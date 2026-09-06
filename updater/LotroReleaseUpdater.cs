@@ -63,6 +63,7 @@ public sealed class InstalledPatchState
     public string game_dir { get; set; }
     public string source_backup_file { get; set; }
     public string source_backup_sha256 { get; set; }
+    public string source_backup_catalog_sha256 { get; set; }
     public string candidate_catalog_sha256 { get; set; }
     public string installed_at { get; set; }
 }
@@ -438,6 +439,16 @@ public sealed class LotroReleaseUpdater
         string currentHash = HashFile(target);
         long currentSize = new FileInfo(target).Length;
 
+        // Re-running the same release is an idempotent success. This is the
+        // ordinary path after a user opens the updater more than once.
+        if (priorState != null
+            && priorState.release_id == manifest.release_id
+            && priorState.asset_id == manifest.asset_id
+            && priorState.size == currentSize
+            && string.Equals(priorState.sha256, currentHash, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(priorState.candidate_catalog_sha256, manifest.candidate_catalog_sha256, StringComparison.OrdinalIgnoreCase))
+            return Task.FromResult(priorState);
+
         bool currentIsCleanBaseline = currentSize == manifest.source_dat_size
             && string.Equals(currentHash, manifest.source_dat_sha256, StringComparison.OrdinalIgnoreCase);
         string cleanSource = null;
@@ -458,7 +469,25 @@ public sealed class LotroReleaseUpdater
                 cleanSource = priorState.source_backup_file;
         }
         if (cleanSource == null)
-            throw new UpdaterFailure("OUTDATED_LOTRO_PATCH", "Bu resmi LOTRO DAT sürümü için henüz uyumlu Türkçe yama yok. Launcher güncellemesi tamamlandıktan sonra yeni yamayı kontrol edin.");
+            cleanSource = FindVerifiedCleanSourceBackup(gameDirectory, manifest);
+        if (cleanSource == null
+            && priorState != null
+            && !string.Equals(priorState.source_dat_sha256, manifest.source_dat_sha256, StringComparison.OrdinalIgnoreCase)
+            && TryGetPriorCleanBackup(gameDirectory, priorState, out string priorCleanBackup))
+        {
+            return RecoverAndInstallUpdatedPatchedDat(
+                gameDirectory,
+                target,
+                priorCleanBackup,
+                document,
+                manifest,
+                statePath,
+                priorStateText,
+                currentSize,
+                cancellationToken);
+        }
+        if (cleanSource == null)
+            throw new UpdaterFailure("OUTDATED_LOTRO_PATCH", "Bu DAT güvenli biçimde otomatik birleştirilemedi. Program hiçbir oyun dosyasını değiştirmedi.");
 
         string candidate = target + ".lotro-candidate.part";
         TryDelete(candidate);
@@ -499,7 +528,8 @@ public sealed class LotroReleaseUpdater
                 size = built.DatSize,
                 game_dir = gameDirectory,
                 source_backup_file = sourceBackup,
-                source_backup_sha256 = manifest.source_dat_sha256,
+                source_backup_sha256 = HashFile(sourceBackup),
+                source_backup_catalog_sha256 = manifest.source_catalog_sha256,
                 candidate_catalog_sha256 = built.CatalogSha256,
                 installed_at = DateTime.UtcNow.ToString("o")
             };
@@ -514,6 +544,78 @@ public sealed class LotroReleaseUpdater
             throw;
         }
         finally { TryDelete(candidate); }
+    }
+
+    private Task<InstalledPatchState> RecoverAndInstallUpdatedPatchedDat(
+        string gameDirectory,
+        string target,
+        string priorCleanBackup,
+        SemanticPatchDocument document,
+        ReleaseManifest manifest,
+        string statePath,
+        string priorStateText,
+        long currentSize,
+        CancellationToken cancellationToken)
+    {
+        string candidate = target + ".lotro-candidate.part";
+        string cleanCandidate = target + ".clean-recovery.part";
+        string sourceBackup = SemanticCleanSourceBackupPath(gameDirectory, manifest);
+        long allowance = checked(Math.Max(currentSize, manifest.source_dat_size) + Math.Max(256L * 1024 * 1024, currentSize / 10));
+        EnsureFreeSpace(gameDirectory, checked(allowance * 3L + 64L * 1024 * 1024));
+        string rollback = BackupFile(target, gameDirectory);
+        TryDelete(candidate);
+        TryDelete(cleanCandidate);
+        try
+        {
+            ManagedSemanticDatPatcher.RecoveryResult recovered = ManagedSemanticDatPatcher.RecoverUpdatedPatchedDat(
+                target,
+                priorCleanBackup,
+                cleanCandidate,
+                candidate,
+                document,
+                manifest.candidate_catalog_sha256,
+                cancellationToken);
+
+            Directory.CreateDirectory(Path.GetDirectoryName(sourceBackup));
+            MoveOrReplace(cleanCandidate, sourceBackup);
+            VerifyFile(sourceBackup, recovered.CleanSource.DatSize, recovered.CleanSource.DatSha256);
+            ReplaceFile(candidate, target);
+            VerifyFile(target, recovered.Translated.DatSize, recovered.Translated.DatSha256);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            InstalledPatchState state = new InstalledPatchState
+            {
+                game_version = manifest.game_version,
+                source_dat_sha256 = manifest.source_dat_sha256,
+                patch_version = manifest.patch_version,
+                release_tag = manifest.release_tag,
+                release_id = manifest.release_id,
+                asset_id = manifest.asset_id,
+                file = target,
+                sha256 = recovered.Translated.DatSha256,
+                size = recovered.Translated.DatSize,
+                game_dir = gameDirectory,
+                source_backup_file = sourceBackup,
+                source_backup_sha256 = recovered.CleanSource.DatSha256,
+                source_backup_catalog_sha256 = recovered.CleanSource.CatalogSha256,
+                candidate_catalog_sha256 = recovered.Translated.CatalogSha256,
+                installed_at = DateTime.UtcNow.ToString("o")
+            };
+            WriteStateAtomic(statePath, state);
+            return Task.FromResult(state);
+        }
+        catch
+        {
+            TryRestore(rollback, target);
+            if (priorStateText == null) TryDelete(statePath); else WriteTextAtomic(statePath, priorStateText);
+            TryDelete(statePath + ".part");
+            throw;
+        }
+        finally
+        {
+            TryDelete(candidate);
+            TryDelete(cleanCandidate);
+        }
     }
 
     private static string EnsureCleanSourceBackup(string source, string gameDirectory, ReleaseManifest manifest, CancellationToken cancellationToken)
@@ -547,6 +649,62 @@ public sealed class LotroReleaseUpdater
         string directory = Path.Combine(gameDirectory, ".lotro-turkce-backups");
         string name = "client_local_English.clean." + manifest.source_dat_sha256.Substring(0, 16).ToLowerInvariant() + ".dat";
         return Path.Combine(directory, name);
+    }
+
+    private static string SemanticCleanSourceBackupPath(string gameDirectory, ReleaseManifest manifest)
+    {
+        string directory = Path.Combine(gameDirectory, ".lotro-turkce-backups");
+        string name = "client_local_English.semantic-clean." + manifest.source_catalog_sha256.Substring(0, 16).ToLowerInvariant() + ".dat";
+        return Path.Combine(directory, name);
+    }
+
+    private static string FindVerifiedCleanSourceBackup(string gameDirectory, ReleaseManifest manifest)
+    {
+        string directory = Path.Combine(gameDirectory, ".lotro-turkce-backups");
+        if (!Directory.Exists(directory)) return null;
+        string expected = CleanSourceBackupPath(gameDirectory, manifest);
+        if (IsVerifiedFile(expected, manifest.source_dat_size, manifest.source_dat_sha256)) return expected;
+        try
+        {
+            foreach (string candidate in Directory.GetFiles(directory, "client_local_English*", SearchOption.TopDirectoryOnly))
+            {
+                if (string.Equals(candidate, expected, StringComparison.OrdinalIgnoreCase)) continue;
+                if (IsVerifiedFile(candidate, manifest.source_dat_size, manifest.source_dat_sha256)) return candidate;
+            }
+        }
+        catch { }
+        return null;
+    }
+
+    private static bool TryGetPriorCleanBackup(string gameDirectory, InstalledPatchState state, out string cleanBackup)
+    {
+        cleanBackup = null;
+        if (state == null || string.IsNullOrWhiteSpace(state.source_backup_file)
+            || string.IsNullOrWhiteSpace(state.source_backup_sha256))
+            return false;
+        try
+        {
+            string backupRoot = Path.GetFullPath(Path.Combine(gameDirectory, ".lotro-turkce-backups"))
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            string candidate = Path.GetFullPath(state.source_backup_file);
+            if (!candidate.StartsWith(backupRoot, StringComparison.OrdinalIgnoreCase)) return false;
+            FileInfo info = new FileInfo(candidate);
+            if (!info.Exists || info.Length < 1 || !string.Equals(HashFile(candidate), state.source_backup_sha256, StringComparison.OrdinalIgnoreCase)) return false;
+            cleanBackup = candidate;
+            return true;
+        }
+        catch { return false; }
+    }
+
+    private static bool IsVerifiedFile(string path, long size, string sha256)
+    {
+        try
+        {
+            FileInfo info = new FileInfo(path);
+            return info.Exists && info.Length == size
+                && string.Equals(HashFile(path), sha256, StringComparison.OrdinalIgnoreCase);
+        }
+        catch { return false; }
     }
 
     private static void EnsureFreeSpace(string directory, long requiredBytes)
@@ -657,6 +815,16 @@ public sealed class LotroReleaseUpdater
         try { File.Replace(candidate, target, null, true); }
         catch (PlatformNotSupportedException) { File.Copy(candidate, fallback, true); File.Delete(target); File.Move(fallback, target); }
         catch (IOException) { File.Copy(candidate, fallback, true); File.Replace(fallback, target, null, true); }
+    }
+
+    private static void MoveOrReplace(string candidate, string target)
+    {
+        if (!File.Exists(target))
+        {
+            File.Move(candidate, target);
+            return;
+        }
+        ReplaceFile(candidate, target);
     }
 
     private static void TryRestore(string backup, string target)

@@ -228,6 +228,70 @@ internal static class UpdaterBehaviorTests
                 if (!File.Exists(installed.source_backup_file)) throw new Exception("clean source backup missing");
                 Verify(installed.source_backup_file, semanticSource.Length, semanticSourceHash);
                 Pass("semantic DAT patch backup/install/round-trip");
+
+                // Simulate the official launcher updating a DAT that already
+                // contains our Turkish row. The binary version changes while
+                // the unchanged localized row remains Turkish.
+                byte[] nextClean = (byte[])semanticSource.Clone();
+                nextClean[nextClean.Length - 1] ^= 0x01;
+                byte[] updatedPatched = File.ReadAllBytes(Path.Combine(semanticGame, "client_local_English.dat"));
+                updatedPatched[updatedPatched.Length - 1] ^= 0x01;
+                File.WriteAllBytes(Path.Combine(semanticGame, "client_local_English.dat"), updatedPatched);
+
+                SemanticPatchDocument nextDocument = new SemanticPatchDocument
+                {
+                    schema_version = 1,
+                    patch_kind = SemanticPatchBuilder.PatchKind,
+                    patch_version = "tr-2026.09.06.semantic",
+                    source_dat_sha256 = Hash(nextClean),
+                    source_dat_size = nextClean.Length,
+                    source_catalog_sha256 = semanticSourceCatalogHash,
+                    translation_catalog_version = "catalog-test-2",
+                    patch_generator_version = "generator-test",
+                    translation_provider = "OPUS",
+                    translation_model_version = "unverified",
+                    counts = new SemanticPatchCounts { safe_translated_count = 1 },
+                    entries = semanticDocument.entries
+                };
+                byte[] nextPatchBytes = Encoding.UTF8.GetBytes(SemanticPatchSerializer.Serialize(nextDocument));
+                string nextPatchPath = Path.Combine(semanticCache, "lotro-turkce-yama-semantic-update-test.json");
+                File.WriteAllBytes(nextPatchPath, nextPatchBytes);
+                ReleaseManifest nextManifest = new ReleaseManifest
+                {
+                    schema_version = 1,
+                    patch_version = nextDocument.patch_version,
+                    release_tag = "tr-2026.09.06-semantic",
+                    release_id = 45,
+                    asset_id = 5,
+                    asset_name = Path.GetFileName(nextPatchPath),
+                    asset_size = nextPatchBytes.Length,
+                    asset_sha256 = Hash(nextPatchBytes),
+                    source_dat_sha256 = nextDocument.source_dat_sha256,
+                    source_dat_size = nextDocument.source_dat_size,
+                    source_catalog_sha256 = nextDocument.source_catalog_sha256,
+                    candidate_catalog_sha256 = semanticCandidateCatalogHash,
+                    game_version = "fixture-2",
+                    asset_kind = LotroReleaseUpdater.SemanticPatchKind,
+                    safe_translated_count = 1
+                };
+                InstalledPatchState upgraded = await semanticUpdater.InstallPatchAsync(
+                    semanticGame,
+                    nextPatchPath,
+                    nextManifest,
+                    Path.Combine(semanticGame, "installed_patch.json"),
+                    CancellationToken.None);
+                List<CatalogRecord> upgradedCatalog = ReadCatalog(Path.Combine(semanticGame, "client_local_English.dat"));
+                if (upgradedCatalog.Count != 1 || upgradedCatalog[0].Source != "Aç") throw new Exception("updated patched DAT was not recovered");
+                if (upgraded.source_backup_catalog_sha256 != semanticSourceCatalogHash) throw new Exception("recovered clean catalog state missing");
+                InstalledPatchState repeated = await semanticUpdater.InstallPatchAsync(
+                    semanticGame,
+                    nextPatchPath,
+                    nextManifest,
+                    Path.Combine(semanticGame, "installed_patch.json"),
+                    CancellationToken.None);
+                if (repeated.sha256 != upgraded.sha256) throw new Exception("idempotent re-run changed state");
+                Pass("official update over patched DAT auto-recovers in one action");
+                Pass("same semantic release re-run is idempotent");
             }
             finally { TryDeleteDirectory(semanticGame); }
         }

@@ -14,7 +14,12 @@ Resmî launcher ile güncellenmiş temiz İngilizce DAT → read-only native ext
 
 Sabit HTTPS GitHub stable release → manifest doğrulama → asset boyut/SHA-256 doğrulama → gerçek LOTRO dizini ve oyun/launcher kapalı kontrolü → backup → geçici candidate → güvenli replacement → post-install doğrulama → atomic `installed_patch.json`.
 
-İlk full-DAT kurulumu, mevcut DAT'ın manifest source SHA-256'sı ile eşleşen temiz baseline üzerinde veya aynı source kimliğine bağlı doğrulanmış önceki patch state'i üzerinde kabul edilir. Aksi durumda `OUTDATED_LOTRO_PATCH` ile fail-closed olur.
+İlk semantic kurulum yalnız manifest source SHA-256'sı ile eşleşen temiz baseline
+üzerinde kabul edilir ve sonraki sürümler için doğrulanmış temiz kaynak yedeği
+oluşturur. Resmî launcher daha sonra yamalı DAT'ı güncellerse updater; canlı DAT,
+önceki temiz yedek ve yeni semantic paketten hem temiz hem Türkçe aday üretir.
+Kaynak ve hedef katalog SHA-256 değerlerinin ikisi de eksiksiz eşleşmeden canlı
+dosya değiştirilmez. Aynı sürümün yeniden çalıştırılması idempotent başarıdır.
 
 ## Semantic patch sözleşmesi
 

@@ -106,7 +106,9 @@ internal sealed class SetupForm : Form
                 string cache = Path.Combine(Path.GetTempPath(), "lotro-turkce-yama");
                 await updater.DownloadPatchAsync(_available.Item1, _available.Item2, cache, _cancel.Token, progress);
                 string statePath = Path.Combine(gameDir, "installed_patch.json");
-                await updater.InstallPatchAsync(gameDir, Path.Combine(cache, _available.Item2.asset_name), _available.Item2, statePath, _cancel.Token);
+                string patchPath = Path.Combine(cache, _available.Item2.asset_name);
+                _status.Text = "Oyun sürümü doğrulanıyor ve Türkçe yama otomatik birleştiriliyor...";
+                await updater.InstallPatchAsync(gameDir, patchPath, _available.Item2, statePath, _cancel.Token);
                 _gameDirectory = gameDir;
                 _status.Text = "Türkçe yama kuruldu.";
                 MessageBox.Show(this, "Türkçe yama başarıyla kuruldu.", "LOTRO Türkçe Yama", MessageBoxButtons.OK, MessageBoxIcon.Information);

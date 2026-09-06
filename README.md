@@ -9,6 +9,9 @@ The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli
 3. **Yama Yap** düğmesine basın.
 4. Araç kaynak DAT ve katalog kimliğini, paket boyutunu ve SHA-256 özetini doğrular; temiz kaynak yedeği almadan canlı dosyayı değiştirmez.
 5. Yeni bir Türkçe paket yayımlandığında aynı kurulum aracı bunu otomatik gösterir.
+6. Resmî launcher daha önce yamalanmış DAT'ı güncellerse yine yalnız **Yama Yap**
+   düğmesine basılır. Araç önceki temiz yedeği, güncellenmiş DAT'ı ve yeni paketi
+   otomatik birleştirir; kullanıcıya DAT seçtirmez veya dosya taşıtmaz.
 
 Kod imzalama sertifikası eklenmediği sürece Windows SmartScreen uyarısı görülebilir.
 

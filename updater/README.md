@@ -10,6 +10,11 @@ Akış:
 4. LOTRO DAT + launcher/client marker doğrulaması ve çalışan süreç kontrolü.
 5. Doğrulanmış backup, geçici candidate, güvenli replacement ve post-install hash kontrolü.
 6. Atomic `installed_patch.json`; hata durumunda DAT/state rollback.
+7. İlk temiz kurulumda sonraki sürümler için doğrulanmış kaynak yedeğini otomatik
+   saklama; kullanıcıdan DAT seçmesini veya taşımasını istememe.
+8. Resmî oyun güncellemesi Türkçe DAT üzerine gelirse güncellenmiş DAT, önceki
+   temiz yedek ve yeni semantic patch'i otomatik birleştirme; temiz ve Türkçe
+   katalog kimlikleri bütünüyle doğrulanmazsa hiçbir oyun dosyasını değiştirmeme.
 
 Updater manifestteki `asset_kind=semantic_delta_patch` sözleşmesini indirip
 doğrular (kaynak DAT/katalog kimliği, asset boyutu/SHA-256, şema ve token
