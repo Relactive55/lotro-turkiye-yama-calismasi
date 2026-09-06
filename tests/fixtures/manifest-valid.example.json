@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "patch_version": "2026.09.05.1",
+  "release_tag": "patch-2026.09.05.1",
+  "release_id": 1,
+  "asset_id": 2,
+  "asset_name": "lotro-turkce-yama-2026.09.05.1.dat",
+  "asset_size": 123456,
+  "asset_sha256": "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+  "source_dat_sha256": "abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+  "source_dat_size": 123456,
+  "game_version": "LOTRO-update-placeholder",
+  "asset_kind": "full_dat",
+  "minimum_updater_version": "0.1.0"
+}

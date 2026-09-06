@@ -1,0 +1,44 @@
+name: Validate LOTRO translation pipeline
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'schemas/**'
+      - 'scripts/**'
+      - 'developer-tool/automation/**'
+      - 'tests/fixtures/**'
+      - 'tests/run-translation-contract.ps1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: translation-candidate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-source-and-contract:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Validate any submitted source bundles
+        shell: pwsh
+        run: |
+          $bundles = @(Get-ChildItem -Path . -Recurse -File -Filter '*.source-bundle.json')
+          foreach ($bundle in $bundles) { ./scripts/validate-source-bundle.ps1 -Path $bundle.FullName }
+          if ($bundles.Count -eq 0) { Write-Output 'No persistent source bundle in repository; client-assisted uploads remain opt-in/transient.' }
+      - name: Run provider-safe contract
+        shell: pwsh
+        run: ./tests/run-translation-contract.ps1
+      - name: Validate semantic patch schema syntax
+        shell: pwsh
+        run: |
+          Get-Content -LiteralPath ./schemas/semantic-translation-patch.schema.json -Raw | ConvertFrom-Json | Out-Null
+          Get-Content -LiteralPath ./schemas/source-bundle.schema.json -Raw | ConvertFrom-Json | Out-Null
+
+  # This public workflow validates the provider-independent contract without
+  # proprietary game data. Real source refresh and release generation run only
+  # on the trusted Windows source machine after the official version watcher
+  # reports a change.

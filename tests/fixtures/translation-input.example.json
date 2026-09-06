@@ -1,0 +1,10 @@
+[
+  {
+    "entry_identity": "synthetic-entry-1",
+    "dat_key": "25000020:0:0:0",
+    "source_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+    "token_signature": "0000000000000000000000000000000000000000000000000000000000000000",
+    "english": "Defeat the Orc",
+    "critical_ui": false
+  }
+]

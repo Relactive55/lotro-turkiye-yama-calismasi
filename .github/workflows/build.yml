@@ -1,0 +1,24 @@
+name: Build developer tool and updater
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Build
+        shell: pwsh
+        run: ./scripts/build.ps1 -Project All
+      - name: Run updater behavior tests
+        shell: pwsh
+        run: ./scripts/test-updater.ps1

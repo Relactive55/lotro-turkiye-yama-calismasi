@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net472</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**;work\**</DefaultItemExcludes>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Keep generated files out even when the contract script redirects obj/bin. -->
+    <Compile Remove="bin\**" />
+    <Compile Remove="obj\**" />
+    <Compile Remove="work\**" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\updater\LotroReleaseUpdater.cs" Link="LotroReleaseUpdater.cs" />
+    <Compile Include="..\updater\ManagedSemanticDatPatcher.cs" Link="ManagedSemanticDatPatcher.cs" />
+    <Compile Include="..\updater\LotroGameLocator.cs" Link="LotroGameLocator.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\ProtectedFormat.cs" Link="ProtectedFormat.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\SourceDigest.cs" Link="SourceDigest.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\SemanticPatch.cs" Link="SemanticPatch.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\SourceBundle.cs" Link="SourceBundle.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\CatalogSnapshot.cs" Link="CatalogSnapshot.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\CatalogIdentity.cs" Link="CatalogIdentity.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\CatalogDiff.cs" Link="CatalogDiff.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\LocRow.cs" Link="LocRow.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\LocBin.cs" Link="LocBin.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\LocRecord.cs" Link="LocRecord.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\FlatEntry.cs" Link="FlatEntry.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\DatEntry.cs" Link="DatEntry.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\TurbineDat.cs" Link="TurbineDat.cs" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+</Project>

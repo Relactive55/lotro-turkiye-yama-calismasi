@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LOTRO public-safe semantic Turkish translation patch",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version", "patch_kind", "patch_version", "source_dat_sha256",
+    "source_dat_size", "source_catalog_sha256", "translation_catalog_version",
+    "patch_generator_version", "counts", "entries"
+  ],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "patch_kind": {"type": "string", "const": "semantic_delta_patch"},
+    "patch_version": {"type": "string", "minLength": 1, "maxLength": 120},
+    "source_dat_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "source_dat_size": {"type": "integer", "minimum": 1},
+    "source_catalog_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "translation_catalog_version": {"type": "string", "maxLength": 120},
+    "patch_generator_version": {"type": "string", "maxLength": 120},
+    "translation_provider": {"type": "string", "maxLength": 80},
+    "translation_model_version": {"type": "string", "maxLength": 160},
+    "translation_model_sha256": {"type": "string", "maxLength": 64},
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["safe_translated_count", "skipped_changed_count", "critical_review_required_count", "ambiguous_count", "removed_count", "review_required_count"],
+      "properties": {
+        "safe_translated_count": {"type": "integer", "minimum": 0},
+        "skipped_changed_count": {"type": "integer", "minimum": 0},
+        "critical_review_required_count": {"type": "integer", "minimum": 0},
+        "ambiguous_count": {"type": "integer", "minimum": 0},
+        "removed_count": {"type": "integer", "minimum": 0},
+        "review_required_count": {"type": "integer", "minimum": 0}
+      }
+    },
+    "entries": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/entry"}
+    }
+  },
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_identity", "dat_key", "did", "record_index", "group_index", "index_in_group", "source_digest", "token_signature", "target", "translation_status", "translation_engine", "translation_engine_version", "classification", "critical_ui"],
+      "properties": {
+        "entry_identity": {"type": "string", "minLength": 1},
+        "dat_key": {"type": "string", "minLength": 1},
+        "did": {"type": "integer", "minimum": 0},
+        "record_index": {"type": "integer", "minimum": 0},
+        "group_index": {"type": "integer", "minimum": -1},
+        "index_in_group": {"type": "integer", "minimum": 0},
+        "source_digest": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "token_signature": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "target": {"type": "string", "minLength": 1},
+        "translation_status": {"type": "string", "enum": ["HUMAN_APPROVED", "TM_REUSED", "GLOSSARY", "MACHINE_TRANSLATED"]},
+        "translation_engine": {"type": "string", "maxLength": 120},
+        "translation_engine_version": {"type": "string", "maxLength": 160},
+        "classification": {"type": "string", "enum": ["UNCHANGED", "NEW", "MODIFIED", "MOVED"]},
+        "critical_ui": {"type": "boolean"}
+      }
+    }
+  }
+}

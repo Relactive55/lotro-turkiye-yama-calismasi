@@ -1,0 +1,63 @@
+# Proprietary and large game data
+*.dat
+*.datx
+*.rar
+*.7z
+*.zip
+raw-localization/
+private-catalog/
+private/
+
+# Models and runtime caches
+*.gguf
+*.exe
+*.dll
+*.pdb
+*.bin
+*.pt
+*.onnx
+*.safetensors
+models/
+model-cache/
+gpu_runtime/
+gpu-cache/
+venv/
+__pycache__/
+
+# Build and disposable output
+bin/
+obj/
+out/
+work/
+temp/
+tmp/
+cache/
+staging/
+backup/
+backups/
+*.part
+*.tmp
+*.log
+*.jsonl
+*.building
+gpu_job_*/
+gpu_quality_log.tsv
+gpu_runtime_path.txt
+lotro_gpu_ready.txt
+YAZIM_RAPOR.txt
+*_fail.txt
+test-output/
+installed_patch.json
+
+# Local configuration / paths / secrets
+settings.ini
+*.user
+*.suo
+.env
+secrets/
+
+# IDE / OS noise
+.vs/
+.idea/
+.DS_Store
+Thumbs.db

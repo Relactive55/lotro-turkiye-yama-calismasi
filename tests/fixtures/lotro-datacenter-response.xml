@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Envelope>
+  <Body>
+    <GetDatacentersResult>
+      <Datacenter>
+        <Name>LOTRO</Name>
+        <LauncherConfigurationServer>http://gls.lotro.com/launcher/lotro/lotrolauncher.server.config.xml</LauncherConfigurationServer>
+      </Datacenter>
+    </GetDatacentersResult>
+  </Body>
+</Envelope>

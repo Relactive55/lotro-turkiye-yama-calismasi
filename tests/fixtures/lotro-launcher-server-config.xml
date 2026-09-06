@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <appSettings>
+    <add key="Patching.ProductCode" value="LOTRO" />
+    <add key="Game.Version" value="3601.0066.7272.4024" />
+  </appSettings>
+</configuration>

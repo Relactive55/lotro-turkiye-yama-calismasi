@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "patch_version": "invalid/../../path",
+  "release_tag": "",
+  "release_id": 0,
+  "asset_id": 0,
+  "asset_name": "..\\client_local_English.dat",
+  "asset_size": 0,
+  "asset_sha256": "wrong",
+  "source_dat_sha256": "wrong",
+  "source_dat_size": 0,
+  "game_version": "",
+  "asset_kind": "full_dat"
+}

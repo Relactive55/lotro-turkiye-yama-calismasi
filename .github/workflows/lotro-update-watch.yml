@@ -1,0 +1,61 @@
+name: Watch official LOTRO version
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: lotro-official-version-watch
+  cancel-in-progress: false
+
+jobs:
+  detect:
+    runs-on: windows-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Read official SSG LOTRO version
+        id: version
+        shell: pwsh
+        run: |
+          $version = ./scripts/get-lotro-official-version.ps1
+          if ($version -notmatch '^[0-9]+(?:\.[0-9]+){3}$') { throw 'Geçersiz LOTRO sürümü.' }
+          "id=$version" >> $env:GITHUB_OUTPUT
+
+      - name: Create one detection issue per official version
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        env:
+          LOTRO_VERSION: ${{ steps.version.outputs.id }}
+        with:
+          script: |
+            const version = process.env.LOTRO_VERSION;
+            const title = `Official LOTRO version detected: ${version}`;
+            const issues = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              per_page: 100
+            });
+            if (issues.some(issue => !issue.pull_request && issue.title === title)) {
+              core.info(`Official version ${version} was already recorded.`);
+              return;
+            }
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title,
+              body: [
+                `Official SSG Game.Version: ${version}`,
+                `Detected by scheduled GitHub Actions run: ${context.runId}`,
+                '',
+                'This signal covers Steam and standalone installations because both are updated by the official LOTRO launcher.',
+                'Do not publish a patch until trusted source refresh, source-digest diff, translation validation and release gates pass.'
+              ].join('\n')
+            });

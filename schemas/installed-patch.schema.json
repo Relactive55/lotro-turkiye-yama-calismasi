@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Installed LOTRO Turkish patch state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["game_version", "source_dat_sha256", "patch_version", "release_tag", "release_id", "asset_id", "file", "sha256", "size", "game_dir", "installed_at"],
+  "properties": {
+    "game_version": {"type": "string"},
+    "source_dat_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "patch_version": {"type": "string"},
+    "release_tag": {"type": "string"},
+    "release_id": {"type": "integer", "minimum": 1},
+    "asset_id": {"type": "integer", "minimum": 1},
+    "file": {"type": "string", "minLength": 1},
+    "sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "size": {"type": "integer", "minimum": 1},
+    "game_dir": {"type": "string", "minLength": 1},
+    "source_backup_file": {"type": "string", "minLength": 1},
+    "source_backup_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "candidate_catalog_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "installed_at": {"type": "string", "format": "date-time"}
+  }
+}

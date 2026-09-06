@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LOTRO Turkish patch release manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "patch_version", "release_tag", "release_id", "asset_id", "asset_name", "asset_size", "asset_sha256", "source_dat_sha256", "source_dat_size", "game_version", "asset_kind"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "patch_version": {"type": "string", "minLength": 1, "maxLength": 80},
+    "release_tag": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$"},
+    "release_id": {"type": "integer", "minimum": 1},
+    "asset_id": {"type": "integer", "minimum": 1},
+    "asset_name": {"type": "string", "pattern": "^lotro-turkce-yama-[A-Za-z0-9][A-Za-z0-9._-]{0,110}$"},
+    "asset_size": {"type": "integer", "minimum": 1},
+    "asset_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "source_dat_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "source_dat_size": {"type": "integer", "minimum": 1},
+    "game_version": {"type": "string", "minLength": 1, "maxLength": 80},
+    "candidate_catalog_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "asset_kind": {"type": "string", "enum": ["full_dat", "delta_patch", "semantic_delta_patch"]},
+    "source_catalog_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "translation_catalog_version": {"type": "string", "maxLength": 120},
+    "patch_generator_version": {"type": "string", "maxLength": 120},
+    "translation_provider": {"type": "string", "maxLength": 80},
+    "translation_model_version": {"type": "string", "maxLength": 160},
+    "safe_translated_count": {"type": "integer", "minimum": 0},
+    "skipped_changed_count": {"type": "integer", "minimum": 0},
+    "critical_review_required_count": {"type": "integer", "const": 0},
+    "minimum_updater_version": {"type": "string", "maxLength": 40}
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LOTRO catalog diff record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["classification", "confidence", "review_required"],
+  "properties": {
+    "classification": {"type": "string", "enum": ["UNCHANGED", "NEW", "MODIFIED", "REMOVED", "MOVED", "AMBIGUOUS"]},
+    "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+    "review_required": {"type": "boolean"},
+    "old_key": {"type": ["string", "null"]},
+    "new_key": {"type": ["string", "null"]},
+    "source_fingerprint": {"type": ["string", "null"]},
+    "reason": {"type": "string"}
+  }
+}

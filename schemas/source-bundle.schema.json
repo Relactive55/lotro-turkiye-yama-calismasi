@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LOTRO client-assisted source update bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "bundle_kind", "source_dat_sha256", "source_dat_size", "source_catalog_sha256", "records"],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "bundle_kind": {"type": "string", "const": "client_assisted_source_update"},
+    "source_dat_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "source_dat_size": {"type": "integer", "minimum": 1},
+    "source_catalog_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "dat_metadata": {"type": "object", "additionalProperties": true},
+    "records": {
+      "type": "array",
+      "maxItems": 100000,
+      "items": {"$ref": "#/$defs/record"}
+    }
+  },
+  "$defs": {
+    "record": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["entry_identity", "dat_key", "did", "record_index", "group_index", "index_in_group", "source_digest", "token_signature", "classification", "critical_ui"],
+      "properties": {
+        "entry_identity": {"type": "string", "minLength": 1},
+        "did": {"type": "integer", "minimum": 0},
+        "dat_key": {"type": "string", "minLength": 1},
+        "record_index": {"type": "integer", "minimum": 0},
+        "group_index": {"type": "integer", "minimum": -1},
+        "index_in_group": {"type": "integer", "minimum": 0},
+        "source_digest": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "token_signature": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+        "classification": {"type": "string", "enum": ["NEW", "MODIFIED"]},
+        "critical_ui": {"type": "boolean"},
+        "source": {"type": "string", "maxLength": 16000}
+      }
+    }
+  }
+}

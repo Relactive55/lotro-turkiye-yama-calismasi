@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LOTRO extracted catalog record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["did", "record_hash", "record_index", "group_index", "index_in_group", "source", "position", "structural_fingerprint", "source_digest", "token_signature", "context_fingerprint"],
+  "properties": {
+    "did": {"type": "integer", "minimum": 0},
+    "record_hash": {"type": "string", "minLength": 1},
+    "record_index": {"type": "integer", "minimum": 0},
+    "group_index": {"type": "integer", "minimum": -1},
+    "index_in_group": {"type": "integer", "minimum": 0},
+    "source": {"type": "string"},
+    "position": {"type": "integer", "minimum": 0},
+    "structural_fingerprint": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "source_fingerprint": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "source_digest": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "token_signature": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "entry_identity": {"type": "string", "minLength": 1},
+    "context_fingerprint": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "critical_ui": {"type": "boolean"}
+  }
+}

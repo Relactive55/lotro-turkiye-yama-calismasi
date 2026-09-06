@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "bundle_kind": "client_assisted_source_update",
+  "source_dat_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_dat_size": 123,
+  "source_catalog_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "dat_metadata": {
+    "block_size": "256",
+    "dat_file_id": "2"
+  },
+  "records": [
+    {
+      "entry_identity": "25000020|shape-q|record-q",
+      "dat_key": "25000020:0:0:0",
+      "did": 620757024,
+      "record_index": 0,
+      "group_index": 0,
+      "index_in_group": 0,
+      "source_digest": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "token_signature": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "classification": "MODIFIED",
+      "critical_ui": false
+    }
+  ]
+}

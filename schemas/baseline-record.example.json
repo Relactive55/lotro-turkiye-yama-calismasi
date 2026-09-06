@@ -1,0 +1,17 @@
+{
+  "source_kind": "clean_english_dat",
+  "file_name": "client_local_English.dat",
+  "size": 0,
+  "sha256": "",
+  "modified_utc": "",
+  "dat_metadata": {
+    "vnum_dat_file": null,
+    "vnum_game_data": null,
+    "dat_file_id": null,
+    "dat_stamp": null,
+    "first_iteration_guid": null
+  },
+  "catalog_sha256": "",
+  "source_digest_contract": "lotro-source-digest-v1",
+  "notes": "Template only. Keep the real path and proprietary DAT outside the repository."
+}
