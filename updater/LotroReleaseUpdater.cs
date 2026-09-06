@@ -486,6 +486,12 @@ public sealed class LotroReleaseUpdater
                 currentSize,
                 cancellationToken);
         }
+        if (cleanSource == null
+            && priorState != null
+            && string.Equals(priorState.source_dat_sha256, manifest.source_dat_sha256, StringComparison.OrdinalIgnoreCase))
+            throw new UpdaterFailure(
+                "PATCH_RELEASE_PENDING",
+                "LOTRO güncellenmiş, fakat bu oyun sürümü için yeni Türkçe paket henüz yayımlanmamış. Oyun dosyanız değiştirilmedi; programı daha sonra yeniden açmanız yeterli.");
         if (cleanSource == null)
             throw new UpdaterFailure("OUTDATED_LOTRO_PATCH", "Bu DAT güvenli biçimde otomatik birleştirilemedi. Program hiçbir oyun dosyasını değiştirmedi.");
 

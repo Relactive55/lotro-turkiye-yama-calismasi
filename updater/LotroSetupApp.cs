@@ -115,6 +115,11 @@ internal sealed class SetupForm : Form
             }
         }
         catch (OperationCanceledException) { _status.Text = "Kurulum iptal edildi."; }
+        catch (UpdaterFailure ex) when (ex.Code == "PATCH_RELEASE_PENDING")
+        {
+            MessageBox.Show(this, ex.Message, "Yeni Türkçe yama bekleniyor", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            _status.Text = "Yeni oyun sürümü için Türkçe yama hazırlanıyor.";
+        }
         catch (UpdaterFailure ex) { MessageBox.Show(this, ex.Message, ex.Code, MessageBoxButtons.OK, MessageBoxIcon.Warning); _status.Text = "Kurulum yapılamadı."; }
         catch (Exception ex) { MessageBox.Show(this, ex.Message, "Kurulum yapılamadı", MessageBoxButtons.OK, MessageBoxIcon.Error); _status.Text = "Kurulum yapılamadı."; }
         finally

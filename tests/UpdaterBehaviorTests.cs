@@ -292,6 +292,18 @@ internal static class UpdaterBehaviorTests
                 if (repeated.sha256 != upgraded.sha256) throw new Exception("idempotent re-run changed state");
                 Pass("official update over patched DAT auto-recovers in one action");
                 Pass("same semantic release re-run is idempotent");
+
+                byte[] newerWithoutRelease = File.ReadAllBytes(Path.Combine(semanticGame, "client_local_English.dat"));
+                newerWithoutRelease[newerWithoutRelease.Length - 2] ^= 0x01;
+                File.WriteAllBytes(Path.Combine(semanticGame, "client_local_English.dat"), newerWithoutRelease);
+                string pendingHash = Hash(newerWithoutRelease);
+                Expect("PATCH_RELEASE_PENDING", () => semanticUpdater.InstallPatchAsync(
+                    semanticGame,
+                    nextPatchPath,
+                    nextManifest,
+                    Path.Combine(semanticGame, "installed_patch.json"),
+                    CancellationToken.None).GetAwaiter().GetResult(), "new official version waits for matching Turkish release");
+                Verify(Path.Combine(semanticGame, "client_local_English.dat"), newerWithoutRelease.Length, pendingHash);
             }
             finally { TryDeleteDirectory(semanticGame); }
         }
