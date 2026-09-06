@@ -2,7 +2,8 @@ name: Watch official LOTRO version
 
 on:
   schedule:
-    - cron: '17 */6 * * *'
+    # 09:17 UTC = 12:17 Europe/Istanbul
+    - cron: '17 9 * * *'
   workflow_dispatch:
 
 permissions:

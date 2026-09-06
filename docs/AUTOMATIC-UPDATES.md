@@ -2,7 +2,7 @@
 
 ## Neyi otomatik algılıyoruz?
 
-GitHub Actions altı saatte bir Standing Stone Games'in resmi GLS hizmetinden
+GitHub Actions günde bir kez (09:17 UTC / 12:17 Türkiye saati) Standing Stone Games'in resmi GLS hizmetinden
 launcher yapılandırma adresini, ardından aynı resmi sunucudan `Game.Version`
 değerini okur. Her yeni sürüm için yalnız bir GitHub issue açılır. Sunucu yanıtı
 alınamaz, beklenmeyen bir alan adına yönlenir veya sonuç belirsiz olursa işlem

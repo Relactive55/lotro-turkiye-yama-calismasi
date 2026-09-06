@@ -46,7 +46,7 @@ Koruma kararları; çevirisi oyunun komut veya dilbilgisi mekanizmasını bozaca
 
 ## Otomasyon
 
-- resmî SSG `Game.Version` değeri GitHub Actions ile altı saatte bir izlenir;
+- resmî SSG `Game.Version` değeri GitHub Actions ile günde bir kez izlenir;
 - Steam ve bağımsız kurulum aynı resmî güncelleme sinyalini kullanır;
 - gerçek DAT değişikliği güvenilir Windows kaynak makinesinde SHA-256 ve katalog özetiyle doğrulanır;
 - yalnız yeni/değişen kaynaklar çeviri hattına girer;

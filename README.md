@@ -29,7 +29,7 @@ Tam DAT, RAR, ham katalog, özel çeviri havuzu, model dosyası veya oyuna ait n
 
 ## Otomatik güncelleme
 
-`Watch official LOTRO version` işi Standing Stone Games'in resmî `Game.Version` değerini altı saatte bir denetler ve yeni sürüm için tek takip kaydı açar. Steam zorunlu değildir. Sürüm sinyali tek başına yama yayımlamaz; güvenilir Windows kaynak makinesinde güncel DAT özeti değişimi doğrulanır, yalnız yeni/değişen İngilizce kayıtlar çeviri hattına alınır ve bütün kalite kapıları geçerse yeni release hazırlanır.
+`Watch official LOTRO version` işi Standing Stone Games'in resmî `Game.Version` değerini günde bir kez, Türkiye saatiyle yaklaşık 12:17'de denetler ve yeni sürüm için tek takip kaydı açar. Steam zorunlu değildir. Sürüm sinyali tek başına yama yayımlamaz; güvenilir Windows kaynak makinesinde güncel DAT özeti değişimi doğrulanır, yalnız yeni/değişen İngilizce kayıtlar çeviri hattına alınır ve bütün kalite kapıları geçerse yeni release hazırlanır.
 
 Bir kullanıcı oyun içinde sorun bildirdiğinde ilgili kayıt düzeltilerek yeni semantic paket yayımlanabilir. Kurulum aracının kodu değişmediyse kullanıcı yeni EXE indirmek zorunda kalmaz; mevcut araç yeni patch sürümünü görür.
 
