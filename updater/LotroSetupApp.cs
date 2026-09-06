@@ -34,6 +34,7 @@ internal sealed class SetupForm : Form
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
+        try { Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
         _status.AutoSize = false;
         _status.SetBounds(24, 24, 500, 52);
         _status.Text = "Güncellemeler kontrol ediliyor...";
