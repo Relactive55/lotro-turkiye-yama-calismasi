@@ -12,12 +12,16 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <OutputPath>bin\x86\Release\</OutputPath>
     <Configuration>Release</Configuration>
+    <DefaultItemExcludes>$(DefaultItemExcludes);automation\**;bin\**;obj\**</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Core" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Remove="automation\**" />
+    <EmbeddedResource Remove="automation\**" />
+    <None Remove="automation\**" />
     <None Include="lotro_gpu_translate.py" CopyToOutputDirectory="PreserveNewest" />
     <None Include="lotro_gpu_setup.ps1" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

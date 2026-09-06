@@ -88,6 +88,8 @@ public static class ProjPaths
 
 	public static string DefaultExportTxtName => TranslationMemoryTxtName;
 
+	public static string UpdateDatDir => Path.Combine(Root, "GÜNCELLEME");
+
 	public static string ExportDirPrimary
 	{
 		get
@@ -109,6 +111,11 @@ public static class ProjPaths
 
 	public static string FindEnDat()
 	{
+		string updateDat = FindUpdateDat();
+		if (!string.IsNullOrEmpty(updateDat))
+		{
+			return updateDat;
+		}
 		string[] array = new string[3]
 		{
 			Path.Combine(Root, "ORJİNAL DAT", "client_local_English.dat"),
@@ -123,6 +130,23 @@ public static class ProjPaths
 			}
 		}
 		return FindDatByFolderHint(isEn: true);
+	}
+
+	public static string FindUpdateDat()
+	{
+		string[] candidates = new string[2]
+		{
+			Path.Combine(Root, "GÜNCELLEME", "client_local_English.dat"),
+			Path.Combine(Root, "GUNCELLEME", "client_local_English.dat")
+		};
+		foreach (string candidate in candidates)
+		{
+			if (File.Exists(candidate))
+			{
+				return candidate;
+			}
+		}
+		return null;
 	}
 
 	public static string FindTrDat()
@@ -280,6 +304,10 @@ public static class ProjPaths
 			return true;
 		}
 		if (Directory.Exists(Path.Combine(dir, "ORJİNAL DAT")) || Directory.Exists(Path.Combine(dir, "ORJINAL DAT")) || Directory.Exists(Path.Combine(dir, "ORIJINAL DAT")))
+		{
+			return true;
+		}
+		if (Directory.Exists(Path.Combine(dir, "GÜNCELLEME")) || Directory.Exists(Path.Combine(dir, "GUNCELLEME")))
 		{
 			return true;
 		}

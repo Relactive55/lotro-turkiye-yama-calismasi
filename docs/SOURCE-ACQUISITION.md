@@ -33,6 +33,15 @@ Kullanıcı resmi launcher ile LOTRO'yu günceller. Setup, DAT'ı yalnız read-o
 okuyarak metadata, catalog fingerprint, `NEW/MODIFIED` satır kimlikleri,
 `source_digest` ve gerekli token bilgilerini içeren küçük bir bundle hazırlar.
 
+Bakımcı girdi sözleşmesi sabittir:
+
+- klasör: proje kökündeki `GÜNCELLEME`
+- dosya: `client_local_English.dat`
+- `GÜNCELLEME` girdisi varsa geliştirici aracı bunu `ORJİNAL DAT` kaynağından
+  önce seçer;
+- girdi salt okunur kaynak kabul edilir; doğrudan değiştirilmez ve GitHub'a
+  yüklenmez.
+
 Bundle:
 
 - opt-in olmadan yüklenmez,
