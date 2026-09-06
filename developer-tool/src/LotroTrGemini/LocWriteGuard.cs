@@ -94,12 +94,15 @@ public static class LocWriteGuard
 			}
 			int did = rows.Count > 0 ? rows[0].Did : bin.FileId;
 			string verifyReason;
-			byte[] packed = TurbineDat.FitBlob(translatedPayload, originalRaw, wasCompressed);
-			if (packed == null)
+			// LOTRO accepts localization containers in the representation chosen
+			// by the official DAT. A managed parser may accept a raw/compressed
+			// conversion which the game rejects, so never switch representation.
+			byte[] packed = TurbineDat.PackBlob(
+				translatedPayload,
+				wasCompressed,
+				originalRaw.Length);
+			if (packed.Length > originalRaw.Length)
 			{
-				byte[] preferred = TurbineDat.PackBlob(translatedPayload, wasCompressed, 0);
-				byte[] alternate = TurbineDat.PackBlob(translatedPayload, !wasCompressed, 0);
-				packed = alternate.Length < preferred.Length ? alternate : preferred;
 				long growthLimit = Math.Max((long)originalRaw.Length * 4L, (long)originalRaw.Length + 16777216L);
 				if (packed.LongLength > growthLimit)
 				{

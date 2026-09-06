@@ -1,9 +1,11 @@
 # LOTRO Türkiye Yama Çalışması
 
-## [⬇️ Güncel LOTRO Türkçe Yama Programını İndir](https://github.com/Relactive/lotro-turkiye-yama-calismasi/releases/latest/download/LOTRO_Turkce_Yama_Setup.exe)
+## Program güncellemesi hazırlanıyor
 
-Programı indirin, LOTRO ve launcher kapalıyken çalıştırın ve **Yama Yap**
-düğmesine basın. DAT dosyası indirmeniz, seçmeniz veya taşımanız gerekmez.
+Önceki kurulum aracında LOTRO'nun kabul etmediği bir DAT depolama dönüşümü
+bulundu. Düzeltilmiş program doğrulanıp aynı indirme bağlantısına yüklenene kadar
+mevcut EXE'yi kullanmayın. Kaynak kod düzeltmesi ve tekrar oluşmasını engelleyen
+test depoya eklenmiştir.
 
 The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli güncelleme projesidir. Son kullanıcı tam oyun DAT'ı indirmez; GitHub Releases sayfasındaki `LOTRO_Turkce_Yama_Setup.exe` aracını indirir ve **Yama Yap** düğmesine basar. Araç Steam ve bağımsız LOTRO kurulumlarını bulabilir, güncel semantic paketi indirir ve kullanıcının kendi resmî DAT dosyasına uygular.
 

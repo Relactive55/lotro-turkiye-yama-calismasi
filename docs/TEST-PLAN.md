@@ -18,6 +18,11 @@ Synthetic catalog ordered-token, tag-stack, placeholder-index, numeric-value, du
 
 The checked-in harness covers stable/draft release selection, manifest identity, HTTPS policy helpers, safe asset names, streaming fixture verification, valid/invalid LOTRO roots, baseline mismatch fail-closed, backup/install/state, rollback on state failure, semantic patch manifest validation, semantic install fail-closed, official-update-over-translated-DAT recovery, same-release idempotence, ordered protected formats, source-digest move/change behavior, deterministic semantic serialization, matching-digest apply, stale English fallback, critical-UI exclusion and all six diff classifications. It uses synthetic bytes and temporary directories only. A real DAT writer round-trip, A→B→C→D human-less simulation and provider benchmark remain release gates, not claims that production application is complete.
 
+The semantic writer must also preserve each official localization subfile's raw
+or compressed representation. A managed-parser round trip is insufficient:
+changing that storage representation can produce a parseable DAT which the
+LOTRO client refuses to load.
+
 ## 2026-09-05 read-only baseline evidence
 
 The newly supplied clean DAT was opened with the x86 native reader without write

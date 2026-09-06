@@ -40,6 +40,7 @@ public static class ManagedSemanticDatPatcher
         public bool WasCompressed;
         public LocBin Bin;
         public List<LocRow> Rows;
+        public HashSet<string> ChangedKeys = new HashSet<string>(StringComparer.Ordinal);
     }
 
     public static Result BuildCandidate(
@@ -122,8 +123,10 @@ public static class ManagedSemanticDatPatcher
                 + ", missing=" + apply.Missing);
         }
 
+        MarkChangedUnits(units, patch.entries.Select(entry => entry.dat_key));
+
         List<Unit> touched = units.Values
-            .Where(unit => unit.Rows.Any(row => !string.Equals(row.Original, row.Translation, StringComparison.Ordinal)))
+            .Where(unit => unit.ChangedKeys.Count != 0)
             .OrderBy(unit => unchecked((uint)unit.Entry.Id))
             .ToList();
         if (touched.Count == 0 || patch.entries.Count == 0)
@@ -252,6 +255,7 @@ public static class ManagedSemanticDatPatcher
                 throw new UpdaterFailure("UPDATED_DAT_RECOVERY_REJECTED", "Metin biçimi doğrulanamadı: " + entry.dat_key + " (" + format.Reason + ")");
 
             row.Translation = provenSource;
+            units[current.Did].ChangedKeys.Add(row.Key);
             resolvedRows.Add(entry.dat_key, row);
         }
 
@@ -338,7 +342,7 @@ public static class ManagedSemanticDatPatcher
         IList<SemanticPatchEntry> expectedTargets)
     {
         List<Unit> touched = units.Values
-            .Where(unit => unit.Rows.Any(row => !string.Equals(row.Original, row.Translation, StringComparison.Ordinal)))
+            .Where(unit => unit.ChangedKeys.Count != 0)
             .OrderBy(unit => unchecked((uint)unit.Entry.Id))
             .ToList();
         CopyFile(basePath, candidatePath, cancellationToken);
@@ -432,9 +436,11 @@ public static class ManagedSemanticDatPatcher
         for (int i = 0; i < unit.Rows.Count; i++) unit.Rows[i].Translation = translations[i];
         byte[] translated = unit.Bin.Rebuild(unit.Rows);
         long growthLimit = Math.Max((long)unit.Raw.Length * 4L, (long)unit.Raw.Length + 16L * 1024 * 1024);
-        byte[] preferred = TurbineDat.PackBlob(translated, unit.WasCompressed, 0);
-        byte[] alternate = TurbineDat.PackBlob(translated, !unit.WasCompressed, 0);
-        byte[] blob = alternate.Length < preferred.Length ? alternate : preferred;
+        // The LOTRO client is stricter than the managed round-trip parser. Keep
+        // every localization subfile in its original storage representation;
+        // changing compressed data to raw (or raw to compressed) can produce a
+        // parseable DAT that the game still refuses to load.
+        byte[] blob = TurbineDat.PackBlob(translated, unit.WasCompressed, 0);
         if (blob.LongLength > growthLimit)
             throw new InvalidDataException("Localization alt dosyası güvenli büyüme sınırını aştı: 0x" + unit.Entry.Id.ToString("X8"));
         byte[] verifyPayload = TurbineDat.MaybeDecompress(blob);
@@ -448,6 +454,20 @@ public static class ManagedSemanticDatPatcher
                 throw new InvalidDataException("Localization rebuild hedef uyuşmazlığı: 0x" + unit.Entry.Id.ToString("X8"));
         }
         return blob;
+    }
+
+    private static void MarkChangedUnits(Dictionary<int, Unit> units, IEnumerable<string> keys)
+    {
+        foreach (string key in keys ?? Enumerable.Empty<string>())
+        {
+            int separator = key == null ? -1 : key.IndexOf(':');
+            if (separator != 8 || !int.TryParse(key.Substring(0, 8), System.Globalization.NumberStyles.HexNumber,
+                System.Globalization.CultureInfo.InvariantCulture, out int did))
+                throw new UpdaterFailure("SEMANTIC_PATCH_INVALID", "DAT satır anahtarı geçersiz: " + key);
+            if (!units.TryGetValue(did, out Unit unit))
+                throw new UpdaterFailure("SEMANTIC_PATCH_APPLY_REJECTED", "Değiştirilecek localization alt dosyası bulunamadı: " + key);
+            unit.ChangedKeys.Add(key);
+        }
     }
 
     private static List<CatalogRecord> ExtractCatalog(string path, CancellationToken cancellationToken)

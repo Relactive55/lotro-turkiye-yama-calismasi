@@ -224,10 +224,14 @@ internal static class UpdaterBehaviorTests
                     CancellationToken.None);
                 List<CatalogRecord> installedCatalog = ReadCatalog(Path.Combine(semanticGame, "client_local_English.dat"));
                 if (installedCatalog.Count != 1 || installedCatalog[0].Source != "Aç") throw new Exception("semantic target not installed");
+                if (FirstLocalizationIsCompressed(Path.Combine(semanticGame, "client_local_English.dat"))
+                    != FirstLocalizationIsCompressed(semanticSourcePath))
+                    throw new Exception("semantic writer changed the official storage representation");
                 if (installed.candidate_catalog_sha256 != semanticCandidateCatalogHash) throw new Exception("semantic catalog state mismatch");
                 if (!File.Exists(installed.source_backup_file)) throw new Exception("clean source backup missing");
                 Verify(installed.source_backup_file, semanticSource.Length, semanticSourceHash);
                 Pass("semantic DAT patch backup/install/round-trip");
+                Pass("semantic writer preserves official storage representation");
 
                 // Simulate the official launcher updating a DAT that already
                 // contains our Turkish row. The binary version changes while
@@ -389,6 +393,16 @@ internal static class UpdaterBehaviorTests
             writer.Write(payload);
         }
         return dat;
+    }
+    private static bool FirstLocalizationIsCompressed(string path)
+    {
+        using (TurbineDat dat = new TurbineDat())
+        {
+            dat.Open(path, false);
+            List<DatEntry> entries = dat.ListLocalization();
+            if (entries.Count == 0) throw new Exception("localization fixture missing");
+            return TurbineDat.LooksCompressed(dat.ReadRaw(entries[0]));
+        }
     }
     private static void Verify(string path, long size, string hash) { if (!File.Exists(path) || new FileInfo(path).Length != size || !string.Equals(LotroReleaseUpdater.HashFile(path), hash, StringComparison.OrdinalIgnoreCase)) throw new Exception("verify " + path); }
     private static void TryDeleteDirectory(string path) { try { if (Directory.Exists(path)) Directory.Delete(path, true); } catch { } }
