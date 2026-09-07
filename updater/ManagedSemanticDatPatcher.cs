@@ -70,6 +70,7 @@ public static class ManagedSemanticDatPatcher
         using (TurbineDat dat = new TurbineDat())
         {
             dat.Open(sourcePath, false);
+            dat.ValidateLocalizationChains();
             foreach (DatEntry entry in dat.ListLocalization())
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -157,6 +158,7 @@ public static class ManagedSemanticDatPatcher
             }
 
             progress("Aday DAT baştan sona yeniden doğrulanıyor...");
+            ValidateCandidateStructure(sourcePath, candidatePath, cancellationToken);
             List<CatalogRecord> candidateRecords = ExtractCatalog(candidatePath, cancellationToken);
             if (candidateRecords.Count != records.Count)
                 throw new InvalidDataException("Aday DAT satır sayısı değişti: " + candidateRecords.Count + "/" + records.Count);
@@ -310,6 +312,7 @@ public static class ManagedSemanticDatPatcher
         using (TurbineDat dat = new TurbineDat())
         {
             dat.Open(path, false);
+            dat.ValidateLocalizationChains();
             foreach (DatEntry entry in dat.ListLocalization())
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -364,6 +367,7 @@ public static class ManagedSemanticDatPatcher
                     throw new IOException("Aday DAT entry boyutu güncellenemedi: 0x" + unit.Entry.Id.ToString("X8"));
             }
         }
+        ValidateCandidateStructure(basePath, candidatePath, cancellationToken);
         List<CatalogRecord> candidateRecords = ExtractCatalog(candidatePath, cancellationToken);
         if (candidateRecords.Count != expectedRecordCount)
             throw new InvalidDataException("Aday DAT satır sayısı değişti: " + candidateRecords.Count + "/" + expectedRecordCount);
@@ -454,6 +458,48 @@ public static class ManagedSemanticDatPatcher
                 throw new InvalidDataException("Localization rebuild hedef uyuşmazlığı: 0x" + unit.Entry.Id.ToString("X8"));
         }
         return blob;
+    }
+
+    private static void ValidateCandidateStructure(string sourcePath, string candidatePath, CancellationToken cancellationToken)
+    {
+        Dictionary<int, DatEntry> sourceEntries = new Dictionary<int, DatEntry>();
+        Dictionary<int, bool> sourceCompression = new Dictionary<int, bool>();
+        using (TurbineDat source = new TurbineDat())
+        {
+            source.Open(sourcePath, false);
+            source.ValidateLocalizationChains();
+            foreach (DatEntry entry in source.ListLocalization())
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                sourceEntries.Add(entry.Id, entry);
+                sourceCompression.Add(entry.Id, TurbineDat.LooksCompressed(source.ReadRaw(entry)));
+            }
+        }
+
+        using (TurbineDat candidate = new TurbineDat())
+        {
+            candidate.Open(candidatePath, false);
+            candidate.ValidateLocalizationChains();
+            List<DatEntry> entries = candidate.ListLocalization();
+            if (entries.Count != sourceEntries.Count)
+                throw new InvalidDataException("Candidate DAT localization entry count changed.");
+            foreach (DatEntry entry in entries)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!sourceEntries.TryGetValue(entry.Id, out DatEntry original))
+                    throw new InvalidDataException("Candidate DAT contains an unexpected localization entry: 0x" + entry.Id.ToString("X8"));
+                if (entry.Offset != original.Offset || entry.Version != original.Version || entry.Timestamp != original.Timestamp
+                    || entry.Flags != original.Flags || entry.Flags2 != original.Flags2 || entry.Iteration != original.Iteration)
+                    throw new InvalidDataException("Candidate DAT localization directory metadata changed: 0x" + entry.Id.ToString("X8"));
+                byte[] raw = candidate.ReadRaw(entry);
+                bool compressed = TurbineDat.LooksCompressed(raw);
+                if (compressed != sourceCompression[entry.Id])
+                    throw new InvalidDataException("Candidate DAT changed the official storage representation: 0x" + entry.Id.ToString("X8"));
+                byte[] payload = TurbineDat.MaybeDecompress(raw);
+                if (compressed && ReferenceEquals(raw, payload))
+                    throw new InvalidDataException("Candidate DAT contains an unreadable compressed entry: 0x" + entry.Id.ToString("X8"));
+            }
+        }
     }
 
     private static void MarkChangedUnits(Dictionary<int, Unit> units, IEnumerable<string> keys)

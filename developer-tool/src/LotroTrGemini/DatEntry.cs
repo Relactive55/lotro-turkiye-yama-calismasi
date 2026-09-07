@@ -12,7 +12,7 @@ public sealed class DatEntry
 
 	public uint Timestamp;
 
-	public uint Size2;
+	public uint Iteration;
 
 	public uint Flags;
 

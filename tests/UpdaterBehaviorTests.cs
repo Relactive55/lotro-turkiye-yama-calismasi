@@ -22,6 +22,12 @@ internal static class UpdaterBehaviorTests
         catch (UpdaterFailure ex) { if (!string.Equals(ex.Code, code, StringComparison.Ordinal)) throw; Pass(name); }
     }
 
+    private static void ExpectInvalidData(Action action, string name)
+    {
+        try { action(); throw new Exception("expected invalid DAT rejection"); }
+        catch (InvalidDataException) { Pass(name); }
+    }
+
     private static async Task MainAsync()
     {
         string steamFixture = CreateTemp();
@@ -123,6 +129,17 @@ internal static class UpdaterBehaviorTests
         string semanticExpectedPath = Path.Combine(semanticRoot, "expected.dat");
         File.WriteAllBytes(semanticSourcePath, semanticSource);
         File.WriteAllBytes(semanticExpectedPath, semanticExpected);
+        byte[] badHeader = (byte[])semanticSource.Clone();
+        Buffer.BlockCopy(BitConverter.GetBytes((uint)(badHeader.Length + 1)), 0, badHeader, 328, 4);
+        string badHeaderPath = Path.Combine(semanticRoot, "bad-header.dat");
+        File.WriteAllBytes(badHeaderPath, badHeader);
+        ExpectInvalidData(() => { using (TurbineDat dat = new TurbineDat()) { dat.Open(badHeaderPath, false); dat.ValidateLocalizationChains(); } }, "DAT header size corruption rejected");
+
+        byte[] badChain = (byte[])semanticSource.Clone();
+        Buffer.BlockCopy(BitConverter.GetBytes(uint.MaxValue), 0, badChain, 2048, 4);
+        string badChainPath = Path.Combine(semanticRoot, "bad-chain.dat");
+        File.WriteAllBytes(badChainPath, badChain);
+        ExpectInvalidData(() => { using (TurbineDat dat = new TurbineDat()) { dat.Open(badChainPath, false); dat.ValidateLocalizationChains(); } }, "DAT out-of-range block pointer rejected");
         List<CatalogRecord> semanticSourceCatalog = ReadCatalog(semanticSourcePath);
         List<CatalogRecord> semanticExpectedCatalog = ReadCatalog(semanticExpectedPath);
         CatalogRecord semanticRecord = semanticSourceCatalog[0];
@@ -227,11 +244,22 @@ internal static class UpdaterBehaviorTests
                 if (FirstLocalizationIsCompressed(Path.Combine(semanticGame, "client_local_English.dat"))
                     != FirstLocalizationIsCompressed(semanticSourcePath))
                     throw new Exception("semantic writer changed the official storage representation");
+                using (TurbineDat sourceDat = new TurbineDat())
+                using (TurbineDat installedDat = new TurbineDat())
+                {
+                    sourceDat.Open(semanticSourcePath, false);
+                    installedDat.Open(Path.Combine(semanticGame, "client_local_English.dat"), false);
+                    DatEntry sourceEntry = sourceDat.ListLocalization()[0];
+                    DatEntry installedEntry = installedDat.ListLocalization()[0];
+                    if (installedEntry.Iteration != sourceEntry.Iteration)
+                        throw new Exception("semantic writer changed the official iteration metadata");
+                }
                 if (installed.candidate_catalog_sha256 != semanticCandidateCatalogHash) throw new Exception("semantic catalog state mismatch");
                 if (!File.Exists(installed.source_backup_file)) throw new Exception("clean source backup missing");
                 Verify(installed.source_backup_file, semanticSource.Length, semanticSourceHash);
                 Pass("semantic DAT patch backup/install/round-trip");
                 Pass("semantic writer preserves official storage representation");
+                Pass("semantic writer preserves official iteration metadata");
 
                 // Simulate the official launcher updating a DAT that already
                 // contains our Turkish row. The binary version changes while

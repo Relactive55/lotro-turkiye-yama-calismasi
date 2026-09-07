@@ -263,7 +263,6 @@ public static class LocTransplant
 					{
 						turbineDat2.UpdateEntrySize(id, (uint)array.Length);
 						value.Size = (uint)array.Length;
-						value.Size2 = (uint)array.Length;
 					}
 					ok++;
 					if (id == 620757423)

@@ -36,6 +36,10 @@ public sealed class TurbineDat : IDisposable
 
 	public uint DirectoryOffset { get; private set; }
 
+	public long FileLength => _fs?.Length ?? 0L;
+
+	public uint DeclaredFileSize { get; private set; }
+
 	public void Open(string path, bool writable)
 	{
 		Close();
@@ -50,7 +54,7 @@ public sealed class TurbineDat : IDisposable
 			throw new InvalidDataException("DAT superblock BT değil.");
 		}
 		BlockSize = _br.ReadUInt32();
-		_br.ReadUInt32();
+		DeclaredFileSize = _br.ReadUInt32();
 		_br.ReadUInt32();
 		_br.ReadUInt32();
 		_br.ReadUInt32();
@@ -64,6 +68,46 @@ public sealed class TurbineDat : IDisposable
 		if (DirectoryOffset == 0 || DirectoryOffset >= _fs.Length)
 		{
 			throw new InvalidDataException("directory offset geçersiz.");
+		}
+	}
+
+	public void ValidateHeaderSize()
+	{
+		if (DeclaredFileSize != _fs.Length)
+			throw new InvalidDataException("DAT header file size does not match the physical file size.");
+	}
+
+	public void ValidateLocalizationChains()
+	{
+		ValidateHeaderSize();
+		foreach (DatEntry entry in ListLocalization())
+		{
+			long remaining = entry.Size;
+			long position = entry.Offset;
+			HashSet<uint> visited = new HashSet<uint>();
+			int steps = 0;
+			while (remaining > 0)
+			{
+				if (steps++ > 2000000)
+					throw new InvalidDataException("Localization block chain is too long: 0x" + entry.Id.ToString("X8"));
+				if (position < 0 || position + 4 > _fs.Length || position > uint.MaxValue)
+					throw new InvalidDataException("Localization block is outside the DAT: 0x" + entry.Id.ToString("X8"));
+				uint current = (uint)position;
+				if (!visited.Add(current))
+					throw new InvalidDataException("Localization block chain contains a cycle: 0x" + entry.Id.ToString("X8"));
+				uint next = ReadU32At(position);
+				if (next == 0)
+				{
+					if (_fs.Position + remaining > _fs.Length)
+						throw new InvalidDataException("Localization data is truncated: 0x" + entry.Id.ToString("X8"));
+					remaining = 0;
+					continue;
+				}
+				if (position + BlockSize > _fs.Length || next + 4L > _fs.Length)
+					throw new InvalidDataException("Localization block chain leaves the DAT: 0x" + entry.Id.ToString("X8"));
+				remaining -= Math.Min(remaining, (long)BlockSize - 4L);
+				position = next;
+			}
 		}
 	}
 
@@ -171,7 +215,7 @@ public sealed class TurbineDat : IDisposable
 					Size = num6,
 					Version = (int)version,
 					Timestamp = timestamp,
-					Size2 = size,
+					Iteration = size,
 					Flags = flags,
 					Flags2 = flags2
 				});
@@ -588,7 +632,7 @@ public sealed class TurbineDat : IDisposable
 			Size = size,
 			Version = (int)version,
 			Timestamp = timestamp,
-			Size2 = size2,
+			Iteration = size2,
 			Flags = flags,
 			Flags2 = flags2
 		};
@@ -644,7 +688,6 @@ public sealed class TurbineDat : IDisposable
 			if (_entryPos.TryGetValue(id, out var value))
 			{
 				WriteUInt32(value + 12, newSize);
-				WriteUInt32(value + 24, newSize);
 				return true;
 			}
 			return false;
@@ -683,7 +726,6 @@ public sealed class TurbineDat : IDisposable
 			if (_br.ReadUInt32() == id)
 			{
 				WriteUInt32(num5 + 12, newSize);
-				WriteUInt32(num5 + 24, newSize);
 				return true;
 			}
 		}

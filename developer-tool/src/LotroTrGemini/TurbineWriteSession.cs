@@ -70,7 +70,6 @@ public sealed class TurbineWriteSession : IDisposable
 				return -1;
 			}
 			entry.Size = (uint)data.Length;
-			entry.Size2 = (uint)data.Length;
 		}
 		return 0;
 	}
