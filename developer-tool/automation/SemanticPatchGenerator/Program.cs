@@ -90,10 +90,10 @@ internal static class Program
                 if (string.Equals(decision.action, "preserve", StringComparison.Ordinal)) continue;
             }
             candidates.TryGetValue(record.Key, out TranslationCandidate candidate);
-            // A previously game-tested DAT may help close critical UI gaps, but
-            // it must never bulk-import ordinary rows into a new release.
-            if (record.CriticalUi
-                && referenceTargets.TryGetValue(record.Key, out string referenceTarget)
+            // A previously game-tested DAT restores broad Turkish coverage.
+            // Structural tables are excluded above and every restored target
+            // still passes the format, mojibake and repetition validators.
+            if (referenceTargets.TryGetValue(record.Key, out string referenceTarget)
                 && !string.Equals(referenceTarget, record.Source, StringComparison.Ordinal))
             {
                 if (candidate == null || !string.Equals(candidate.target, referenceTarget, StringComparison.Ordinal))
