@@ -82,7 +82,23 @@ public static class KnownUiFixes
 		new FlatUiFix("250001BB:900:-1:0",
 			"To equip a hobby, drag it from the Hobbies Panel to an available quickslot at the bottom of the game screen.",
 			"Bir hobiyi kuşanmak için, onu Hobi Paneli'nden oyun ekranının altındaki uygun bir hızlı yuvaya sürükleyin."),
-		new FlatUiFix("250001BB:917:-1:0", "Traits", "Özellikler")
+		new FlatUiFix("250001BB:917:-1:0", "Traits", "Özellikler"),
+		// Shared vendor, barter and chat labels that live in the protected
+		// fallback table.  Keep these exact-key fixes fail-closed so a changed
+		// official row cannot be silently rewritten.
+		new FlatUiFix("250001BB:59:-1:0", "Combat", "Savaş"),
+		new FlatUiFix("250001BB:133:-1:0", "Barter", "Takas"),
+		new FlatUiFix("250001BB:154:-1:0", "Comments", "Yorumlar"),
+		new FlatUiFix("250001BB:162:-1:0", "All", "Tümü"),
+		new FlatUiFix("250001BB:324:-1:0", "Items To Trade", "Takas Edilecek Eşyalar"),
+		new FlatUiFix("250001BB:345:-1:0", "Filter by Profile:", "Profile Göre Filtrele:"),
+		new FlatUiFix("250001BB:511:-1:0", "Close Window", "Pencereyi Kapat"),
+		new FlatUiFix("250001BB:602:-1:0", "All", "Tümü"),
+		new FlatUiFix("250001BB:609:-1:0", "General", "Genel"),
+		new FlatUiFix("250001BB:629:-1:0", "All", "Tümü"),
+		new FlatUiFix("250001BB:714:-1:0", "Shop", "Mağaza"),
+		new FlatUiFix("250001BB:845:-1:0", "Barter", "Takas"),
+		new FlatUiFix("250001BB:876:-1:0", "Item to Receive", "Alınacak Eşya")
 	};
 
 	public static bool HasAutomaticFix(int did)
