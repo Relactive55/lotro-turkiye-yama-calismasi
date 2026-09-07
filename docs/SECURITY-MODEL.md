@@ -1,6 +1,6 @@
 # Updater güvenlik modeli
 
-- Endpoint sabittir: `Relactive/lotro-turkiye-yama-calismasi` ve HTTPS.
+- Endpoint sabittir: `Relactive55/lotro-turkiye-yama-calismasi` ve HTTPS.
 - `raw main`, kullanıcı URL'si, config/CLI endpoint override ve HTTP downgrade yoktur; redirect hedefi yeniden doğrulanır.
 - Yalnız stable (`draft=false`, `prerelease=false`) release kabul edilir.
 - Manifest release ID/tag ve beklenen asset ID/name ile bağlanır.

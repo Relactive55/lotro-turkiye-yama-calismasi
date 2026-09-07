@@ -48,6 +48,16 @@ internal static class DeveloperSafetyTests
 			&& Convert.ToBase64String(boundaryBin.Rebuild(boundaryRows)) == Convert.ToBase64String(boundaryFixture),
 			"fallback keeps final boundary string and exact managed layout");
 		passed++;
+		byte[] hiddenUiFixture = BuildHiddenUiFixture();
+		byte[] fixedUiFixture = KnownUiFixes.ApplyTranslatedPayload(unchecked((int)0x250001BDu), hiddenUiFixture);
+		Check(!ContainsBytes(fixedUiFixture, Encoding.Unicode.GetBytes("Character Slots Used"))
+			&& ContainsBytes(fixedUiFixture, Encoding.Unicode.GetBytes(" / "))
+			&& ContainsBytes(fixedUiFixture, Encoding.Unicode.GetBytes(" KARAKTER YUVASI KULLANILIYOR")),
+			"hidden character-slot UI variants are translated");
+		passed++;
+		Check(object.ReferenceEquals(hiddenUiFixture, KnownUiFixes.ApplyTranslatedPayload(unchecked((int)0x250001BEu), hiddenUiFixture)),
+			"known UI fix stays scoped to its verified DID");
+		passed++;
 
 		List<CatalogRecord> oldRecords = new List<CatalogRecord>
 		{
@@ -281,5 +291,31 @@ internal static class DeveloperSafetyTests
 	{
 		writer.Write((byte)value.Length);
 		writer.Write(Encoding.Unicode.GetBytes(value));
+	}
+
+	private static byte[] BuildHiddenUiFixture()
+	{
+		using (MemoryStream stream = new MemoryStream())
+		using (BinaryWriter writer = new BinaryWriter(stream, Encoding.Unicode, true))
+		{
+			writer.Write(new byte[] { 1, 2 });
+			writer.Write(3);
+			WriteVarString(writer, "");
+			WriteVarString(writer, " of ");
+			WriteVarString(writer, " Character Slots Used");
+			writer.Write(new byte[] { 4, 5 });
+			return stream.ToArray();
+		}
+	}
+
+	private static bool ContainsBytes(byte[] haystack, byte[] needle)
+	{
+		for (int i = 0; i <= haystack.Length - needle.Length; i++)
+		{
+			int j = 0;
+			while (j < needle.Length && haystack[i + j] == needle[j]) j++;
+			if (j == needle.Length) return true;
+		}
+		return false;
 	}
 }

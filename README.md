@@ -2,7 +2,7 @@
 
 ## Güncel programı indir
 
-[**LOTRO Türkçe Yama programını indir (Windows)**](https://github.com/Relactive/lotro-turkiye-yama-calismasi/releases/latest/download/LOTRO_Turkce_Yama_Setup.exe)
+[**LOTRO Türkçe Yama programını indir (Windows)**](https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/latest/download/LOTRO_Turkce_Yama_Setup.exe)
 
 Program temiz resmî DAT üzerinde özel bir aday kopya oluşturur. Aday DAT hem
 yapısal denetimlerden hem de LOTRO `datexport.dll` okuyucusuyla 281.422 alt

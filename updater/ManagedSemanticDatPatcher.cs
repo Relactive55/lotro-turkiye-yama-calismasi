@@ -145,7 +145,7 @@ public static class ManagedSemanticDatPatcher
                 foreach (Unit unit in touched)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    byte[] blob = BuildVerifiedBlob(unit);
+                    byte[] blob = BuildVerifiedBlob(unit, true);
                     if (!candidate.TryGetEntry(unit.Entry.Id, out DatEntry current) || current == null)
                         throw new InvalidDataException("Aday DAT girdisi bulunamadı: 0x" + unit.Entry.Id.ToString("X8"));
                     if (!candidate.WriteOrRelocateContiguous(unit.Entry.Id, blob))
@@ -269,7 +269,8 @@ public static class ManagedSemanticDatPatcher
                 patch.source_catalog_sha256,
                 cancellationToken,
                 0,
-                null);
+                null,
+                false);
 
             foreach (SemanticPatchEntry entry in patch.entries)
                 resolvedRows[entry.dat_key].Translation = entry.target;
@@ -282,7 +283,8 @@ public static class ManagedSemanticDatPatcher
                 expectedCandidateCatalogSha256,
                 cancellationToken,
                 patch.entries.Count,
-                patch.entries);
+                patch.entries,
+                true);
             progress("Oyun güncellemesi güvenle birleştirildi ve Türkçe DAT doğrulandı.");
             return new RecoveryResult { CleanSource = clean, Translated = translated };
         }
@@ -338,7 +340,8 @@ public static class ManagedSemanticDatPatcher
         string expectedCatalogSha256,
         CancellationToken cancellationToken,
         int applied,
-        IList<SemanticPatchEntry> expectedTargets)
+        IList<SemanticPatchEntry> expectedTargets,
+        bool applyKnownUiFixes)
     {
         List<Unit> touched = units.Values
             .Where(unit => unit.ChangedKeys.Count != 0)
@@ -352,7 +355,7 @@ public static class ManagedSemanticDatPatcher
             foreach (Unit unit in touched)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                byte[] blob = BuildVerifiedBlob(unit);
+                byte[] blob = BuildVerifiedBlob(unit, applyKnownUiFixes);
                 if (!candidate.TryGetEntry(unit.Entry.Id, out DatEntry current) || current == null)
                     throw new InvalidDataException("Aday DAT girdisi bulunamadı: 0x" + unit.Entry.Id.ToString("X8"));
                 if (!candidate.WriteOrRelocateContiguous(unit.Entry.Id, blob))
@@ -422,7 +425,7 @@ public static class ManagedSemanticDatPatcher
         return null;
     }
 
-    private static byte[] BuildVerifiedBlob(Unit unit)
+    private static byte[] BuildVerifiedBlob(Unit unit, bool applyKnownUiFixes)
     {
         string[] translations = unit.Rows.Select(row => row.Translation).ToArray();
         foreach (LocRow row in unit.Rows) row.Translation = row.Original;
@@ -431,6 +434,8 @@ public static class ManagedSemanticDatPatcher
             throw new InvalidDataException("Localization identity rebuild başarısız: 0x" + unit.Entry.Id.ToString("X8"));
         for (int i = 0; i < unit.Rows.Count; i++) unit.Rows[i].Translation = translations[i];
         byte[] translated = unit.Bin.Rebuild(unit.Rows);
+        if (applyKnownUiFixes)
+            translated = KnownUiFixes.ApplyTranslatedPayload(unit.Entry.Id, translated);
         long growthLimit = Math.Max((long)unit.Raw.Length * 4L, (long)unit.Raw.Length + 16L * 1024 * 1024);
         // The LOTRO client is stricter than the managed round-trip parser. Keep
         // every localization subfile in its original storage representation;

@@ -4,7 +4,7 @@ Bu, `LOTRÇEVİRİ.exe` geliştirici aracından ayrı son kullanıcı updater'ı
 
 Akış:
 
-1. Sabit HTTPS `Relactive/lotro-turkiye-yama-calismasi` stable release kontrolü.
+1. Sabit HTTPS `Relactive55/lotro-turkiye-yama-calismasi` stable release kontrolü.
 2. `manifest.json` ve beklenen patch asset kimliği, boyutu ve SHA-256 doğrulaması.
 3. 1.9 GB sınıfı full DAT için streaming `.part` indirme, disk alanı kontrolü, iptal ve ilerleme bildirimi.
 4. LOTRO DAT + launcher/client marker doğrulaması ve çalışan süreç kontrolü.

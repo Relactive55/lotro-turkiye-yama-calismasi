@@ -24,6 +24,7 @@
     <Compile Include="..\developer-tool\src\LotroTrGemini\LocBin.cs" Link="LotroTrGemini\LocBin.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\DatEntry.cs" Link="LotroTrGemini\DatEntry.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\TurbineDat.cs" Link="LotroTrGemini\TurbineDat.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\KnownUiFixes.cs" Link="LotroTrGemini\KnownUiFixes.cs" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Web.Extensions" />
   </ItemGroup>

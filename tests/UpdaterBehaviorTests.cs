@@ -63,7 +63,7 @@ internal static class UpdaterBehaviorTests
             id = 42, tag_name = manifest.release_tag, draft = false, prerelease = false,
             assets = new[]
             {
-                new ReleaseAsset { id = 1, name = "manifest.json", size = 1, browser_download_url = "https://github.com/Relactive/lotro-turkiye-yama-calismasi/releases/download/patch-2026.09.05-test/manifest.json" },
+                new ReleaseAsset { id = 1, name = "manifest.json", size = 1, browser_download_url = "https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/download/patch-2026.09.05-test/manifest.json" },
                 new ReleaseAsset { id = 2, name = patchName, size = patch.Length, browser_download_url = "https://objects.githubusercontent.com/lotro-turkce-yama-test.dat" }
             }
         };
@@ -210,8 +210,8 @@ internal static class UpdaterBehaviorTests
             prerelease = false,
             assets = new[]
             {
-                new ReleaseAsset { id = 3, name = "manifest.json", size = 1, browser_download_url = "https://github.com/Relactive/lotro-turkiye-yama-calismasi/releases/download/tr-2026.09.05-semantic/manifest.json" },
-                new ReleaseAsset { id = 4, name = semanticName, size = semanticBytes.Length, browser_download_url = "https://github.com/Relactive/lotro-turkiye-yama-calismasi/releases/download/tr-2026.09.05-semantic/" + semanticName }
+                new ReleaseAsset { id = 3, name = "manifest.json", size = 1, browser_download_url = "https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/download/tr-2026.09.05-semantic/manifest.json" },
+                new ReleaseAsset { id = 4, name = semanticName, size = semanticBytes.Length, browser_download_url = "https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/download/tr-2026.09.05-semantic/" + semanticName }
             }
         };
         string semanticManifestJson = new JavaScriptSerializer().Serialize(semanticManifest);

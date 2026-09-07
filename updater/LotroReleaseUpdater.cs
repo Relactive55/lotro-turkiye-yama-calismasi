@@ -277,12 +277,12 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
 
 public sealed class LotroReleaseUpdater
 {
-    public const string Owner = "Relactive";
+    public const string Owner = "Relactive55";
     public const string Repository = "lotro-turkiye-yama-calismasi";
     public const string ManifestAssetName = "manifest.json";
     public const string PatchAssetPrefix = "lotro-turkce-yama-";
     public const string SemanticPatchKind = "semantic_delta_patch";
-    public static readonly Uri LatestReleaseUri = new Uri("https://api.github.com/repos/Relactive/lotro-turkiye-yama-calismasi/releases/latest");
+    public static readonly Uri LatestReleaseUri = new Uri("https://api.github.com/repos/Relactive55/lotro-turkiye-yama-calismasi/releases/latest");
 
     private readonly IReleaseTransport _transport;
     private readonly JavaScriptSerializer _json = new JavaScriptSerializer();

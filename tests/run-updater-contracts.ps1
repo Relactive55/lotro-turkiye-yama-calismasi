@@ -25,9 +25,9 @@ function Expect-Code([scriptblock]$action, [string]$expected, [string]$name) {
     }
 }
 
-$transport.GetMethod('ValidateUri').Invoke($null, @([Uri]'https://api.github.com/repos/Relactive/lotro-turkiye-yama-calismasi/releases/latest'))
+$transport.GetMethod('ValidateUri').Invoke($null, @([Uri]'https://api.github.com/repos/Relactive55/lotro-turkiye-yama-calismasi/releases/latest'))
 Pass 'allowlisted HTTPS endpoint'
- $transport.GetMethod('ValidateReleaseAssetUri').Invoke($null, @([Uri]'https://github.com/Relactive/lotro-turkiye-yama-calismasi/releases/download/patch-1/manifest.json', 'patch-1', 'manifest.json'))
+ $transport.GetMethod('ValidateReleaseAssetUri').Invoke($null, @([Uri]'https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/download/patch-1/manifest.json', 'patch-1', 'manifest.json'))
  Pass 'release asset owner/repository path'
 Expect-Code { $transport.GetMethod('ValidateUri').Invoke($null, @([Uri]'http://api.github.com/x')) } 'ENDPOINT_REJECTED' 'HTTP downgrade rejected'
 Expect-Code { $transport.GetMethod('ValidateUri').Invoke($null, @([Uri]'https://evil.example/x')) } 'ENDPOINT_REJECTED' 'non-allowlisted host rejected'
@@ -52,8 +52,8 @@ $json = New-Object System.Web.Script.Serialization.JavaScriptSerializer
 $manifest = $json.Deserialize((Get-Content -LiteralPath (Join-Path (Split-Path $PSScriptRoot -Parent) 'tests\fixtures\manifest-valid.example.json') -Raw), $manifestType)
 $release = [Activator]::CreateInstance($releaseType)
 $release.id = 1; $release.tag_name = 'patch-2026.09.05.1'; $release.draft = $false; $release.prerelease = $false
-$assetManifest = [Activator]::CreateInstance($assetType); $assetManifest.id = 3; $assetManifest.name = 'manifest.json'; $assetManifest.size = 100; $assetManifest.browser_download_url = 'https://github.com/Relactive/lotro-turkiye-yama-calismasi/releases/download/patch-2026.09.05.1/manifest.json'
-$assetPatch = [Activator]::CreateInstance($assetType); $assetPatch.id = 2; $assetPatch.name = $manifest.asset_name; $assetPatch.size = $manifest.asset_size; $assetPatch.browser_download_url = 'https://github.com/Relactive/lotro-turkiye-yama-calismasi/releases/download/patch-2026.09.05.1/' + $manifest.asset_name
+$assetManifest = [Activator]::CreateInstance($assetType); $assetManifest.id = 3; $assetManifest.name = 'manifest.json'; $assetManifest.size = 100; $assetManifest.browser_download_url = 'https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/download/patch-2026.09.05.1/manifest.json'
+$assetPatch = [Activator]::CreateInstance($assetType); $assetPatch.id = 2; $assetPatch.name = $manifest.asset_name; $assetPatch.size = $manifest.asset_size; $assetPatch.browser_download_url = 'https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/download/patch-2026.09.05.1/' + $manifest.asset_name
 $release.assets = @($assetManifest, $assetPatch)
 $manifestValidator.GetMethod('Validate').Invoke($null, @($manifest, $release, $assetManifest))
 Pass 'valid manifest identity'
