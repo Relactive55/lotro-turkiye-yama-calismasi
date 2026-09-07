@@ -195,7 +195,25 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
 
     private async Task<HttpResponseMessage> SendAllowedAsync(Uri uri, CancellationToken cancellationToken)
     {
-        for (int attempt = 0; attempt < 5; attempt++)
+        for (int attempt = 0; attempt < 3; attempt++)
+        {
+            try
+            {
+                HttpResponseMessage response = await SendAllowedOnceAsync(uri, cancellationToken).ConfigureAwait(false);
+                int status = (int)response.StatusCode;
+                bool transient = status == 408 || status == 429 || status >= 500;
+                if (!transient || attempt == 2) return response;
+                response.Dispose();
+            }
+            catch (HttpRequestException) when (attempt < 2) { }
+            await Task.Delay(TimeSpan.FromMilliseconds(500 * (attempt + 1)), cancellationToken).ConfigureAwait(false);
+        }
+        throw new UpdaterFailure("RELEASE_HTTP_FAILED", "GitHub bağlantısı kurulamadı.");
+    }
+
+    private async Task<HttpResponseMessage> SendAllowedOnceAsync(Uri uri, CancellationToken cancellationToken)
+    {
+        for (int redirect = 0; redirect < 5; redirect++)
         {
             ValidateUri(uri);
             using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri))

@@ -11,6 +11,9 @@ internal static class LotroSetupApp
     [STAThread]
     private static void Main()
     {
+        // GitHub no longer accepts the older TLS protocols that can still be
+        // selected by a default .NET Framework 4.7.2 installation.
+        System.Net.ServicePointManager.SecurityProtocol |= System.Net.SecurityProtocolType.Tls12;
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
         Application.Run(new SetupForm());
@@ -25,6 +28,7 @@ internal sealed class SetupForm : Form
     private CancellationTokenSource _cancel;
     private Tuple<StableRelease, ReleaseManifest> _available;
     private string _gameDirectory;
+    private bool _checking;
 
     public SetupForm()
     {
@@ -52,7 +56,12 @@ internal sealed class SetupForm : Form
 
     private async Task CheckAsync()
     {
+        if (_checking) return;
+        _checking = true;
+        _available = null;
         _install.Enabled = false;
+        _install.Text = "Yama Yap";
+        _status.Text = "Güncellemeler kontrol ediliyor...";
         try
         {
             using (IReleaseTransport transport = new FixedGitHubTransport())
@@ -74,19 +83,37 @@ internal sealed class SetupForm : Form
                     : "tam DAT";
                 _status.Text = "Yeni Türkçe yama bulundu (" + kind + "): " + _available.Item2.patch_version
                     + (_gameDirectory == null ? "\nLOTRO klasörü kurulum sırasında seçilecek." : "\nLOTRO otomatik bulundu.");
+                _install.Text = "Yama Yap";
                 _install.Enabled = true;
             }
         }
         catch (UpdaterFailure ex)
         {
-            _status.Text = ex.Code == "NO_STABLE_RELEASE" ? "Yayınlanmış stable Türkçe yama bulunamadı." : "Güncelleme kontrol edilemedi.";
+            if (ex.Code == "NO_STABLE_RELEASE")
+                _status.Text = "Yayınlanmış kararlı Türkçe yama bulunamadı.";
+            else if (ex.Code == "RELEASE_HTTP_FAILED" && ex.Message.EndsWith(": 404", StringComparison.Ordinal))
+                _status.Text = "GitHub projesine dışarıdan erişilemiyor (404). Proje sahibi hesap kısıtlamasını kontrol etmelidir.";
+            else
+                _status.Text = "Güncelleme kontrol edilemedi. İnternet bağlantınızı kontrol edip yeniden deneyin.";
+            _install.Text = "Tekrar Dene";
+            _install.Enabled = true;
         }
-        catch { _status.Text = "Güncelleme kontrol edilemedi."; }
+        catch
+        {
+            _status.Text = "Güncelleme kontrol edilemedi. İnternet bağlantınızı kontrol edip yeniden deneyin.";
+            _install.Text = "Tekrar Dene";
+            _install.Enabled = true;
+        }
+        finally { _checking = false; }
     }
 
     private async void InstallClicked(object sender, EventArgs e)
     {
-        if (_available == null) return;
+        if (_available == null)
+        {
+            await CheckAsync();
+            return;
+        }
         _install.Enabled = false;
         _progress.Value = 0;
         _cancel = new CancellationTokenSource();
