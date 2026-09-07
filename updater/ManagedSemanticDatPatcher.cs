@@ -127,7 +127,7 @@ public static class ManagedSemanticDatPatcher
         MarkChangedUnits(units, patch.entries.Select(entry => entry.dat_key));
 
         List<Unit> touched = units.Values
-            .Where(unit => unit.ChangedKeys.Count != 0)
+            .Where(unit => unit.ChangedKeys.Count != 0 || KnownUiFixes.HasAutomaticFix(unit.Entry.Id))
             .OrderBy(unit => unchecked((uint)unit.Entry.Id))
             .ToList();
         if (touched.Count == 0 || patch.entries.Count == 0)
@@ -344,7 +344,8 @@ public static class ManagedSemanticDatPatcher
         bool applyKnownUiFixes)
     {
         List<Unit> touched = units.Values
-            .Where(unit => unit.ChangedKeys.Count != 0)
+            .Where(unit => unit.ChangedKeys.Count != 0
+                || (applyKnownUiFixes && KnownUiFixes.HasAutomaticFix(unit.Entry.Id)))
             .OrderBy(unit => unchecked((uint)unit.Entry.Id))
             .ToList();
         CopyFile(basePath, candidatePath, cancellationToken);
