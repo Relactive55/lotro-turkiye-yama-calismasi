@@ -1,11 +1,13 @@
 # LOTRO Türkiye Yama Çalışması
 
-## Program güncellemesi hazırlanıyor
+## Güncel programı indir
 
-Önceki kurulum aracında LOTRO'nun kabul etmediği bir DAT depolama dönüşümü
-bulundu. Düzeltilmiş program doğrulanıp aynı indirme bağlantısına yüklenene kadar
-mevcut EXE'yi kullanmayın. Kaynak kod düzeltmesi ve tekrar oluşmasını engelleyen
-test depoya eklenmiştir.
+[**LOTRO Türkçe Yama programını indir (Windows)**](https://github.com/Relactive/lotro-turkiye-yama-calismasi/releases/latest/download/LOTRO_Turkce_Yama_Setup.exe)
+
+Program temiz resmî DAT üzerinde özel bir aday kopya oluşturur; başlık, blok
+zincirleri, resmî iteration bilgileri, saklama biçimi, katalog kimliği ve hedef
+metinler tam doğrulanmadan oyun dosyasını değiştirmez. Hata veya kesinti olursa
+doğrulanmış yedekten otomatik geri döner.
 
 The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli güncelleme projesidir. Son kullanıcı tam oyun DAT'ı indirmez; GitHub Releases sayfasındaki `LOTRO_Turkce_Yama_Setup.exe` aracını indirir ve **Yama Yap** düğmesine basar. Araç Steam ve bağımsız LOTRO kurulumlarını bulabilir, güncel semantic paketi indirir ve kullanıcının kendi resmî DAT dosyasına uygular.
 
@@ -29,9 +31,11 @@ Kod imzalama sertifikası eklenmediği sürece Windows SmartScreen uyarısı gö
 - kaynak katalog SHA-256: `bf5984ecb19add7c93911c73dba88ecdc1de221330027671c125da9212184922`
 - katalog kaydı: `825,136`
 - güvenle uygulanan Türkçe kayıt: `645,004`
-- dokunulan yerelleştirme bloğu: `231,463`
+- dokunulan yerelleştirme bloğu: `231,494`
 - kritik inceleme: `0`
 - genel inceleme/reddedilen aday: `0`
+- doğrulanmış Türkçe DAT boyutu: `1,986,100,480` bayt
+- doğrulanmış Türkçe DAT SHA-256: `cfb5a39d9989375270bdd9ccaeab10e83b9e7b0c3acbeece6c9e10b5322d6ff2`
 
 Komut anahtarları, değişkenler, biçim parçaları ve özel adlar çeviri sayılmaz; bozulmamaları için açık koruma kararlarıyla kaynak biçiminde tutulur. Semantic paketin güncel 1,9 GB resmî DAT kopyasına tam uygulanması ve oluşan `825,136` kaydın yeniden okunması başarıyla sınanmıştır.
 
