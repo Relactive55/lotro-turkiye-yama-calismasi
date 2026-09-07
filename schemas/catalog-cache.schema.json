@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LOTRO catalog cache metadata",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "cache_kind",
+    "source_dat_sha256",
+    "source_dat_size",
+    "source_catalog_sha256",
+    "cache_base_catalog_sha256",
+    "source_record_count",
+    "cache_record_count",
+    "records_asset_name",
+    "records_asset_sha256",
+    "fast_records_asset_name",
+    "fast_records_asset_sha256",
+    "exact_term_index"
+  ],
+  "properties": {
+    "schema_version": {"type": "integer", "const": 1},
+    "cache_kind": {"type": "string", "const": "catalog_record_cache"},
+    "source_dat_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "source_dat_size": {"type": "integer", "minimum": 1},
+    "source_catalog_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "cache_base_catalog_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "source_record_count": {"type": "integer", "minimum": 0},
+    "cache_record_count": {"type": "integer", "minimum": 0},
+    "records_asset_name": {"type": "string", "minLength": 1},
+    "records_asset_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "fast_records_asset_name": {"type": "string", "minLength": 1},
+    "fast_records_asset_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "exact_term_index": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {"type": "string", "minLength": 1},
+        "uniqueItems": true
+      }
+    }
+  }
+}

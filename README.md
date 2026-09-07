@@ -41,6 +41,15 @@ Komut anahtarları, değişkenler, biçim parçaları ve özel adlar çeviri say
 
 Tam DAT, RAR, ham katalog, özel çeviri havuzu, model dosyası veya oyuna ait native DLL bu depoda tutulmaz.
 
+## Hızlı düzeltme akışı
+
+Bakımcılar için katalog önbelleği, temiz DAT'ı bir kez okuyup sonraki terim ve
+semantic düzeltmelerini DAT'ı yeniden açmadan üretir. Kaynak SHA-256/ boyut veya
+katalog özeti değişmedikçe tam tarama tekrarlanmaz. Ayrıntılı akış ve fail-closed
+kuralları [`docs/FAST-CORRECTION-WORKFLOW.md`](docs/FAST-CORRECTION-WORKFLOW.md)
+belgesinde, metadata sözleşmesi ise [`schemas/catalog-cache.schema.json`](schemas/catalog-cache.schema.json)
+dosyasındadır.
+
 ## Otomatik güncelleme
 
 `Watch official LOTRO version` işi Standing Stone Games'in resmî `Game.Version` değerini günde bir kez, Türkiye saatiyle yaklaşık 12:17'de denetler ve yeni sürüm için tek takip kaydı açar. Steam zorunlu değildir. Sürüm sinyali tek başına yama yayımlamaz; güvenilir Windows kaynak makinesinde güncel DAT özeti değişimi doğrulanır, yalnız yeni/değişen İngilizce kayıtlar çeviri hattına alınır ve bütün kalite kapıları geçerse yeni release hazırlanır.
