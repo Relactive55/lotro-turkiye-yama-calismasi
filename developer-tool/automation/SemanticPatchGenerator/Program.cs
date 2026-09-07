@@ -9,6 +9,19 @@ using LotroTrGemini;
 
 internal static class Program
 {
+    // These are offset/token-driven string tables. Rebuilding only part of one
+    // can leave the client looking up a token at an obsolete internal offset.
+    // Keep the official payload byte-for-byte until a table-aware writer can
+    // prove every token lookup after translation.
+    private static readonly HashSet<int> StructuralPreserveDids = new HashSet<int>
+    {
+        unchecked((int)0x250001A7),
+        unchecked((int)0x250001AF),
+        unchecked((int)0x250001BB),
+        unchecked((int)0x25008A58),
+        unchecked((int)0x2503B6C1)
+    };
+
     private static int Main(string[] args)
     {
         if (args.Length < 4 || args.Length > 7)
@@ -20,9 +33,9 @@ internal static class Program
         string candidatePath = Path.GetFullPath(args[1]);
         string outputPath = Path.GetFullPath(args[2]);
         string patchVersion = args[3];
-        string referencePath = args.Length >= 5 ? Path.GetFullPath(args[4]) : null;
-        string reviewPath = args.Length >= 6 ? Path.GetFullPath(args[5]) : null;
-        string decisionsPath = args.Length == 7 ? Path.GetFullPath(args[6]) : null;
+        string referencePath = args.Length >= 5 && args[4] != "-" ? Path.GetFullPath(args[4]) : null;
+        string reviewPath = args.Length >= 6 && args[5] != "-" ? Path.GetFullPath(args[5]) : null;
+        string decisionsPath = args.Length == 7 && args[6] != "-" ? Path.GetFullPath(args[6]) : null;
         if (!File.Exists(sourcePath) || !File.Exists(candidatePath)) throw new FileNotFoundException("Source DAT or candidate pool is missing.");
         if (referencePath != null && !File.Exists(referencePath)) throw new FileNotFoundException("Verified reference DAT is missing.", referencePath);
 
@@ -65,7 +78,11 @@ internal static class Program
         List<ReviewRow> rejectedReview = new List<ReviewRow>();
         foreach (CatalogRecord record in records)
         {
-            if (IsExcluded(record)) continue;
+            if (IsExcluded(record))
+            {
+                if (decisions.ContainsKey(record.Key)) usedDecisions.Add(record.Key);
+                continue;
+            }
             decisions.TryGetValue(record.Key, out ManualDecision decision);
             if (decision != null)
             {
@@ -73,7 +90,10 @@ internal static class Program
                 if (string.Equals(decision.action, "preserve", StringComparison.Ordinal)) continue;
             }
             candidates.TryGetValue(record.Key, out TranslationCandidate candidate);
-            if (referenceTargets.TryGetValue(record.Key, out string referenceTarget)
+            // A previously game-tested DAT may help close critical UI gaps, but
+            // it must never bulk-import ordinary rows into a new release.
+            if (record.CriticalUi
+                && referenceTargets.TryGetValue(record.Key, out string referenceTarget)
                 && !string.Equals(referenceTarget, record.Source, StringComparison.Ordinal))
             {
                 if (candidate == null || !string.Equals(candidate.target, referenceTarget, StringComparison.Ordinal))
@@ -326,7 +346,8 @@ internal static class Program
 
     private static bool IsExcluded(CatalogRecord record)
     {
-        return CatalogIdentity.IsExcludedFromTranslation(record.Did, record.RecordIndex, record.GroupIndex, record.IndexInGroup);
+        return StructuralPreserveDids.Contains(record.Did)
+            || CatalogIdentity.IsExcludedFromTranslation(record.Did, record.RecordIndex, record.GroupIndex, record.IndexInGroup);
     }
 
     private static string Validate(CatalogRecord record, TranslationCandidate candidate)
@@ -337,8 +358,30 @@ internal static class Program
         if (!string.Equals(record.TokenSignature, candidate.token_signature, StringComparison.OrdinalIgnoreCase)) return "token";
         if (string.IsNullOrWhiteSpace(candidate.target) || candidate.target.IndexOf('\0') >= 0) return "target";
         if (string.Equals(record.Source, candidate.target, StringComparison.Ordinal)) return "unchanged";
+        if (ContainsMojibake(candidate.target)) return "mojibake";
+        if (IsRepeatedTranslation(candidate.target)) return "repeated-target";
         ProtectedFormatResult format = ProtectedFormat.Validate(record.Source, candidate.target);
         return format.IsValid ? null : format.Reason;
+    }
+
+    private static bool ContainsMojibake(string value)
+    {
+        string[] markers = { "Ã¼", "Ã¶", "Ã§", "Ã‡", "Ã–", "Ãœ", "Ä±", "Ä°", "ÄŸ", "Äž", "ÅŸ", "Åž", "ï¿½", "�" };
+        return markers.Any(marker => value.IndexOf(marker, StringComparison.Ordinal) >= 0);
+    }
+
+    private static bool IsRepeatedTranslation(string value)
+    {
+        string text = (value ?? string.Empty).Trim();
+        if (text.Length < 24) return false;
+        for (int split = text.Length / 2 - 2; split <= text.Length / 2 + 2; split++)
+        {
+            if (split <= 0 || split >= text.Length) continue;
+            string left = text.Substring(0, split).Trim();
+            string right = text.Substring(split).Trim();
+            if (left.Length >= 12 && string.Equals(left, right, StringComparison.Ordinal)) return true;
+        }
+        return false;
     }
 
     private static string HashFile(string path)
