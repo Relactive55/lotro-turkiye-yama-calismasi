@@ -251,15 +251,15 @@ internal static class UpdaterBehaviorTests
                     installedDat.Open(Path.Combine(semanticGame, "client_local_English.dat"), false);
                     DatEntry sourceEntry = sourceDat.ListLocalization()[0];
                     DatEntry installedEntry = installedDat.ListLocalization()[0];
-                    if (installedEntry.Iteration != sourceEntry.Iteration)
-                        throw new Exception("semantic writer changed the official iteration metadata");
+                    if (installedEntry.Offset == sourceEntry.Offset && installedEntry.Size2 != sourceEntry.Size2)
+                        throw new Exception("semantic writer changed the official in-place allocation metadata");
                 }
                 if (installed.candidate_catalog_sha256 != semanticCandidateCatalogHash) throw new Exception("semantic catalog state mismatch");
                 if (!File.Exists(installed.source_backup_file)) throw new Exception("clean source backup missing");
                 Verify(installed.source_backup_file, semanticSource.Length, semanticSourceHash);
                 Pass("semantic DAT patch backup/install/round-trip");
                 Pass("semantic writer preserves official storage representation");
-                Pass("semantic writer preserves official iteration metadata");
+                Pass("semantic writer preserves official in-place allocation metadata");
 
                 // Simulate the official launcher updating a DAT that already
                 // contains our Turkish row. The binary version changes while

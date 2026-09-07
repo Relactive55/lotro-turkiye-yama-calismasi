@@ -215,7 +215,7 @@ public sealed class TurbineDat : IDisposable
 					Size = num6,
 					Version = (int)version,
 					Timestamp = timestamp,
-					Iteration = size,
+					Size2 = size,
 					Flags = flags,
 					Flags2 = flags2
 				});
@@ -632,7 +632,7 @@ public sealed class TurbineDat : IDisposable
 			Size = size,
 			Version = (int)version,
 			Timestamp = timestamp,
-			Iteration = size2,
+			Size2 = size2,
 			Flags = flags,
 			Flags2 = flags2
 		};
@@ -693,6 +693,68 @@ public sealed class TurbineDat : IDisposable
 			return false;
 		}
 		return UpdateSizeRec(DirectoryOffset, (uint)id, newSize, 0);
+	}
+
+	public bool WriteOrRelocateContiguous(int id, byte[] blob)
+	{
+		if (!_writable)
+			throw new InvalidOperationException("read-only");
+		if (blob == null)
+			blob = new byte[0];
+		if (blob.LongLength > uint.MaxValue)
+			return false;
+		if (!TryGetEntry(id, out DatEntry entry) || entry == null)
+			return false;
+
+		uint existingHeader = ReadU32At(entry.Offset);
+		long inPlaceCapacity = entry.Size2 >= 4 ? (long)entry.Size2 - 4L : 0L;
+		if (existingHeader == 0 && blob.LongLength <= inPlaceCapacity
+			&& entry.Offset + (long)entry.Size2 <= _fs.Length)
+		{
+			WriteUInt32(entry.Offset, 0u);
+			_fs.Position = entry.Offset + 4L;
+			_fs.Write(blob, 0, blob.Length);
+			WriteZeros(inPlaceCapacity - blob.LongLength);
+			WriteEntryLocationAndSizes(id, entry.Offset, checked((uint)blob.Length), entry.Size2);
+			return true;
+		}
+
+		long start = _fs.Length;
+		if ((start & 3L) != 0)
+			start = (start + 3L) & ~3L;
+		ulong allocation64 = (((ulong)blob.Length + 7UL) & ~3UL) + 4UL;
+		if (allocation64 > uint.MaxValue || start + (long)allocation64 > uint.MaxValue)
+			return false;
+		uint allocation = (uint)allocation64;
+		long end = start + allocation;
+		_fs.SetLength(end);
+		WriteUInt32(start, 0u);
+		_fs.Position = start + 4L;
+		_fs.Write(blob, 0, blob.Length);
+		WriteZeros(end - _fs.Position);
+		WriteEntryLocationAndSizes(id, checked((uint)start), checked((uint)blob.Length), allocation);
+		WriteUInt32(328L, checked((uint)end));
+		DeclaredFileSize = checked((uint)end);
+		return true;
+	}
+
+	private void WriteZeros(long count)
+	{
+		while (count > 0)
+		{
+			int current = (int)Math.Min(count, ZeroPad.Length);
+			_fs.Write(ZeroPad, 0, current);
+			count -= current;
+		}
+	}
+
+	private void WriteEntryLocationAndSizes(int id, uint offset, uint size, uint size2)
+	{
+		if (_entryPos == null || !_entryPos.TryGetValue(id, out long position))
+			throw new InvalidOperationException("entry index missing");
+		WriteUInt32(position + 8L, offset);
+		WriteUInt32(position + 12L, size);
+		WriteUInt32(position + 24L, size2);
 	}
 
 	private bool UpdateSizeRec(uint offset, uint id, uint newSize, int depth)

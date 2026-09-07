@@ -148,12 +148,8 @@ public static class ManagedSemanticDatPatcher
                     byte[] blob = BuildVerifiedBlob(unit);
                     if (!candidate.TryGetEntry(unit.Entry.Id, out DatEntry current) || current == null)
                         throw new InvalidDataException("Aday DAT girdisi bulunamadı: 0x" + unit.Entry.Id.ToString("X8"));
-                    int capacity = candidate.MeasureCapacity(current.Offset);
-                    if (blob.Length > capacity && !candidate.ExpandChain(current.Offset, blob.Length))
-                        throw new IOException("Aday DAT blok zinciri genişletilemedi: 0x" + unit.Entry.Id.ToString("X8"));
-                    candidate.WriteChain(current.Offset, blob);
-                    if (!candidate.UpdateEntrySize(unit.Entry.Id, checked((uint)blob.Length)))
-                        throw new IOException("Aday DAT entry boyutu güncellenemedi: 0x" + unit.Entry.Id.ToString("X8"));
+                    if (!candidate.WriteOrRelocateContiguous(unit.Entry.Id, blob))
+                        throw new IOException("Aday DAT girdisi güvenli biçimde yazılamadı: 0x" + unit.Entry.Id.ToString("X8"));
                 }
             }
 
@@ -359,12 +355,8 @@ public static class ManagedSemanticDatPatcher
                 byte[] blob = BuildVerifiedBlob(unit);
                 if (!candidate.TryGetEntry(unit.Entry.Id, out DatEntry current) || current == null)
                     throw new InvalidDataException("Aday DAT girdisi bulunamadı: 0x" + unit.Entry.Id.ToString("X8"));
-                int capacity = candidate.MeasureCapacity(current.Offset);
-                if (blob.Length > capacity && !candidate.ExpandChain(current.Offset, blob.Length))
-                    throw new IOException("Aday DAT blok zinciri genişletilemedi: 0x" + unit.Entry.Id.ToString("X8"));
-                candidate.WriteChain(current.Offset, blob);
-                if (!candidate.UpdateEntrySize(unit.Entry.Id, checked((uint)blob.Length)))
-                    throw new IOException("Aday DAT entry boyutu güncellenemedi: 0x" + unit.Entry.Id.ToString("X8"));
+                if (!candidate.WriteOrRelocateContiguous(unit.Entry.Id, blob))
+                    throw new IOException("Aday DAT girdisi güvenli biçimde yazılamadı: 0x" + unit.Entry.Id.ToString("X8"));
             }
         }
         ValidateCandidateStructure(basePath, candidatePath, cancellationToken);
@@ -488,9 +480,13 @@ public static class ManagedSemanticDatPatcher
                 cancellationToken.ThrowIfCancellationRequested();
                 if (!sourceEntries.TryGetValue(entry.Id, out DatEntry original))
                     throw new InvalidDataException("Candidate DAT contains an unexpected localization entry: 0x" + entry.Id.ToString("X8"));
-                if (entry.Offset != original.Offset || entry.Version != original.Version || entry.Timestamp != original.Timestamp
-                    || entry.Flags != original.Flags || entry.Flags2 != original.Flags2 || entry.Iteration != original.Iteration)
+                if (entry.Version != original.Version || entry.Timestamp != original.Timestamp
+                    || entry.Flags != original.Flags || entry.Flags2 != original.Flags2)
                     throw new InvalidDataException("Candidate DAT localization directory metadata changed: 0x" + entry.Id.ToString("X8"));
+                if (entry.Offset == original.Offset && entry.Size2 != original.Size2)
+                    throw new InvalidDataException("Candidate DAT changed an in-place allocation: 0x" + entry.Id.ToString("X8"));
+                if (entry.Offset != original.Offset && entry.Size2 != ContiguousAllocationSize(entry.Size))
+                    throw new InvalidDataException("Candidate DAT relocation allocation is invalid: 0x" + entry.Id.ToString("X8"));
                 byte[] raw = candidate.ReadRaw(entry);
                 bool compressed = TurbineDat.LooksCompressed(raw);
                 if (compressed != sourceCompression[entry.Id])
@@ -500,6 +496,12 @@ public static class ManagedSemanticDatPatcher
                     throw new InvalidDataException("Candidate DAT contains an unreadable compressed entry: 0x" + entry.Id.ToString("X8"));
             }
         }
+    }
+
+    private static uint ContiguousAllocationSize(uint size)
+    {
+        ulong aligned = ((ulong)size + 7UL) & ~3UL;
+        return checked((uint)(aligned + 4UL));
     }
 
     private static void MarkChangedUnits(Dictionary<int, Unit> units, IEnumerable<string> keys)
