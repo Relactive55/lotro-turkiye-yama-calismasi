@@ -1,11 +1,13 @@
 # LOTRO Türkiye Yama Çalışması
 
-## Program güvenlik düzeltmesi hazırlanıyor
+## Güncel programı indir
 
-Bağımsız `datexport.dll` doğrulaması, büyüyen alt dosyalar için oluşturulan blok
-zincirlerinin LOTRO tarafından kabul edilmediğini gösterdi. Kullanıcıların oyun
-dosyalarını riske atmamak için kurulum EXE'si geçici olarak yayından kaldırıldı.
-Resmî okuyucuyla tam doğrulama geçmeden yeni indirme bağlantısı açılmayacaktır.
+[**LOTRO Türkçe Yama programını indir (Windows)**](https://github.com/Relactive/lotro-turkiye-yama-calismasi/releases/latest/download/LOTRO_Turkce_Yama_Setup.exe)
+
+Program temiz resmî DAT üzerinde özel bir aday kopya oluşturur. Aday DAT hem
+yapısal denetimlerden hem de LOTRO `datexport.dll` okuyucusuyla 281.422 alt
+dosyalık bağımsız karşılaştırmadan geçirilmiştir. Hata veya kesinti olursa
+doğrulanmış yedekten otomatik geri dönülür.
 
 The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli güncelleme projesidir. Son kullanıcı tam oyun DAT'ı indirmez; GitHub Releases sayfasındaki `LOTRO_Turkce_Yama_Setup.exe` aracını indirir ve **Yama Yap** düğmesine basar. Araç Steam ve bağımsız LOTRO kurulumlarını bulabilir, güncel semantic paketi indirir ve kullanıcının kendi resmî DAT dosyasına uygular.
 
@@ -32,8 +34,8 @@ Kod imzalama sertifikası eklenmediği sürece Windows SmartScreen uyarısı gö
 - dokunulan yerelleştirme bloğu: `231,494`
 - kritik inceleme: `0`
 - genel inceleme/reddedilen aday: `0`
-- doğrulanmış Türkçe DAT boyutu: `1,986,100,480` bayt
-- doğrulanmış Türkçe DAT SHA-256: `cfb5a39d9989375270bdd9ccaeab10e83b9e7b0c3acbeece6c9e10b5322d6ff2`
+- doğrulanmış Türkçe DAT boyutu: `1,937,144,604` bayt
+- doğrulanmış Türkçe DAT SHA-256: `6e33bc9d8c522f9e0e55ccd6cf62b025acb2e69722cde1d8f9fa2dcd3f470216`
 
 Komut anahtarları, değişkenler, biçim parçaları ve özel adlar çeviri sayılmaz; bozulmamaları için açık koruma kararlarıyla kaynak biçiminde tutulur. Semantic paketin güncel 1,9 GB resmî DAT kopyasına tam uygulanması ve oluşan `825,136` kaydın yeniden okunması başarıyla sınanmıştır.
 
