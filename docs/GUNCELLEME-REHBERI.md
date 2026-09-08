@@ -4,32 +4,30 @@
 
 1. LOTRO'yu resmi launcher ile güncelleyin ve oyunu/launcher'ı kapatın.
 2. Temiz `client_local_English.dat` dosyasını proje kökündeki
-   `GÜNCELLEME` klasörüne koyun. Önceki temiz dosya `ORJİNAL DAT` içinde kalsın.
-   Aynı dosya adı sorun değildir; klasör yolları farklıdır:
+   `GÜNCELLEME` klasörüne koyun ve önceki dosyanın yerine geçir:
 
    ```text
    lotro-turkiye-yama-calismasi/
-   ├─ ORJİNAL DAT/client_local_English.dat   (eski temiz İngilizce temel)
-   └─ GÜNCELLEME/client_local_English.dat    (yeni temiz İngilizce güncelleme)
+   └─ GÜNCELLEME/client_local_English.dat    (tek temiz İngilizce DAT)
    ```
 
-   İki dosya da Türkçe yama yapılmamış olmalıdır; aynı dosya adını farklı
-   klasörlerde kullanmak normaldir. Bu iki dosyayı aynı klasöre koymayın.
-3. `LOTRKaynakGonder.exe` programında yeni ve önceki temiz DAT'ı seçip
-   **GitHub'a Gönder** düğmesine basın. Çevrilmiş DAT veya tam DAT yüklemeyin.
+   Dosya Türkçe yama yapılmamış olmalıdır.
+3. `LOTRKaynakGonder.exe` programında bu tek DAT'ı seçip **GitHub'a Gönder**
+   düğmesine basın. Çevrilmiş DAT veya tam DAT yüklemeyin.
 4. GitHub Actions yeni/değişen satırları ücretsiz Argos ile çevirir, kontrol eder
    ve inceleme PR'ı açar. Onaydan sonra kaynaklar, DAT/semantic paket ve gerekiyorsa
    EXE güncellenir; testler geçince GitHub Release yayımlanır.
 
-İlk gönderimden sonra program son gönderilen kataloğu yerel
+İlk gönderimde program seçilen DAT'ı yerel
 `.lotro-source-state.jsonl.gz` dosyasında saklar. Bir sonraki oyun güncellemesinde
 yalnızca `GÜNCELLEME/client_local_English.dat` dosyasını yenisiyle değiştirin;
-`ORJİNAL DAT` içindeki dosya ve durum dosyası eski karşılaştırma noktası olarak
-kalır. Durum dosyası kaybolursa ilk gönderimdeki iki temiz DAT yeniden seçilir.
+durum dosyası eski karşılaştırma noktası olarak kalır. İlk çalıştırma yalnızca
+temel durum oluşturur; sonraki güncelleme yeni/değişen satırlar için patch üretir.
+Durum dosyası kaybolursa program yeni DAT'ı yeniden temel kabul eder.
 
 ## Temizlik kuralı
 
-- `ORJİNAL DAT`, güncel `GÜNCELLEME`, kaynak kodu, `*.cs`, `*.csproj`, script,
+- Güncel `GÜNCELLEME`, kaynak kodu, `*.cs`, `*.csproj`, script,
   belge, manifest ve release dosyaları korunur.
 - Yalnızca kesin geçici olduğu doğrulanan kopya, log, önbellek ve derleme
   çıktıları Geri Dönüşüm Kutusu'na taşınır. Emin olunmayan dosya silinmez.

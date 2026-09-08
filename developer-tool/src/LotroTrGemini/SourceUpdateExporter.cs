@@ -26,6 +26,7 @@ public sealed class SourceUpdateExportResult
     public int CandidateRecordCount { get; internal set; }
     public int ExcludedRecordCount { get; internal set; }
     public int AmbiguousRecordCount { get; internal set; }
+    public bool BaselineInitialized { get; internal set; }
     public string OutputDirectory { get; internal set; }
     public List<SourceUpdateBundleFile> Bundles { get; } = new List<SourceUpdateBundleFile>();
 }
@@ -67,13 +68,22 @@ public static class SourceUpdateExporter
             progress?.Invoke("Önceki katalog durumu doğrulanıyor…");
             baseline = SourceCatalogStateStore.Load(statePath);
         }
-        else
+        else if (!string.IsNullOrWhiteSpace(baselineDatPath))
         {
-            if (string.IsNullOrWhiteSpace(baselineDatPath) || !File.Exists(baselineDatPath))
-                throw new InvalidOperationException("İlk kullanım için ORJİNAL DAT içindeki eski temiz client_local_English.dat dosyasını seçin.");
+            if (!File.Exists(baselineDatPath))
+                throw new InvalidOperationException("Eski temiz DAT bulunamadı.");
             progress?.Invoke("İlk temel katalog oluşturuluyor…");
             baseline = extractor.Extract(baselineDatPath, cancellationToken);
             EnsureCleanEnglish(baseline);
+        }
+        else
+        {
+            // A single-DAT sender can bootstrap its local state from the first
+            // clean English DAT. There is no safe diff to publish yet; after
+            // this snapshot is committed, each later DAT is compared with the
+            // last successfully submitted catalog.
+            progress?.Invoke("İlk temiz DAT temel olarak kaydediliyor…");
+            baseline = updated;
         }
 
         cancellationToken.ThrowIfCancellationRequested();
@@ -109,6 +119,7 @@ public static class SourceUpdateExporter
             CandidateRecordCount = candidates.Count,
             ExcludedRecordCount = excluded,
             AmbiguousRecordCount = summary.Ambiguous,
+            BaselineInitialized = !File.Exists(statePath) && string.IsNullOrWhiteSpace(baselineDatPath),
             OutputDirectory = runDirectory
         };
 

@@ -17,10 +17,13 @@ yazmaz. Hedef depo private değilse gönderimi fail-closed durdurur.
    Contents: Read and write ve Pull requests: Read and write yetkilerine sahip
    fine-grained token olmalıdır.
 2. Bilgisayarda GitHub CLI ile bir kez `gh auth login` yapılır.
-3. İlk çalıştırmada güncel DAT ve eski temiz DAT seçilir. Program `.lotro-source-
-   state.jsonl.gz` dosyasını eski temiz DAT'ın yanında oluşturur.
-4. Sonraki LOTRO güncellemelerinde yalnız yeni temiz DAT seçilip **GitHub'a
-   Gönder** düğmesine basılır.
+3. İlk çalıştırmada `GÜNCELLEME/client_local_English.dat` içindeki tek temiz DAT
+   seçilir. Program önceki katalog yoksa bu DAT'ı temel olarak kaydeder ve patch
+   üretmez; durum dosyası `%LOCALAPPDATA%\Relactive\LotroSourceSender\state`
+   altında tutulur.
+4. Sonraki LOTRO güncellemelerinde aynı dosyanın üzerine yeni temiz DAT'ı koyup
+   yalnızca **GitHub'a Gönder** düğmesine basılır. Önceki katalog durum dosyasından
+   otomatik alınır; ikinci DAT seçilmez.
 
 Private Actions bundle'ı doğrular, çeviri deposundaki `translation_pipeline.py`
 scriptini ücretsiz ve yerel Argos modeliyle çalıştırır ve İngilizce kaynak içermeyen

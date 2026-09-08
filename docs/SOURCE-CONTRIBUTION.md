@@ -8,10 +8,12 @@ before a release.
 Yeni source bundle göndermek isteyen oyuncu için hedef akış:
 
 1. Resmi LOTRO launcher ile güncelle.
-2. `LOTRKaynakGonder.exe` ile güncel ve önceki temiz
-   `client_local_English.dat` dosyalarını seç.
-3. Program read-only olarak yalnız `NEW`/`MODIFIED` satırlardan küçük bundle
-   üretir ve GitHub CLI oturumuyla özel kaynak deposuna gönderir.
+2. `LOTRKaynakGonder.exe` ile yalnız yeni temiz
+   `client_local_English.dat` dosyasını seç.
+3. Program önceki katalogu yerel durum dosyasından alır; ilk çalıştırmada
+   yalnız temel durumu kaydeder, sonraki çalıştırmalarda read-only olarak sadece
+   `NEW`/`MODIFIED` satırlardan küçük bundle üretip GitHub CLI oturumuyla özel
+   kaynak deposuna gönderir.
 4. Private Actions bundle'ı doğrular, ücretsiz yerel Argos çevirisini üretir ve
    İngilizce içermeyen adayları aynı özel çeviri deposunda inceleme PR'ı olarak açar.
 5. Kaynak DAT, ham katalog ve token hiçbir aşamada herkese açık depoya veya

@@ -29,7 +29,6 @@ internal sealed class SenderSettings
     public string repository { get; set; } = "Relactive55/lotro-turkiye-yama-kaynak";
     public string branch { get; set; } = "main";
     public string last_updated_dat { get; set; } = "";
-    public string last_baseline_dat { get; set; } = "";
     public string state_path { get; set; } = "";
 }
 
@@ -188,7 +187,6 @@ internal sealed class SenderForm : Form
     private readonly string _settingsPath;
     private SenderSettings _settings;
     private TextBox _updated;
-    private TextBox _baseline;
     private TextBox _state;
     private TextBox _repository;
     private TextBox _branch;
@@ -225,15 +223,14 @@ internal sealed class SenderForm : Form
         table.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
         table.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-        _updated = AddPathRow(table, 0, "Güncel temiz DAT", "DAT seç", BrowseUpdated);
-        _baseline = AddPathRow(table, 1, "Eski temel DAT", "Temel seç", BrowseBaseline);
-        _state = AddTextRow(table, 2, "Yerel durum", true);
-        _repository = AddTextRow(table, 3, "Private GitHub", false);
-        _branch = AddTextRow(table, 4, "Branch", false);
+        _updated = AddPathRow(table, 0, "Tek temiz DAT", "DAT seç", BrowseUpdated);
+        _state = AddTextRow(table, 1, "Durum (otomatik)", true);
+        _repository = AddTextRow(table, 2, "Private GitHub", false);
+        _branch = AddTextRow(table, 3, "Branch", false);
 
         Label note = new Label
         {
-            Text = "DAT salt okunur taranır. Ham DAT public depoya gönderilmez; yalnız yeni/değişen metinler private depoya yüklenir.",
+            Text = "Tek temiz client_local_English.dat dosyasını her güncellemede yenisiyle değiştirin. Önceki katalog yerel durum dosyasından otomatik alınır; ham DAT gönderilmez.",
             Dock = DockStyle.Fill,
             AutoSize = false,
             ForeColor = Color.FromArgb(70, 70, 70),
@@ -286,7 +283,6 @@ internal sealed class SenderForm : Form
     private void LoadValues()
     {
         _updated.Text = Existing(_settings.last_updated_dat);
-        _baseline.Text = Existing(_settings.last_baseline_dat);
         _state.Text = string.IsNullOrWhiteSpace(_settings.state_path) ? DefaultStatePath(_updated.Text) : _settings.state_path;
         _repository.Text = string.IsNullOrWhiteSpace(_settings.repository) ? "Relactive55/lotro-turkiye-yama-kaynak" : _settings.repository;
         _branch.Text = string.IsNullOrWhiteSpace(_settings.branch) ? "main" : _settings.branch;
@@ -294,38 +290,22 @@ internal sealed class SenderForm : Form
 
     private void BrowseUpdated(object sender, EventArgs e)
     {
-        using (OpenFileDialog dialog = DatDialog("Güncel temiz client_local_English.dat seçin"))
+        using (OpenFileDialog dialog = DatDialog("Tek temiz client_local_English.dat seçin"))
         {
             if (dialog.ShowDialog(this) != DialogResult.OK) return;
             _updated.Text = dialog.FileName;
             if (!File.Exists(_state.Text)) _state.Text = DefaultStatePath(dialog.FileName);
-            if (string.IsNullOrWhiteSpace(_baseline.Text) || Same(_baseline.Text, dialog.FileName)) _baseline.Text = FindBaseline(dialog.FileName);
             Append("Güncel DAT seçildi: " + Path.GetFileName(dialog.FileName));
-        }
-    }
-
-    private void BrowseBaseline(object sender, EventArgs e)
-    {
-        using (OpenFileDialog dialog = DatDialog("Eski temiz client_local_English.dat seçin"))
-        {
-            if (dialog.ShowDialog(this) == DialogResult.OK)
-            {
-                _baseline.Text = dialog.FileName;
-                Append("Eski temel DAT seçildi: " + Path.GetFileName(dialog.FileName));
-            }
         }
     }
 
     private async Task SendAsync()
     {
         string updated = (_updated.Text ?? "").Trim();
-        string baseline = (_baseline.Text ?? "").Trim();
         string state = (_state.Text ?? "").Trim();
         string repository = (_repository.Text ?? "").Trim();
         string branch = (_branch.Text ?? "").Trim();
         if (!File.Exists(updated)) { ShowError("Önce güncel temiz DAT dosyasını seçin."); return; }
-        if (!File.Exists(state) && !File.Exists(baseline)) { ShowError("İlk kullanımda eski temiz DAT da seçilmelidir."); return; }
-        if (Same(updated, baseline)) { ShowError("Güncel DAT ile eski temel DAT aynı dosya olamaz."); return; }
         if (string.IsNullOrWhiteSpace(state)) { ShowError("Yerel durum dosyası yolu boş."); return; }
 
         SaveSettings();
@@ -333,7 +313,7 @@ internal sealed class SenderForm : Form
         SetBusy(true);
         try
         {
-            SourceUpdateExportResult result = await Task.Run(() => SourceUpdateExporter.Create(updated, baseline, state, Path.Combine(_settingsDirectory, "out"), "", _cancellation.Token, Append), _cancellation.Token);
+            SourceUpdateExportResult result = await Task.Run(() => SourceUpdateExporter.Create(updated, "", state, Path.Combine(_settingsDirectory, "out"), "", _cancellation.Token, Append), _cancellation.Token);
             Append(string.Format("Karşılaştırma: yeni={0:N0}, değişmiş={1:N0}, belirsiz={2:N0}, gönderilecek={3:N0}", result.Summary.New, result.Summary.Modified, result.Summary.Ambiguous, result.CandidateRecordCount));
             if (result.Bundles.Count > 0)
             {
@@ -342,6 +322,12 @@ internal sealed class SenderForm : Form
                 SourceUpdateExporter.CommitState(result);
                 TryDeleteDirectory(result.OutputDirectory);
                 Append("Kaynak durumu güncellendi; GitHub Actions otomatik çeviri için çalışacak.");
+            }
+            else if (result.BaselineInitialized)
+            {
+                SourceUpdateExporter.CommitState(result);
+                TryDeleteDirectory(result.OutputDirectory);
+                Append("İlk temiz DAT kaydedildi; patch oluşturulmadı. Sonraki güncellemede yalnızca yeni DAT'ı seçin.");
             }
             else
             {
@@ -375,25 +361,8 @@ internal sealed class SenderForm : Form
         return new OpenFileDialog { Title = title, Filter = "LOTRO DAT|client_local_English.dat|DAT dosyaları|*.dat|Tüm dosyalar|*.*", CheckFileExists = true, Multiselect = false, InitialDirectory = ExistingDirectory(_updated?.Text) };
     }
 
-    private static string FindBaseline(string updated)
-    {
-        if (string.IsNullOrWhiteSpace(updated)) return "";
-        DirectoryInfo directory = new FileInfo(updated).Directory;
-        for (int depth = 0; directory != null && depth < 8; depth++, directory = directory.Parent)
-        {
-            foreach (string name in new[] { "ORJİNAL DAT", "ORJINAL DAT", "ORIJINAL DAT" })
-            {
-                string candidate = Path.Combine(directory.FullName, name, "client_local_English.dat");
-                if (File.Exists(candidate) && !Same(candidate, updated)) return candidate;
-            }
-        }
-        return "";
-    }
-
     private static string DefaultStatePath(string updated)
     {
-        string baseline = FindBaseline(updated);
-        if (!string.IsNullOrWhiteSpace(baseline)) return Path.Combine(Path.GetDirectoryName(baseline), ".lotro-source-state.jsonl.gz");
         return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Relactive", "LotroSourceSender", "state", "catalog.jsonl.gz");
     }
 
@@ -420,7 +389,6 @@ internal sealed class SenderForm : Form
             _settings.repository = (_repository?.Text ?? _settings.repository).Trim();
             _settings.branch = (_branch?.Text ?? _settings.branch).Trim();
             _settings.last_updated_dat = (_updated?.Text ?? _settings.last_updated_dat).Trim();
-            _settings.last_baseline_dat = (_baseline?.Text ?? _settings.last_baseline_dat).Trim();
             _settings.state_path = (_state?.Text ?? _settings.state_path).Trim();
             JavaScriptSerializer serializer = new JavaScriptSerializer();
             File.WriteAllText(_settingsPath, serializer.Serialize(_settings), new UTF8Encoding(false));
@@ -456,12 +424,6 @@ internal sealed class SenderForm : Form
     {
         if (InvokeRequired) { BeginInvoke(new Action<string>(ShowError), text); return; }
         MessageBox.Show(this, text, "LOTRO Kaynak Güncellemesi", MessageBoxButtons.OK, MessageBoxIcon.Exclamation);
-    }
-
-    private static bool Same(string left, string right)
-    {
-        if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right)) return false;
-        try { return string.Equals(Path.GetFullPath(left), Path.GetFullPath(right), StringComparison.OrdinalIgnoreCase); } catch { return false; }
     }
 
     private static string Existing(string value) => !string.IsNullOrWhiteSpace(value) && File.Exists(value) ? value : "";

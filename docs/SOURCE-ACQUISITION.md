@@ -29,16 +29,16 @@ Ancak aşağıdakiler birden fazla kontrollü denemeyle kanıtlanırsa açılabi
 
 ### 2. CLIENT_ASSISTED (mevcut tasarım)
 
-Kullanıcı resmi launcher ile LOTRO'yu günceller. Setup, DAT'ı yalnız read-only
-okuyarak metadata, catalog fingerprint, `NEW/MODIFIED` satır kimlikleri,
+Kullanıcı resmi launcher ile LOTRO'yu günceller. Setup, tek seçilen DAT'ı yalnız
+read-only okuyarak metadata, catalog fingerprint, `NEW/MODIFIED` satır kimlikleri,
 `source_digest` ve gerekli token bilgilerini içeren küçük bir bundle hazırlar.
 
 Bakımcı girdi sözleşmesi sabittir:
 
 - klasör: proje kökündeki `GÜNCELLEME`
-- dosya: `client_local_English.dat`
-- `GÜNCELLEME` girdisi varsa geliştirici aracı bunu `ORJİNAL DAT` kaynağından
-  önce seçer;
+- dosya: `client_local_English.dat` (tek temiz İngilizce DAT)
+- önceki katalog: `%LOCALAPPDATA%\Relactive\LotroSourceSender\state` altındaki
+  yerel durum dosyası;
 - girdi salt okunur kaynak kabul edilir; doğrudan değiştirilmez ve GitHub'a
   yüklenmez.
 
