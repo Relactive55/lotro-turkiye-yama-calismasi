@@ -12,8 +12,9 @@ $redirectHosts = @('bit.ly', 'tinyurl.com', 't.co', 'goo.gl', 'is.gd', 'cutt.ly'
 $urlPattern = [regex]'https?://[^\s<>"''`()\[\]]+'
 $findings = New-Object System.Collections.Generic.List[object]
 $gitCommand = (Get-Command git.exe -ErrorAction SilentlyContinue).Source
-if ([string]::IsNullOrWhiteSpace($gitCommand) -and (Test-Path -LiteralPath 'C:\Program Files\Git\cmd\git.exe')) {
-    $gitCommand = 'C:\Program Files\Git\cmd\git.exe'
+if ([string]::IsNullOrWhiteSpace($gitCommand)) {
+    $gitCandidate = Join-Path ([Environment]::GetFolderPath('ProgramFiles')) 'Git\cmd\git.exe'
+    if (Test-Path -LiteralPath $gitCandidate) { $gitCommand = $gitCandidate }
 }
 if ([string]::IsNullOrWhiteSpace($gitCommand)) { throw 'Git bulunamadı; public indirme bağlantısı denetimi çalıştırılamadı.' }
 
