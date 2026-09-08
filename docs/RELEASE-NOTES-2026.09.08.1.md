@@ -1,5 +1,10 @@
 # LOTRO Türkçe Yama 2026.09.08.1
 
+**Geçersiz kılınmış taslak:** Sonraki inceleme, modern DAT başlığının yanlış
+okunduğunu ve kayıt sonundaki dört baytın kaybolduğunu buldu. Aşağıdaki eski
+doğrulamalar oyun uyumluluğu kanıtı değildir. Bu taslak yayımlanmamalıdır;
+[2026.09.08.2 düzeltmesine](RELEASE-NOTES-2026.09.08.2.md) bakın.
+
 Doğrulanmış yeni ana paket. Resmî kaynak sürümü: `3601.0066.7272.4024`.
 
 - Önceki v9 manifestindeki yanlış aday katalog bilgisi yeni, tam doğrulanmış

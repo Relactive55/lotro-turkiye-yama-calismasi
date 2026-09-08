@@ -41,6 +41,8 @@ public sealed class TurbineDat : IDisposable
 
 	public uint DeclaredFileSize { get; private set; }
 
+	public bool UsesModernStorage { get; private set; }
+
 	public void Open(string path, bool writable)
 	{
 		Close();
@@ -51,6 +53,8 @@ public sealed class TurbineDat : IDisposable
 		// sequential buffer repeatedly reads unrelated data at each small seek.
 		_fs = new FileStream(path, FileMode.Open, (!writable) ? FileAccess.Read : FileAccess.ReadWrite, writable ? FileShare.Read : FileShare.ReadWrite, 64 * 1024, FileOptions.RandomAccess);
 		_br = new BinaryReader(_fs, Encoding.Unicode, leaveOpen: true);
+		_fs.Position = 0x101;
+		UsesModernStorage = _br.ReadUInt16() == 0x4c50;
 		_fs.Position = 320L;
 		if (_br.ReadUInt32() != 21570)
 		{
@@ -85,6 +89,11 @@ public sealed class TurbineDat : IDisposable
 		ValidateHeaderSize();
 		foreach (DatEntry entry in ListLocalization())
 		{
+			if (UsesModernStorage)
+			{
+				ReadModernContent(entry, false);
+				continue;
+			}
 			long remaining = entry.Size;
 			long position = entry.Offset;
 			HashSet<uint> visited = new HashSet<uint>();
@@ -242,7 +251,65 @@ public sealed class TurbineDat : IDisposable
 
 	public byte[] ReadRaw(DatEntry e)
 	{
-		return ReadChain(e.Offset, e.Size);
+		return UsesModernStorage ? ReadModernContent(e, true) : ReadChain(e.Offset, e.Size);
+	}
+
+	// Compatibility inspection only: old packages were catalogued through this
+	// four-byte-shifted view. Never use it to rebuild or write a modern DAT.
+	public byte[] ReadLegacyFramingForMigration(DatEntry e) => ReadChain(e.Offset, e.Size);
+
+	private byte[] ReadModernContent(DatEntry entry, bool materialize)
+	{
+		if (entry.Size > int.MaxValue || entry.Size2 < 8 || entry.Offset < 0x168 || entry.Offset + (long)entry.Size2 > _fs.Length)
+			throw new InvalidDataException("Invalid modern DAT allocation: " + entry.Id.ToString("X8"));
+		uint count = ReadU32At(entry.Offset);
+		uint legacy = ReadU32At(entry.Offset + 4L);
+		long tableBytes = (long)count * 8;
+		if (legacy != 0 || tableBytes > entry.Size2 - 8L)
+			throw new InvalidDataException("Unsupported or corrupt modern DAT block descriptor: " + entry.Id.ToString("X8"));
+		long firstCapacity = entry.Size2 - 8L - tableBytes;
+		int first = (int)Math.Min(firstCapacity, entry.Size);
+		byte[] result = materialize ? new byte[entry.Size] : null;
+		if (materialize) ReadExactAt(entry.Offset + 8L, result, 0, first);
+		long remaining = entry.Size - first;
+		if (count == 0)
+		{
+			if (remaining != 0) throw new InvalidDataException("Modern DAT payload is truncated.");
+			return result;
+		}
+		int destination = first;
+		long table = entry.Offset + 8L + firstCapacity;
+		var ranges = new List<Tuple<long, long>>();
+		ranges.Add(Tuple.Create((long)entry.Offset, entry.Offset + (long)entry.Size2));
+		for (uint i = 0; i < count; i++)
+		{
+			uint capacity = ReadU32At(table + i * 8L);
+			uint offset = ReadU32At(table + i * 8L + 4L);
+			long end = offset + (long)capacity;
+			if (capacity == 0 || offset < 0x168 || end > _fs.Length)
+				throw new InvalidDataException("Modern DAT extra block is outside its archive.");
+			foreach (var range in ranges)
+				if (offset < range.Item2 && end > range.Item1) throw new InvalidDataException("Modern DAT blocks overlap.");
+			ranges.Add(Tuple.Create((long)offset, end));
+			int take = (int)Math.Min(remaining, capacity);
+			if (materialize && take > 0) ReadExactAt(offset, result, destination, take);
+			destination += take;
+			remaining -= take;
+		}
+		if (remaining != 0) throw new InvalidDataException("Modern DAT payload is truncated.");
+		return result;
+	}
+
+	private void ReadExactAt(long position, byte[] output, int offset, int count)
+	{
+		_fs.Position = position;
+		while (count > 0)
+		{
+			int read = _fs.Read(output, offset, count);
+			if (read == 0) throw new EndOfStreamException();
+			offset += read;
+			count -= read;
+		}
 	}
 
 	private uint ReadU32At(long pos)
@@ -386,6 +453,7 @@ public sealed class TurbineDat : IDisposable
 
 	public int MeasureCapacity(uint dataOffset)
 	{
+		if (UsesModernStorage) throw new NotSupportedException("Modern DAT capacity must use the indexed allocation, not a legacy block chain.");
 		int num = 0;
 		long pos = dataOffset;
 		int num2 = 0;
@@ -404,6 +472,7 @@ public sealed class TurbineDat : IDisposable
 
 	public void WriteChain(uint dataOffset, byte[] blob)
 	{
+		if (UsesModernStorage) throw new NotSupportedException("Legacy chain writes are forbidden for modern DAT storage; use WriteOrRelocateContiguous.");
 		if (!_writable)
 		{
 			throw new InvalidOperationException("read-only");
@@ -498,6 +567,7 @@ public sealed class TurbineDat : IDisposable
 
 	public bool ExpandChain(uint dataOffset, int neededSize)
 	{
+		if (UsesModernStorage) throw new NotSupportedException("Legacy chain expansion is forbidden for modern DAT storage.");
 		if (!_writable)
 		{
 			throw new InvalidOperationException("read-only");
@@ -729,14 +799,17 @@ public sealed class TurbineDat : IDisposable
 			return false;
 		if (!TryGetEntry(id, out DatEntry entry) || entry == null)
 			return false;
+		if (UsesModernStorage) ReadModernContent(entry, false);
 
 		uint existingHeader = ReadU32At(entry.Offset);
-		long inPlaceCapacity = entry.Size2 >= 4 ? (long)entry.Size2 - 4L : 0L;
+		int headerSize = UsesModernStorage ? 8 : 4;
+		long inPlaceCapacity = entry.Size2 >= headerSize ? (long)entry.Size2 - headerSize : 0L;
 		if (existingHeader == 0 && blob.LongLength <= inPlaceCapacity
 			&& entry.Offset + (long)entry.Size2 <= _fs.Length)
 		{
 			WriteUInt32(entry.Offset, 0u);
-			_fs.Position = entry.Offset + 4L;
+			if (UsesModernStorage) WriteUInt32(entry.Offset + 4L, 0u);
+			_fs.Position = entry.Offset + headerSize;
 			_fs.Write(blob, 0, blob.Length);
 			WriteZeros(inPlaceCapacity - blob.LongLength);
 			WriteEntryLocationAndSizes(id, entry.Offset, checked((uint)blob.Length), entry.Size2);
@@ -746,14 +819,17 @@ public sealed class TurbineDat : IDisposable
 		long start = _fs.Length;
 		if ((start & 3L) != 0)
 			start = (start + 3L) & ~3L;
-		ulong allocation64 = (((ulong)blob.Length + 7UL) & ~3UL) + 4UL;
+		ulong allocation64 = UsesModernStorage
+			? (((ulong)blob.Length + 3UL) & ~3UL) + 8UL
+			: (((ulong)blob.Length + 7UL) & ~3UL) + 4UL;
 		if (allocation64 > uint.MaxValue || start + (long)allocation64 > uint.MaxValue)
 			return false;
 		uint allocation = (uint)allocation64;
 		long end = start + allocation;
 		_fs.SetLength(end);
 		WriteUInt32(start, 0u);
-		_fs.Position = start + 4L;
+		if (UsesModernStorage) WriteUInt32(start + 4L, 0u);
+		_fs.Position = start + headerSize;
 		_fs.Write(blob, 0, blob.Length);
 		WriteZeros(end - _fs.Position);
 		WriteEntryLocationAndSizes(id, checked((uint)start), checked((uint)blob.Length), allocation);

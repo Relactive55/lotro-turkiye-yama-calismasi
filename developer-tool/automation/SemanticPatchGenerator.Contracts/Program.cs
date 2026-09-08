@@ -215,6 +215,10 @@ internal static class GeneratorContractTests
         Expect<IOException>(() => Run("--verified-root", source, asset, manifest, "-", output, "root-3", "1.2.3.4"),
             "root generation never overwrites an existing output");
         string rejected = Path.Combine(temporary, "rejected-root");
+        Expect<InvalidDataException>(() => Run("--repair-native-framing", source, asset, manifest, "-", rejected, "root-3", "1.2.3.4"),
+            "native migration rejects a source without the modern format signature");
+        Check(!Directory.Exists(rejected) && Hash(source) == sourceHash,
+            "rejected framing migration neither mutates source nor creates a package");
         Expect<InvalidDataException>(() => Run("--verified-root", source, asset, manifest, "-", rejected, "root-3", "1.2.3.5"),
             "old clean source cannot masquerade as a newly detected official version");
         legacy.asset_sha256 = CatalogIdentity.Sha256Hex("tampered asset");

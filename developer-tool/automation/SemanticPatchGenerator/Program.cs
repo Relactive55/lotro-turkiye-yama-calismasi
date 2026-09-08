@@ -26,6 +26,7 @@ internal static class Program
     {
         if (args.Length > 0 && args[0] == "--incremental") return IncrementalGeneration.Run(args);
         if (args.Length > 0 && args[0] == "--verified-root") return RootGeneration.Run(args);
+        if (args.Length > 0 && args[0] == "--repair-native-framing") return RootGeneration.Run(args);
         if (args.Length < 4 || args.Length > 8)
         {
             Console.Error.WriteLine("Usage: SemanticPatchGenerator <source.dat> <candidates.jsonl> <output.json> <patch-version> [verified-reference.dat] [private-review.jsonl] [manual-decisions.jsonl] [reference-source.dat]");
@@ -329,7 +330,7 @@ internal static class Program
         return result;
     }
 
-    internal static List<CatalogRecord> ExtractCatalog(string path)
+    internal static List<CatalogRecord> ExtractCatalog(string path, bool legacyFraming = false)
     {
         List<CatalogRecord> records = new List<CatalogRecord>(850000);
         long position = 0;
@@ -339,7 +340,7 @@ internal static class Program
             dat.ValidateLocalizationChains();
             foreach (DatEntry entry in dat.ListLocalization())
             {
-                byte[] raw = dat.ReadRaw(entry);
+                byte[] raw = legacyFraming ? dat.ReadLegacyFramingForMigration(entry) : dat.ReadRaw(entry);
                 byte[] payload = TurbineDat.MaybeDecompress(raw);
                 if (TurbineDat.LooksCompressed(raw) && ReferenceEquals(raw, payload))
                     throw new InvalidDataException("Compressed localization entry could not be read: 0x" + entry.Id.ToString("X8"));

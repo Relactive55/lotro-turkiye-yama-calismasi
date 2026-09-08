@@ -55,10 +55,11 @@ internal static class RootGeneration
         {
             if (sourceLock.Length != patch.source_dat_size || !SourceDigest.Matches(Program.HashFile(source), patch.source_dat_sha256))
                 throw new InvalidDataException("Clean source does not match the independently anchored baseline.");
+            if (args[0] == "--repair-native-framing") RepairFraming(source, patch, log);
             if (args[4] != "-") ApplyDecisions(source, patch, Program.LoadDecisions(args[4]), version);
             patch.patch_version = version;
             patch.patch_mode = SemanticPatchBuilder.FullPatchMode;
-            patch.patch_generator_version = "semantic-generator-v3-verified-root";
+            patch.patch_generator_version = "semantic-generator-v4-native-framing";
             patch.translation_catalog_version += "+reviewed-root-" + version;
             patch.entries = patch.entries.OrderBy(entry => entry.entry_identity, StringComparer.Ordinal)
                 .ThenBy(entry => entry.dat_key, StringComparer.Ordinal).ToList();
@@ -104,6 +105,44 @@ internal static class RootGeneration
                 + "|catalog=" + candidate.CatalogSha256 + "|manifest=template-only");
         }
         return 0;
+    }
+
+    // This is not a metadata restamp. Both views are independently reconstructed
+    // from the SHA-anchored clean source, and every existing translation must
+    // prove the same key, source digest, token signature and stable identity.
+    private static void RepairFraming(string source, SemanticPatchDocument patch, Action<string> log)
+    {
+        using (var dat = new TurbineDat())
+        {
+            dat.Open(source, false);
+            if (!dat.UsesModernStorage) throw new InvalidDataException("Framing migration requires an identified modern DAT.");
+        }
+        log("Verifying legacy catalog against anchored clean DAT...");
+        VerifyFramingCatalog(source, patch, true);
+        log("Verifying all translation identities against native DAT payloads...");
+        patch.source_catalog_sha256 = VerifyFramingCatalog(source, patch, false);
+        log("NATIVE_FRAMING_MIGRATION_PASS|entries=" + patch.entries.Count + "|catalog=" + patch.source_catalog_sha256);
+    }
+
+    private static string VerifyFramingCatalog(string source, SemanticPatchDocument patch, bool legacy)
+    {
+        var records = Program.ExtractCatalog(source, legacy);
+        string hash = CatalogIdentity.ComputeCatalogHash(records);
+        if (legacy && !SourceDigest.Matches(hash, patch.source_catalog_sha256))
+            throw new InvalidDataException("Legacy catalog cannot be reproduced from the anchored clean source.");
+        var wanted = patch.entries.ToDictionary(entry => entry.dat_key, StringComparer.Ordinal);
+        foreach (var record in records)
+        {
+            if (!wanted.TryGetValue(record.Key, out var entry)) continue;
+            if (entry.entry_identity != record.EntryIdentity
+                || !SourceDigest.Matches(entry.source_digest, record.SourceDigest)
+                || !SourceDigest.Matches(entry.token_signature, record.TokenSignature))
+                throw new InvalidDataException("Framing migration requires review; translation identity changed: " + record.Key);
+            wanted.Remove(record.Key);
+        }
+        if (wanted.Count != 0)
+            throw new InvalidDataException("Framing migration lost a translation key: " + wanted.Keys.First());
+        return hash;
     }
 
     private static void ApplyDecisions(string source, SemanticPatchDocument patch,

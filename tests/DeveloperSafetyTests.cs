@@ -280,6 +280,7 @@ internal static class DeveloperSafetyTests
 		}
 		passed += VerifyTranslationScope();
 		passed += VerifyCompressedPackage(semanticPatch);
+		passed += ModernDatTests.Run();
 		Console.WriteLine("developer_tests_passed=" + passed);
 		return passed;
 	}

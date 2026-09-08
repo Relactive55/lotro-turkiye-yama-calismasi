@@ -58,6 +58,13 @@ public sealed class TurbineWriteSession : IDisposable
 		{
 			return -1;
 		}
+		if (_dat.UsesModernStorage)
+		{
+			if (!_dat.WriteOrRelocateContiguous(fileId, data)) return -1;
+			_dat.TryGetEntry(fileId, out DatEntry updated);
+			_entries[fileId] = updated;
+			return 0;
+		}
 		if (data.LongLength > entry.Size && !_dat.ExpandChain(entry.Offset, data.Length))
 		{
 			return -1;

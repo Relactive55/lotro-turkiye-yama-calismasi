@@ -22,6 +22,12 @@ $json = [System.Web.Script.Serialization.JavaScriptSerializer]::new()
 $json.MaxJsonLength = [int]::MaxValue
 $manifest = $json.Deserialize([IO.File]::ReadAllText((Join-Path $directory 'manifest-template.json')), [LotroTurkceYama.Setup.ReleaseManifest])
 $proof = Get-Content -LiteralPath (Join-Path $directory 'verification.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+# Earlier producers validated a four-byte-shifted view with the same buggy
+# reader/writer. Matching hashes alone cannot rehabilitate those candidates.
+if ($manifest.patch_generator_version -cne 'semantic-generator-v4-native-framing' -or
+    [Version]$manifest.minimum_updater_version -lt [Version]'1.3.0.0') {
+    throw 'Obsolete DAT framing producer; rebuild a native-framing root before publication.'
+}
 if ($manifest.release_id -ne 0 -or $manifest.asset_id -ne 0 -or $manifest.patch_mode -cne 'full' -or
     $manifest.chain_depth -ne 0 -or $proof.status -cne 'VERIFIED_ROOT' -or !$proof.source_unchanged -or
     $proof.applied -ne $manifest.safe_translated_count -or $proof.candidate_sha256 -ine $manifest.candidate_dat_sha256 -or

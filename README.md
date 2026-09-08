@@ -8,10 +8,11 @@ bakın. İlk kök paket bir kez indirilir; güncellemeler yalnız eksik küçük
 
 [**LOTRO Türkçe Yama programını indir (Windows)**](https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/latest/download/LOTRO_Turkce_Yama_Setup.exe)
 
-Program temiz resmî DAT üzerinde özel bir aday kopya oluşturur. Aday DAT hem
-yapısal denetimlerden hem de LOTRO `datexport.dll` okuyucusuyla 281.422 alt
-dosyalık bağımsız karşılaştırmadan geçirilmiştir. Hata veya kesinti olursa
-doğrulanmış yedekten otomatik geri dönülür.
+Program temiz resmî DAT üzerinde özel bir aday kopya oluşturur. Adayın bütün
+yerelleştirme kayıtları ve çeviri hedefleri yeniden doğrulanır. Modern DAT
+başlığına ilişkin son düzeltme, bağımsız fiziksel bayt testleriyle de sınandı;
+oyun içi test henüz tamamlanmadı. Hata durumunda canlı dosya değiştirilmez
+veya değiştirme başladıysa doğrulanmış yedekten geri dönme denenir.
 
 The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli güncelleme projesidir. Son kullanıcı tam oyun DAT'ı indirmez; GitHub Releases sayfasındaki `LOTRO_Turkce_Yama_Setup.exe` aracını indirir ve **Yama Yap** düğmesine basar. Araç Steam ve bağımsız LOTRO kurulumlarını bulabilir, güncel semantic paketi indirir ve kullanıcının kendi resmî DAT dosyasına uygular.
 
@@ -24,7 +25,8 @@ The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli
 5. Yeni bir Türkçe paket yayımlandığında aynı kurulum aracı bunu otomatik gösterir.
 6. Resmî launcher daha önce yamalanmış DAT'ı güncellerse yine yalnız **Yama Yap**
    düğmesine basılır. Araç önceki temiz yedeği, güncellenmiş DAT'ı ve yeni paketi
-   otomatik birleştirir; kullanıcıya DAT seçtirmez veya dosya taşıtmaz.
+   yalnız kaynak kimlikleri kanıtlanabiliyorsa birleştirir. Eşleşme yoksa eski
+   yedeği yeni oyun sürümüne zorla uygulamaz; uyumlu paket/kaynak ister.
 
 Kod imzalama sertifikası eklenmediği sürece Windows SmartScreen uyarısı görülebilir.
 
@@ -34,12 +36,14 @@ Kod imzalama sertifikası eklenmediği sürece Windows SmartScreen uyarısı gö
 - kaynak DAT SHA-256: `48deba5c621bb72492afd2687acffc49a0289054255c2136b7cb469ec1bdd967`
 - kaynak katalog SHA-256: `bf5984ecb19add7c93911c73dba88ecdc1de221330027671c125da9212184922`
 - katalog kaydı: `825,136`
-- güvenle uygulanan Türkçe kayıt: `645,004`
-- dokunulan yerelleştirme bloğu: `231,494`
+- doğrulanan Türkçe kayıt: `643,828`
+- dokunulan yerelleştirme bloğu: `231,578`
 - kritik inceleme: `0`
 - genel inceleme/reddedilen aday: `0`
-- doğrulanmış Türkçe DAT boyutu: `1,937,144,604` bayt
-- doğrulanmış Türkçe DAT SHA-256: `6e33bc9d8c522f9e0e55ccd6cf62b025acb2e69722cde1d8f9fa2dcd3f470216`
+- yeni kök sürümü: `2026.09.08.2`, kurulum aracı: `1.3.0.0`
+- doğrulanmış Türkçe DAT boyutu: `1,939,169,648` bayt
+- doğrulanmış Türkçe DAT SHA-256: `fb775e755b520bda6100382f6377c906d7b477194a3d5b3be2b02a7635215d02`
+- sıkıştırılmış ana indirme: `67,511,953` bayt
 
 Komut anahtarları, değişkenler, biçim parçaları ve özel adlar çeviri sayılmaz; bozulmamaları için açık koruma kararlarıyla kaynak biçiminde tutulur. Semantic paketin güncel 1,9 GB resmî DAT kopyasına tam uygulanması ve oluşan `825,136` kaydın yeniden okunması başarıyla sınanmıştır.
 
@@ -56,6 +60,9 @@ belgesinde, metadata sözleşmesi ise [`schemas/catalog-cache.schema.json`](sche
 dosyasındadır.
 
 ## Otomatik güncelleme
+
+Modern DAT başlığı düzeltmesi ve önceki taslağın neden geçersiz kılındığı:
+[2026.09.08.2 sürüm notları](docs/RELEASE-NOTES-2026.09.08.2.md).
 
 8 Eylül denetimi, v9'un önbellekten hesaplanmış sonuç katalog kimliğinde hata
 buldu. Gerçek adayın bütün çeviri hedefleri doğrulandı; mevcut v9 manifestiyle

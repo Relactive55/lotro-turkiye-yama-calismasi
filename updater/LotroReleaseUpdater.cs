@@ -302,7 +302,7 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
 
 public sealed class LotroReleaseUpdater
 {
-    public const string CurrentUpdaterVersion = "1.2.0.0";
+    public const string CurrentUpdaterVersion = "1.3.0.0";
     public const string Owner = "Relactive55";
     public const string Repository = "lotro-turkiye-yama-calismasi";
     public const string ManifestAssetName = "manifest.json";
