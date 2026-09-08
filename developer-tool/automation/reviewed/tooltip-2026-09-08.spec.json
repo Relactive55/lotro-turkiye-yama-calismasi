@@ -1,166 +1,3525 @@
 {
-  "groups": [
-    { "dids": ["25004705","2500C2DD","2502B769","2502B76A","2502B76B","2502B76C","2502B76D","2502B776","2502B777","2502B778","2502B779","25035C5C"], "source":"Penetrating Shot", "target":"Delici Atış" },
-    { "dids": ["25017889","2501EF5C","2501EF5E","2502040F","25020410","25020411","25020412","25027268","250281E8","25028277","250297F3","2502BB13","2502C124","25045FF9","250465CF"], "source":"Tactical Mitigation", "target":"Taktiksel Hasar Azaltma" }
-  ],
-  "rows": [
-    ["25000023:154:-1:0","Edit","Düzenle"],
-    ["25002216:0:-1:0","Barbed Fury","Dikenli Öfke"],
-    ["250265BC:0:-1:0","Barbed Fury","Dikenli Öfke"],
-    ["250265BC:1:-1:0","Increases damage over time.","Zaman içinde verilen hasarı artırır."],
-    ["250265B6:0:-1:0","Critical Eye","Keskin Göz"],
-    ["250265B6:1:-1:0","Practised Aim increases the chance that your attacks will land exactly where you intend.","Pratik Nişan, saldırılarınızın hedeflediğiniz yere tam isabet etme şansını artırır."],
-    ["25011A3E:0:-1:0","Critical Eye","Keskin Göz"],
-    ["25011A3E:2:-1:0","Achieve critical hits with your bow","Yayınızla kritik vuruşlar yapın"],
-    ["25011A3E:3:-1:0","Precision aim comes from training and knowledge of your foe. Know your enemy, know where to send your arrow to cause the greatest result, and be able to let fly with confidence and precision.","Kesin nişan, eğitimden ve düşmanınızı tanımaktan gelir. Düşmanınızı tanıyın, en büyük etkiyi yaratmak için okunuzu nereye göndereceğinizi bilin ve güvenle, isabetle atış yapın."],
-    ["2503FBCA:0:-1:0","Critical Eye","Keskin Göz"],
-    ["2503FBCA:1:-1:0","Burglars gain access to special actions after a successful critical or devastating strike. Gamblers gain access to special actions after successfully evading an attack.","Hırsızlar başarılı bir kritik veya yıkıcı vuruştan sonra özel eylemlere erişir. Kumarbazlar bir saldırıdan başarıyla kaçtıktan sonra özel eylemlere erişir."],
-    ["25025E3B:0:-1:0","Change Trait configurations?\\nAny unsaved trait data will be lost.","Özellik yapılandırmaları değiştirilsin mi?\\nKaydedilmemiş özellik verileri kaybolacak."],
-    ["2502273B:51:-1:0","Change Trait configurations?\\nAny unsaved trait data will be lost and if you are mounted on a war-steed you will be dismounted.","Özellik yapılandırmaları değiştirilsin mi?\\nKaydedilmemiş özellik verileri kaybolacak; savaş bineğine biniyorsanız bineğinizden indirileceksiniz."],
-    ["25027719:9:-1:0","Balance","Bakiye"],
-    ["2502ECB2:10:-1:0","Mounts Collected ","Toplanan Binekler "],
-    ["2502ECB2:11:-1:0","Emotes","İfadeler"],
-    ["2502ECB2:23:-1:0","Pets","Evcil Hayvanlar"],
-    ["2502ECB2:30:-1:0","Emotes Collected ","Toplanan İfadeler "],
-    ["2502ECB2:35:-1:0","Baubles","Süsler"],
-    ["2502ECB2:43:-1:0","Baubles Collected ","Toplanan Süsler "],
-    ["2502ECB2:48:-1:0","Birds","Kuşlar"],
-    ["2502ECB2:50:-1:0","Mounts","Binekler"],
-    ["2502ECB2:51:-1:0","Pets Collected ","Toplanan Evcil Hayvanlar "],
-    ["2502ECB2:56:-1:0","None earned","Hiçbiri kazanılmadı"],
-    ["2502ECB2:62:-1:0","Birds Discovered ","Keşfedilen Kuşlar "],
-    ["2504049E:0:-1:0","Pets","Evcil Hayvanlar"],
-    ["25040E14:0:-1:0","Pets","Evcil Hayvanlar"],
-    ["2504293D:0:-1:0","Pets","Evcil Hayvanlar"],
-    ["250404A3:0:-1:0","Mounts","Binekler"],
-    ["250404A5:0:-1:0","Mounts","Binekler"],
-    ["25040E15:0:-1:0","Mounts","Binekler"],
-    ["2504293E:0:-1:0","Mounts","Binekler"],
-    ["250550D3:0:-1:0","Mounts","Binekler"],
-    ["2502EAD5:0:-1:0","Emotes","İfadeler"],
-    ["25030DFA:0:-1:0","Emotes","İfadeler"],
-    ["2503F761:0:-1:0","Emotes","İfadeler"],
-    ["25043E35:0:-1:0","Emotes","İfadeler"],
-    ["2502200E:0:-1:0","Baubles","Süsler"],
-    ["25004989:1:-1:0","Birds","Kuşlar"],
-    ["250047C1:1:-1:3"," of Bree-land"," (Bree Diyarlı)"],
-    ["250047C2:1:-1:3"," of Dale"," (Dale'li)"],
-    ["250047C3:1:-1:3"," of Gondor"," (Gondor'lu)"],
-    ["250047C4:1:-1:3"," of Rohan"," (Rohan'lı)"],
-    ["250047C5:1:-1:3"," of the Fallohides"," (Fallohide Soyundan)"],
-    ["250047C6:1:-1:3"," of the Harfoots"," (Harfoot Soyundan)"],
-    ["250047C7:1:-1:3"," of the Stoors"," (Stoor Soyundan)"],
-    ["250047C8:1:-1:3"," of the Iron Hills"," (Demir Tepeleri'nden)"],
-    ["250047C9:1:-1:3"," of the Lonely Mountain"," (Yalnız Dağ'dan)"],
-    ["250047CA:1:-1:3"," of the Blue Mountains"," (Mavi Dağlar'dan)"],
-    ["250047CB:1:-1:3"," of the Grey Mountains"," (Gri Dağlar'dan)"],
-    ["250047CC:1:-1:3"," of the White Mountains"," (Beyaz Dağlar'dan)"],
-    ["250047CD:1:-1:3"," of Lindon"," (Lindon'lu)"],
-    ["250047CE:1:-1:3"," of Lórien"," (Lórien'li)"],
-    ["250047CF:1:-1:3"," of Mirkwood"," (Kuyutormanlı)"],
-    ["250047D0:1:-1:3"," of Rivendell"," (Ayrıkvadili)"],
-    ["250047D1:1:-1:3"," of Edhellond"," (Edhellond'lu)"],
-    ["250064CE:1:-1:3"," of the Quick Post"," (Hızlı Posta)"],
-    ["2502E714:1:-1:3"," of the Seven Stars"," (Yedi Yıldızın)"],
-    ["25030B16:1:-1:3"," of the Vales"," (Vadilerden)"],
-    ["25031D9B:1:-1:3"," of Elendilmir"," (Elendilmir'li)"],
-    ["25031D9C:1:-1:3"," of Windfola"," (Windfola'lı)"],
-    ["25031DA0:1:-1:3"," of Gilrain"," (Gilrain'li)"],
-    ["25031DA2:1:-1:3"," of Sirannon"," (Sirannon'lu)"],
-    ["25031DA3:1:-1:3"," of Withywindle"," (Withywindle'lı)"],
-    ["25031DA4:1:-1:3"," of Gladden"," (Gladden'lı)"],
-    ["25031DA5:1:-1:3"," of Vanyar"," (Vanyar'lı)"],
-    ["25031DA9:1:-1:3"," of Landroval"," (Landroval'lı)"],
-    ["25031DAB:1:-1:3"," of Imladris"," (Imladris'li)"],
-    ["25031DAC:1:-1:3"," of Anduin"," (Anduin'li)"],
-    ["25031DAE:1:-1:3"," of Vilya"," (Vilya'lı)"],
-    ["25031DB0:1:-1:3"," of Gwaihir"," (Gwaihir'li)"],
-    ["25031DB1:1:-1:3"," of Laurelin"," (Laurelin'li)"],
-    ["25031DB3:1:-1:3"," of Crickhollow"," (Crickhollow'lu)"],
-    ["25031DB6:1:-1:3"," of Snowbourn"," (Snowbourn'lu)"],
-    ["25031DB7:1:-1:3"," of Silverlode"," (Silverlode'lu)"],
-    ["25031DB8:1:-1:3"," of Eldar"," (Eldar'lı)"],
-    ["25031DB9:1:-1:3"," of Maiar"," (Maiar'lı)"],
-    ["25031DBB:1:-1:3"," of Nimrodel"," (Nimrodel'li)"],
-    ["25031DBC:1:-1:3"," of Arkenstone"," (Arkenstone'lu)"],
-    ["25031DBE:1:-1:3"," of Brandywine"," (Brandywine'lı)"],
-    ["25031DBF:1:-1:3"," of Riddermark"," (Riddermark'lı)"],
-    ["25031DC1:1:-1:3"," of Firefoot"," (Firefoot'lu)"],
-    ["25031DC3:1:-1:3"," of Estel"," (Estel'li)"],
-    ["25031DC7:1:-1:3"," of Meneldor"," (Meneldor'lu)"],
-    ["25031DCA:1:-1:3"," of Belegaer"," (Belegaer'li)"],
-    ["25031DCC:1:-1:3"," of Dwarrowdelf"," (Dwarrowdelf'li)"],
-    ["25031DD0:1:-1:3"," of Evernight"," (Evernight'li)"],
-    ["25031DD4:1:-1:3"," of Morthond"," (Morthond'lu)"],
-    ["250321C2:1:-1:3"," of Aglarond"," (Aglarond'lu)"],
-    ["250321CC:1:-1:3"," of Fornost"," (Fornost'lu)"],
-    ["250321CD:1:-1:3"," of Mirkwood"," (Kuyutormanlı)"],
-    ["25039DDB:1:-1:3"," of Beleriand"," (Beleriand'lı)"],
-    ["2503B6C0:1:-1:3"," of Ossiriand"," (Ossiriand'lı)"],
-    ["2503B6C2:1:-1:3"," of Nargothrond"," (Nargothrond'lu)"],
-    ["2503B6C3:1:-1:3"," of Imladris"," (Imladris'li)"],
-    ["2504087C:1:-1:3"," of Mordor"," (Mordor'lu)"],
-    ["2504E9AF:1:-1:3"," of Misthallow"," (Misthallow'lu)"],
-    ["25054448:1:-1:3"," of Harad"," (Harad'lı)"],
-    ["25054449:1:-1:3"," of Umbar"," (Umbar'lı)"],
-    ["2505444A:1:-1:3"," of Rhûn"," (Rhûn'lu)"],
-    ["2504ECD8:1:-1:3"," of the Outlands"," (Dış Diyarlardan)"],
-    ["25057DB9:1:-1:3"," of the Waves and Wind"," (Dalgalar ve Rüzgârın)"],
-    ["25000023:19:-1:0","Mitigations","Hasar Azaltımları"],
-    ["25000023:29:-1:0","Tactical","Taktiksel"],
-    ["25000023:58:-1:0","Tactical","Taktiksel"],
-    ["25000023:66:-1:0","Tactical","Taktiksel"],
-    ["25000023:129:-1:0","Incoming Healing","Alınan İyileştirme"],
-    ["25000023:150:-1:0","Block","Blok"],
-    ["25000023:207:-1:0","Incoming Healing","Alınan İyileştirme"],
-    ["25000023:211:-1:0","Tactical","Taktiksel"],
-    ["25000023:244:-1:0","Block","Blok"],
-    ["25000023:258:-1:0","Tactical","Taktiksel"],
-    ["25000023:259:-1:0","Tactical","Taktiksel"],
-    ["25000023:268:-1:0","Tactical","Taktiksel"],
-    ["25000023:292:-1:0","Tactical","Taktiksel"],
-    ["25000003:17:-1:0","Finger","Parmak"],
-    ["2500001D:46:-1:0","Durability","Dayanıklılık"],
-    ["25004705:1:-1:0","A damaging shot that pierces enemy mitigations.","Düşmanın hasar azaltımını delerek hasar veren bir atış."],
-    ["25004706:0:-1:0","Penetrating Shot: Pierce the Darkness","Delici Atış: Karanlığı Del"],
-    ["25004706:1:-1:0","A damaging shot that pierces enemy mitigations.\\n\\nArrows inflict Light damage.","Düşmanın hasar azaltımını delerek hasar veren bir atış.\\n\\nOklar Işık hasarı verir."],
-    ["25004707:0:-1:0","Penetrating Shot: Burn Through","Delici Atış: Yakıp Geç"],
-    ["25004707:1:-1:0","A damaging shot that pierces enemy mitigations.\\n\\nArrows inflict fire damage.","Düşmanın hasar azaltımını delerek hasar veren bir atış.\\n\\nOklar Ateş hasarı verir."],
-    ["2502BAF0:0:-1:0","Builder","Biriktirici"],
-    ["2502BAF0:1:-1:0","Stance","Duruş"],
-    ["2502BAF0:2:-1:0","Captain Heal","Kaptan İyileştirmesi"],
-    ["2502BAF0:3:-1:0","Buff","Güçlendirme"],
-    ["2502BAF0:4:-1:0","Fist","Yumruk"],
-    ["2502BAF0:5:-1:0","Bear Form","Ayı Biçimi"],
-    ["2502BAF0:6:-1:0","Critical Hit Chain","Kritik Vuruş Zinciri"],
-    ["2502BAF0:7:-1:0","Fire","Ateş"],
-    ["2502BAF0:8:-1:0","Awareness","Farkındalık"],
-    ["2502BAF0:9:-1:0","Lightning","Yıldırım"],
-    ["2502BAF0:10:-1:0","Stun","Sersemletme"],
-    ["2502BAF0:12:-1:0","Haversack","Heybe"],
-    ["2502BAF0:13:-1:0","Heal","İyileştirme"],
-    ["2502BAF0:14:-1:0","Morale-tap","Moral Emme"],
-    ["2502BAF0:15:-1:0","Finisher","Bitirici"],
-    ["2502BAF0:16:-1:0","Blade","Bıçak"],
-    ["2502BAF0:17:-1:0","Cry","Nara"],
-    ["2502BAF0:18:-1:0","Strike","Vuruş"],
-    ["2502BAF0:19:-1:0","Any Form","Herhangi Bir Biçim"],
-    ["2502BAF0:20:-1:0","Debuff","Zayıflatma"],
-    ["2502BAF0:23:-1:0","Set-Up","Hazırlık"],
-    ["2502BAF0:24:-1:0","Frost","Soğuk"],
-    ["2502BAF0:25:-1:0","Shanty","Denizci Türküsü"],
-    ["2502BAF0:26:-1:0","Swordplay","Kılıç Kullanımı"],
-    ["2502BAF0:28:-1:0","Call","Çağrı"],
-    ["2502BAF0:29:-1:0","Quick","Hızlı"],
-    ["2502BAF0:30:-1:0","Wind","Rüzgâr"],
-    ["2502BAF0:31:-1:0","Focus Spender","Odak Tüketen"],
-    ["2502BAF0:33:-1:0","Harmful","Zarar Verici"],
-    ["2502BAF0:34:-1:0","Heavy","Ağır"],
-    ["2502BAF0:36:-1:0","Stealth","Gizlilik"],
-    ["2502BAF0:37:-1:0","Man Form","İnsan Biçimi"],
-    ["2502BAF0:38:-1:0","Fear","Korku"],
-    ["2502BAF0:39:-1:0","Acid","Asit"],
-    ["2502BAF0:40:-1:0","Shadow","Gölge"],
-    ["2502BAF0:41:-1:0","Balanced","Dengeli"]
-  ]
+    "groups":  [
+                   {
+                       "dids":  [
+                                    "25004705",
+                                    "2500C2DD",
+                                    "2502B769",
+                                    "2502B76A",
+                                    "2502B76B",
+                                    "2502B76C",
+                                    "2502B76D",
+                                    "2502B776",
+                                    "2502B777",
+                                    "2502B778",
+                                    "2502B779",
+                                    "25035C5C"
+                                ],
+                       "source":  "Penetrating Shot",
+                       "target":  "Delici Atış"
+                   },
+                   {
+                       "dids":  [
+                                    "25017889",
+                                    "2501EF5C",
+                                    "2501EF5E",
+                                    "2502040F",
+                                    "25020410",
+                                    "25020411",
+                                    "25020412",
+                                    "25027268",
+                                    "250281E8",
+                                    "25028277",
+                                    "250297F3",
+                                    "2502BB13",
+                                    "2502C124",
+                                    "25045FF9",
+                                    "250465CF"
+                                ],
+                       "source":  "Tactical Mitigation",
+                       "target":  "Taktiksel Hasar Azaltma"
+                   }
+               ],
+    "rows":  [
+                 [
+                     "25000023:154:-1:0",
+                     "Edit",
+                     "Düzenle"
+                 ],
+                 [
+                     "25002216:0:-1:0",
+                     "Barbed Fury",
+                     "Dikenli Öfke"
+                 ],
+                 [
+                     "250265BC:0:-1:0",
+                     "Barbed Fury",
+                     "Dikenli Öfke"
+                 ],
+                 [
+                     "250265BC:1:-1:0",
+                     "Increases damage over time.",
+                     "Zaman içinde verilen hasarı artırır."
+                 ],
+                 [
+                     "250265B6:0:-1:0",
+                     "Critical Eye",
+                     "Keskin Göz"
+                 ],
+                 [
+                     "250265B6:1:-1:0",
+                     "Practised Aim increases the chance that your attacks will land exactly where you intend.",
+                     "Pratik Nişan, saldırılarınızın hedeflediğiniz yere tam isabet etme şansını artırır."
+                 ],
+                 [
+                     "25011A3E:0:-1:0",
+                     "Critical Eye",
+                     "Keskin Göz"
+                 ],
+                 [
+                     "25011A3E:2:-1:0",
+                     "Achieve critical hits with your bow",
+                     "Yayınızla kritik vuruşlar yapın"
+                 ],
+                 [
+                     "25011A3E:3:-1:0",
+                     "Precision aim comes from training and knowledge of your foe. Know your enemy, know where to send your arrow to cause the greatest result, and be able to let fly with confidence and precision.",
+                     "Kesin nişan, eğitimden ve düşmanınızı tanımaktan gelir. Düşmanınızı tanıyın, en büyük etkiyi yaratmak için okunuzu nereye göndereceğinizi bilin ve güvenle, isabetle atış yapın."
+                 ],
+                 [
+                     "2503FBCA:0:-1:0",
+                     "Critical Eye",
+                     "Keskin Göz"
+                 ],
+                 [
+                     "2503FBCA:1:-1:0",
+                     "Burglars gain access to special actions after a successful critical or devastating strike. Gamblers gain access to special actions after successfully evading an attack.",
+                     "Hırsızlar başarılı bir kritik veya yıkıcı vuruştan sonra özel eylemlere erişir. Kumarbazlar bir saldırıdan başarıyla kaçtıktan sonra özel eylemlere erişir."
+                 ],
+                 [
+                     "25025E3B:0:-1:0",
+                     "Change Trait configurations?\\nAny unsaved trait data will be lost.",
+                     "Özellik yapılandırmaları değiştirilsin mi?\\nKaydedilmemiş özellik verileri kaybolacak."
+                 ],
+                 [
+                     "2502273B:51:-1:0",
+                     "Change Trait configurations?\\nAny unsaved trait data will be lost and if you are mounted on a war-steed you will be dismounted.",
+                     "Özellik yapılandırmaları değiştirilsin mi?\\nKaydedilmemiş özellik verileri kaybolacak; savaş bineğine biniyorsanız bineğinizden indirileceksiniz."
+                 ],
+                 [
+                     "25027719:9:-1:0",
+                     "Balance",
+                     "Bakiye"
+                 ],
+                 [
+                     "2502ECB2:10:-1:0",
+                     "Mounts Collected ",
+                     "Toplanan Binekler "
+                 ],
+                 [
+                     "2502ECB2:11:-1:0",
+                     "Emotes",
+                     "İfadeler"
+                 ],
+                 [
+                     "2502ECB2:23:-1:0",
+                     "Pets",
+                     "Evcil Hayvanlar"
+                 ],
+                 [
+                     "2502ECB2:30:-1:0",
+                     "Emotes Collected ",
+                     "Toplanan İfadeler "
+                 ],
+                 [
+                     "2502ECB2:35:-1:0",
+                     "Baubles",
+                     "Süsler"
+                 ],
+                 [
+                     "2502ECB2:43:-1:0",
+                     "Baubles Collected ",
+                     "Toplanan Süsler "
+                 ],
+                 [
+                     "2502ECB2:48:-1:0",
+                     "Birds",
+                     "Kuşlar"
+                 ],
+                 [
+                     "2502ECB2:50:-1:0",
+                     "Mounts",
+                     "Binekler"
+                 ],
+                 [
+                     "2502ECB2:51:-1:0",
+                     "Pets Collected ",
+                     "Toplanan Evcil Hayvanlar "
+                 ],
+                 [
+                     "2502ECB2:56:-1:0",
+                     "None earned",
+                     "Hiçbiri kazanılmadı"
+                 ],
+                 [
+                     "2502ECB2:62:-1:0",
+                     "Birds Discovered ",
+                     "Keşfedilen Kuşlar "
+                 ],
+                 [
+                     "2504049E:0:-1:0",
+                     "Pets",
+                     "Evcil Hayvanlar"
+                 ],
+                 [
+                     "25040E14:0:-1:0",
+                     "Pets",
+                     "Evcil Hayvanlar"
+                 ],
+                 [
+                     "2504293D:0:-1:0",
+                     "Pets",
+                     "Evcil Hayvanlar"
+                 ],
+                 [
+                     "250404A3:0:-1:0",
+                     "Mounts",
+                     "Binekler"
+                 ],
+                 [
+                     "250404A5:0:-1:0",
+                     "Mounts",
+                     "Binekler"
+                 ],
+                 [
+                     "25040E15:0:-1:0",
+                     "Mounts",
+                     "Binekler"
+                 ],
+                 [
+                     "2504293E:0:-1:0",
+                     "Mounts",
+                     "Binekler"
+                 ],
+                 [
+                     "250550D3:0:-1:0",
+                     "Mounts",
+                     "Binekler"
+                 ],
+                 [
+                     "2502EAD5:0:-1:0",
+                     "Emotes",
+                     "İfadeler"
+                 ],
+                 [
+                     "25030DFA:0:-1:0",
+                     "Emotes",
+                     "İfadeler"
+                 ],
+                 [
+                     "2503F761:0:-1:0",
+                     "Emotes",
+                     "İfadeler"
+                 ],
+                 [
+                     "25043E35:0:-1:0",
+                     "Emotes",
+                     "İfadeler"
+                 ],
+                 [
+                     "2502200E:0:-1:0",
+                     "Baubles",
+                     "Süsler"
+                 ],
+                 [
+                     "25004989:1:-1:0",
+                     "Birds",
+                     "Kuşlar"
+                 ],
+                 [
+                     "250047C1:1:-1:3",
+                     " of Bree-land",
+                     " (Bree Diyarlı)"
+                 ],
+                 [
+                     "250047C2:1:-1:3",
+                     " of Dale",
+                     " (Dale\u0027li)"
+                 ],
+                 [
+                     "250047C3:1:-1:3",
+                     " of Gondor",
+                     " (Gondor\u0027lu)"
+                 ],
+                 [
+                     "250047C4:1:-1:3",
+                     " of Rohan",
+                     " (Rohan\u0027lı)"
+                 ],
+                 [
+                     "250047C5:1:-1:3",
+                     " of the Fallohides",
+                     " (Fallohide Soyundan)"
+                 ],
+                 [
+                     "250047C6:1:-1:3",
+                     " of the Harfoots",
+                     " (Harfoot Soyundan)"
+                 ],
+                 [
+                     "250047C7:1:-1:3",
+                     " of the Stoors",
+                     " (Stoor Soyundan)"
+                 ],
+                 [
+                     "250047C8:1:-1:3",
+                     " of the Iron Hills",
+                     " (Demir Tepeleri\u0027nden)"
+                 ],
+                 [
+                     "250047C9:1:-1:3",
+                     " of the Lonely Mountain",
+                     " (Yalnız Dağ\u0027dan)"
+                 ],
+                 [
+                     "250047CA:1:-1:3",
+                     " of the Blue Mountains",
+                     " (Mavi Dağlar\u0027dan)"
+                 ],
+                 [
+                     "250047CB:1:-1:3",
+                     " of the Grey Mountains",
+                     " (Gri Dağlar\u0027dan)"
+                 ],
+                 [
+                     "250047CC:1:-1:3",
+                     " of the White Mountains",
+                     " (Beyaz Dağlar\u0027dan)"
+                 ],
+                 [
+                     "250047CD:1:-1:3",
+                     " of Lindon",
+                     " (Lindon\u0027lu)"
+                 ],
+                 [
+                     "250047CE:1:-1:3",
+                     " of Lórien",
+                     " (Lórien\u0027li)"
+                 ],
+                 [
+                     "250047CF:1:-1:3",
+                     " of Mirkwood",
+                     " (Kuyutormanlı)"
+                 ],
+                 [
+                     "250047D0:1:-1:3",
+                     " of Rivendell",
+                     " (Ayrıkvadili)"
+                 ],
+                 [
+                     "250047D1:1:-1:3",
+                     " of Edhellond",
+                     " (Edhellond\u0027lu)"
+                 ],
+                 [
+                     "250064CE:1:-1:3",
+                     " of the Quick Post",
+                     " (Hızlı Posta)"
+                 ],
+                 [
+                     "2502E714:1:-1:3",
+                     " of the Seven Stars",
+                     " (Yedi Yıldızın)"
+                 ],
+                 [
+                     "25030B16:1:-1:3",
+                     " of the Vales",
+                     " (Vadilerden)"
+                 ],
+                 [
+                     "25031D9B:1:-1:3",
+                     " of Elendilmir",
+                     " (Elendilmir\u0027li)"
+                 ],
+                 [
+                     "25031D9C:1:-1:3",
+                     " of Windfola",
+                     " (Windfola\u0027lı)"
+                 ],
+                 [
+                     "25031DA0:1:-1:3",
+                     " of Gilrain",
+                     " (Gilrain\u0027li)"
+                 ],
+                 [
+                     "25031DA2:1:-1:3",
+                     " of Sirannon",
+                     " (Sirannon\u0027lu)"
+                 ],
+                 [
+                     "25031DA3:1:-1:3",
+                     " of Withywindle",
+                     " (Withywindle\u0027lı)"
+                 ],
+                 [
+                     "25031DA4:1:-1:3",
+                     " of Gladden",
+                     " (Gladden\u0027lı)"
+                 ],
+                 [
+                     "25031DA5:1:-1:3",
+                     " of Vanyar",
+                     " (Vanyar\u0027lı)"
+                 ],
+                 [
+                     "25031DA9:1:-1:3",
+                     " of Landroval",
+                     " (Landroval\u0027lı)"
+                 ],
+                 [
+                     "25031DAB:1:-1:3",
+                     " of Imladris",
+                     " (Imladris\u0027li)"
+                 ],
+                 [
+                     "25031DAC:1:-1:3",
+                     " of Anduin",
+                     " (Anduin\u0027li)"
+                 ],
+                 [
+                     "25031DAE:1:-1:3",
+                     " of Vilya",
+                     " (Vilya\u0027lı)"
+                 ],
+                 [
+                     "25031DB0:1:-1:3",
+                     " of Gwaihir",
+                     " (Gwaihir\u0027li)"
+                 ],
+                 [
+                     "25031DB1:1:-1:3",
+                     " of Laurelin",
+                     " (Laurelin\u0027li)"
+                 ],
+                 [
+                     "25031DB3:1:-1:3",
+                     " of Crickhollow",
+                     " (Crickhollow\u0027lu)"
+                 ],
+                 [
+                     "25031DB6:1:-1:3",
+                     " of Snowbourn",
+                     " (Snowbourn\u0027lu)"
+                 ],
+                 [
+                     "25031DB7:1:-1:3",
+                     " of Silverlode",
+                     " (Silverlode\u0027lu)"
+                 ],
+                 [
+                     "25031DB8:1:-1:3",
+                     " of Eldar",
+                     " (Eldar\u0027lı)"
+                 ],
+                 [
+                     "25031DB9:1:-1:3",
+                     " of Maiar",
+                     " (Maiar\u0027lı)"
+                 ],
+                 [
+                     "25031DBB:1:-1:3",
+                     " of Nimrodel",
+                     " (Nimrodel\u0027li)"
+                 ],
+                 [
+                     "25031DBC:1:-1:3",
+                     " of Arkenstone",
+                     " (Arkenstone\u0027lu)"
+                 ],
+                 [
+                     "25031DBE:1:-1:3",
+                     " of Brandywine",
+                     " (Brandywine\u0027lı)"
+                 ],
+                 [
+                     "25031DBF:1:-1:3",
+                     " of Riddermark",
+                     " (Riddermark\u0027lı)"
+                 ],
+                 [
+                     "25031DC1:1:-1:3",
+                     " of Firefoot",
+                     " (Firefoot\u0027lu)"
+                 ],
+                 [
+                     "25031DC3:1:-1:3",
+                     " of Estel",
+                     " (Estel\u0027li)"
+                 ],
+                 [
+                     "25031DC7:1:-1:3",
+                     " of Meneldor",
+                     " (Meneldor\u0027lu)"
+                 ],
+                 [
+                     "25031DCA:1:-1:3",
+                     " of Belegaer",
+                     " (Belegaer\u0027li)"
+                 ],
+                 [
+                     "25031DCC:1:-1:3",
+                     " of Dwarrowdelf",
+                     " (Dwarrowdelf\u0027li)"
+                 ],
+                 [
+                     "25031DD0:1:-1:3",
+                     " of Evernight",
+                     " (Evernight\u0027li)"
+                 ],
+                 [
+                     "25031DD4:1:-1:3",
+                     " of Morthond",
+                     " (Morthond\u0027lu)"
+                 ],
+                 [
+                     "250321C2:1:-1:3",
+                     " of Aglarond",
+                     " (Aglarond\u0027lu)"
+                 ],
+                 [
+                     "250321CC:1:-1:3",
+                     " of Fornost",
+                     " (Fornost\u0027lu)"
+                 ],
+                 [
+                     "250321CD:1:-1:3",
+                     " of Mirkwood",
+                     " (Kuyutormanlı)"
+                 ],
+                 [
+                     "25039DDB:1:-1:3",
+                     " of Beleriand",
+                     " (Beleriand\u0027lı)"
+                 ],
+                 [
+                     "2503B6C0:1:-1:3",
+                     " of Ossiriand",
+                     " (Ossiriand\u0027lı)"
+                 ],
+                 [
+                     "2503B6C2:1:-1:3",
+                     " of Nargothrond",
+                     " (Nargothrond\u0027lu)"
+                 ],
+                 [
+                     "2503B6C3:1:-1:3",
+                     " of Imladris",
+                     " (Imladris\u0027li)"
+                 ],
+                 [
+                     "2504087C:1:-1:3",
+                     " of Mordor",
+                     " (Mordor\u0027lu)"
+                 ],
+                 [
+                     "2504E9AF:1:-1:3",
+                     " of Misthallow",
+                     " (Misthallow\u0027lu)"
+                 ],
+                 [
+                     "25054448:1:-1:3",
+                     " of Harad",
+                     " (Harad\u0027lı)"
+                 ],
+                 [
+                     "25054449:1:-1:3",
+                     " of Umbar",
+                     " (Umbar\u0027lı)"
+                 ],
+                 [
+                     "2505444A:1:-1:3",
+                     " of Rhûn",
+                     " (Rhûn\u0027lu)"
+                 ],
+                 [
+                     "2504ECD8:1:-1:3",
+                     " of the Outlands",
+                     " (Dış Diyarlardan)"
+                 ],
+                 [
+                     "25057DB9:1:-1:3",
+                     " of the Waves and Wind",
+                     " (Dalgalar ve Rüzgârın)"
+                 ],
+                 [
+                     "25000023:19:-1:0",
+                     "Mitigations",
+                     "Hasar Azaltımları"
+                 ],
+                 [
+                     "25000023:29:-1:0",
+                     "Tactical",
+                     "Taktiksel"
+                 ],
+                 [
+                     "25000023:58:-1:0",
+                     "Tactical",
+                     "Taktiksel"
+                 ],
+                 [
+                     "25000023:66:-1:0",
+                     "Tactical",
+                     "Taktiksel"
+                 ],
+                 [
+                     "25000023:129:-1:0",
+                     "Incoming Healing",
+                     "Alınan İyileştirme"
+                 ],
+                 [
+                     "25000023:150:-1:0",
+                     "Block",
+                     "Blok"
+                 ],
+                 [
+                     "25000023:207:-1:0",
+                     "Incoming Healing",
+                     "Alınan İyileştirme"
+                 ],
+                 [
+                     "25000023:211:-1:0",
+                     "Tactical",
+                     "Taktiksel"
+                 ],
+                 [
+                     "25000023:244:-1:0",
+                     "Block",
+                     "Blok"
+                 ],
+                 [
+                     "25000023:258:-1:0",
+                     "Tactical",
+                     "Taktiksel"
+                 ],
+                 [
+                     "25000023:259:-1:0",
+                     "Tactical",
+                     "Taktiksel"
+                 ],
+                 [
+                     "25000023:268:-1:0",
+                     "Tactical",
+                     "Taktiksel"
+                 ],
+                 [
+                     "25000023:292:-1:0",
+                     "Tactical",
+                     "Taktiksel"
+                 ],
+                 [
+                     "25000003:17:-1:0",
+                     "Finger",
+                     "Parmak"
+                 ],
+                 [
+                     "2500001D:46:-1:0",
+                     "Durability",
+                     "Dayanıklılık"
+                 ],
+                 [
+                     "25004705:1:-1:0",
+                     "A damaging shot that pierces enemy mitigations.",
+                     "Düşmanın hasar azaltımını delerek hasar veren bir atış."
+                 ],
+                 [
+                     "25004706:0:-1:0",
+                     "Penetrating Shot: Pierce the Darkness",
+                     "Delici Atış: Karanlığı Del"
+                 ],
+                 [
+                     "25004706:1:-1:0",
+                     "A damaging shot that pierces enemy mitigations.\\n\\nArrows inflict Light damage.",
+                     "Düşmanın hasar azaltımını delerek hasar veren bir atış.\\n\\nOklar Işık hasarı verir."
+                 ],
+                 [
+                     "25004707:0:-1:0",
+                     "Penetrating Shot: Burn Through",
+                     "Delici Atış: Yakıp Geç"
+                 ],
+                 [
+                     "25004707:1:-1:0",
+                     "A damaging shot that pierces enemy mitigations.\\n\\nArrows inflict fire damage.",
+                     "Düşmanın hasar azaltımını delerek hasar veren bir atış.\\n\\nOklar Ateş hasarı verir."
+                 ],
+                 [
+                     "2502BAF0:0:-1:0",
+                     "Builder",
+                     "Biriktirici"
+                 ],
+                 [
+                     "2502BAF0:1:-1:0",
+                     "Stance",
+                     "Duruş"
+                 ],
+                 [
+                     "2502BAF0:2:-1:0",
+                     "Captain Heal",
+                     "Kaptan İyileştirmesi"
+                 ],
+                 [
+                     "2502BAF0:3:-1:0",
+                     "Buff",
+                     "Güçlendirme"
+                 ],
+                 [
+                     "2502BAF0:4:-1:0",
+                     "Fist",
+                     "Yumruk"
+                 ],
+                 [
+                     "2502BAF0:5:-1:0",
+                     "Bear Form",
+                     "Ayı Biçimi"
+                 ],
+                 [
+                     "2502BAF0:6:-1:0",
+                     "Critical Hit Chain",
+                     "Kritik Vuruş Zinciri"
+                 ],
+                 [
+                     "2502BAF0:7:-1:0",
+                     "Fire",
+                     "Ateş"
+                 ],
+                 [
+                     "2502BAF0:8:-1:0",
+                     "Awareness",
+                     "Farkındalık"
+                 ],
+                 [
+                     "2502BAF0:9:-1:0",
+                     "Lightning",
+                     "Yıldırım"
+                 ],
+                 [
+                     "2502BAF0:10:-1:0",
+                     "Stun",
+                     "Sersemletme"
+                 ],
+                 [
+                     "2502BAF0:12:-1:0",
+                     "Haversack",
+                     "Heybe"
+                 ],
+                 [
+                     "2502BAF0:13:-1:0",
+                     "Heal",
+                     "İyileştirme"
+                 ],
+                 [
+                     "2502BAF0:14:-1:0",
+                     "Morale-tap",
+                     "Moral Emme"
+                 ],
+                 [
+                     "2502BAF0:15:-1:0",
+                     "Finisher",
+                     "Bitirici"
+                 ],
+                 [
+                     "2502BAF0:16:-1:0",
+                     "Blade",
+                     "Bıçak"
+                 ],
+                 [
+                     "2502BAF0:17:-1:0",
+                     "Cry",
+                     "Nara"
+                 ],
+                 [
+                     "2502BAF0:18:-1:0",
+                     "Strike",
+                     "Vuruş"
+                 ],
+                 [
+                     "2502BAF0:19:-1:0",
+                     "Any Form",
+                     "Herhangi Bir Biçim"
+                 ],
+                 [
+                     "2502BAF0:20:-1:0",
+                     "Debuff",
+                     "Zayıflatma"
+                 ],
+                 [
+                     "2502BAF0:23:-1:0",
+                     "Set-Up",
+                     "Hazırlık"
+                 ],
+                 [
+                     "2502BAF0:24:-1:0",
+                     "Frost",
+                     "Soğuk"
+                 ],
+                 [
+                     "2502BAF0:25:-1:0",
+                     "Shanty",
+                     "Denizci Türküsü"
+                 ],
+                 [
+                     "2502BAF0:26:-1:0",
+                     "Swordplay",
+                     "Kılıç Kullanımı"
+                 ],
+                 [
+                     "2502BAF0:28:-1:0",
+                     "Call",
+                     "Çağrı"
+                 ],
+                 [
+                     "2502BAF0:29:-1:0",
+                     "Quick",
+                     "Hızlı"
+                 ],
+                 [
+                     "2502BAF0:30:-1:0",
+                     "Wind",
+                     "Rüzgâr"
+                 ],
+                 [
+                     "2502BAF0:31:-1:0",
+                     "Focus Spender",
+                     "Odak Tüketen"
+                 ],
+                 [
+                     "2502BAF0:33:-1:0",
+                     "Harmful",
+                     "Zarar Verici"
+                 ],
+                 [
+                     "2502BAF0:34:-1:0",
+                     "Heavy",
+                     "Ağır"
+                 ],
+                 [
+                     "2502BAF0:36:-1:0",
+                     "Stealth",
+                     "Gizlilik"
+                 ],
+                 [
+                     "2502BAF0:37:-1:0",
+                     "Man Form",
+                     "İnsan Biçimi"
+                 ],
+                 [
+                     "2502BAF0:38:-1:0",
+                     "Fear",
+                     "Korku"
+                 ],
+                 [
+                     "2502BAF0:39:-1:0",
+                     "Acid",
+                     "Asit"
+                 ],
+                 [
+                     "2502BAF0:40:-1:0",
+                     "Shadow",
+                     "Gölge"
+                 ],
+                 [
+                     "2502BAF0:41:-1:0",
+                     "Balanced",
+                     "Dengeli"
+                 ],
+                 [
+                     "2502E759:0:-1:0",
+                     "Black Huorn with Honeycomb",
+                     "Petekli Kara Huorn"
+                 ],
+                 [
+                     "2502E75A:0:-1:0",
+                     "Fangorn Huorn",
+                     "Fangorn Huornu"
+                 ],
+                 [
+                     "2502E75B:0:-1:0",
+                     "Snowy Fangorn Huorn",
+                     "Karlı Fangorn Huornu"
+                 ],
+                 [
+                     "2502EABB:0:-1:0",
+                     "White Chicken[e]",
+                     "Beyaz Tavuk[e]"
+                 ],
+                 [
+                     "2502EABE:0:-1:0",
+                     "Dorking Chicken[e]",
+                     "Dorking Tavuk[e]"
+                 ],
+                 [
+                     "2502EABF:0:-1:0",
+                     "Red Chicken[e]",
+                     "Kırmızı Tavuk[e]"
+                 ],
+                 [
+                     "2502EAC2:0:-1:0",
+                     "Scrapper Chicken[e]",
+                     "Çöpçü Tavuk[e]"
+                 ],
+                 [
+                     "2502EAC4:0:-1:0",
+                     "Orange Wyandotte Chicken[e]",
+                     "Turuncu Wyandotte Tavuk[e]"
+                 ],
+                 [
+                     "2502EAC5:0:-1:0",
+                     "Black-foot Chicken[e]",
+                     "Kara Ayaklı Tavuk[e]"
+                 ],
+                 [
+                     "2502EBEA:0:-1:0",
+                     "Plain Shrew[e]",
+                     "Düz Sivrifare[e]"
+                 ],
+                 [
+                     "2502EBEE:0:-1:0",
+                     "Spotted Shrew[e]",
+                     "Benekli Sivrifare[e]"
+                 ],
+                 [
+                     "2502EBEF:0:-1:0",
+                     "Dusty Shrew[e]",
+                     "Tozlu Sivrifare[e]"
+                 ],
+                 [
+                     "2502EBF0:0:-1:0",
+                     "Large Shrew[e]",
+                     "Büyük Sivrifare[e]"
+                 ],
+                 [
+                     "2502F696:0:-1:0",
+                     "White Swan[e]",
+                     "Beyaz Kuğu[e]"
+                 ],
+                 [
+                     "2502F697:0:-1:0",
+                     "Black Swan[e]",
+                     "Kara Kuğu[e]"
+                 ],
+                 [
+                     "2502F9C1:0:-1:0",
+                     "Little Tundra Cub[e]",
+                     "Küçük Tundra Yavru[e]"
+                 ],
+                 [
+                     "2502F9C2:0:-1:0",
+                     "Spirit Bear[e]",
+                     "Ruh Ayı[e]"
+                 ],
+                 [
+                     "2502FA33:0:-1:0",
+                     "Night Swan",
+                     "Gece Kuğu"
+                 ],
+                 [
+                     "2502FC64:0:-1:0",
+                     "Treasure-seeking Cave-claw[e]",
+                     "Hazine Arayan Mağara Pençesi[e]"
+                 ],
+                 [
+                     "2502FE41:0:-1:0",
+                     "Black-beak Cave-claw[e]",
+                     "Kara Gagalı Mağara Pençesi[e]"
+                 ],
+                 [
+                     "2502FE48:0:-1:0",
+                     "Tan-back Cave-claw[e]",
+                     "Taba Sırtlı Mağara Pençesi[e]"
+                 ],
+                 [
+                     "2502FE4B:0:-1:0",
+                     "Pink-beak Cave-claw[e]",
+                     "Pembe Gagalı Mağara Pençesi[e]"
+                 ],
+                 [
+                     "2502FE50:0:-1:0",
+                     "Green-beak Cave-claw[e]",
+                     "Yeşil Gagalı Mağara Pençesi[e]"
+                 ],
+                 [
+                     "2502FE54:0:-1:0",
+                     "Green-back Cave-claw[e]",
+                     "Yeşil Sırtlı Mağara Pençesi[e]"
+                 ],
+                 [
+                     "250301F9:0:-1:0",
+                     "Frog",
+                     "Kurbağa"
+                 ],
+                 [
+                     "250301FC:0:-1:0",
+                     "Fog Frog",
+                     "Sis Kurbağası"
+                 ],
+                 [
+                     "250301FE:0:-1:0",
+                     "Pond Frog",
+                     "Gölet Kurbağası"
+                 ],
+                 [
+                     "250301FF:0:-1:0",
+                     "Copper-back Frog",
+                     "Bakır Sırtlı Kurbağa"
+                 ],
+                 [
+                     "25030207:0:-1:0",
+                     "Marsh Frog",
+                     "Bataklık Kurbağa"
+                 ],
+                 [
+                     "2503021A:0:-1:0",
+                     "Well-travelled Turtle",
+                     "Çok Gezmiş Kaplumbağa"
+                 ],
+                 [
+                     "250302FA:0:-1:0",
+                     "Shadow Grim",
+                     "Gölge Kasvetlisi"
+                 ],
+                 [
+                     "250302FB:0:-1:0",
+                     "Grim",
+                     "Kasvetli Yoldaş"
+                 ],
+                 [
+                     "250302FC:0:-1:0",
+                     "Fire Grim",
+                     "Ateş Kasvetlisi"
+                 ],
+                 [
+                     "25030AAD:0:-1:0",
+                     "Aurochs Calf",
+                     "Yaban Sığırı Buzağısı"
+                 ],
+                 [
+                     "25030AAE:0:-1:0",
+                     "Sand-flies",
+                     "Kum Sinekleri"
+                 ],
+                 [
+                     "25030AB0:0:-1:0",
+                     "Stowaway Rat",
+                     "Kaçak Sıçan"
+                 ],
+                 [
+                     "25031838:0:-1:0",
+                     "Brown Sheep",
+                     "Kahverengi Koyun"
+                 ],
+                 [
+                     "25031839:0:-1:0",
+                     "Tan Sheep",
+                     "Taba Koyun"
+                 ],
+                 [
+                     "2503183A:0:-1:0",
+                     "Brown Rabbit",
+                     "Kahverengi Tavşan"
+                 ],
+                 [
+                     "2503183B:0:-1:0",
+                     "Sleek Fox",
+                     "Zarif Tilki"
+                 ],
+                 [
+                     "2503183C:0:-1:0",
+                     "Very Fancy Cat",
+                     "Çok Şık Kedi"
+                 ],
+                 [
+                     "2503183D:0:-1:0",
+                     "Brown Fox",
+                     "Kahverengi Tilki"
+                 ],
+                 [
+                     "2503183E:0:-1:0",
+                     "Brown Squirrel",
+                     "Kahverengi Sincap"
+                 ],
+                 [
+                     "2503184B:0:-1:0",
+                     "Pinto Rabbit",
+                     "Alaca Tavşan"
+                 ],
+                 [
+                     "2503184C:0:-1:0",
+                     "Ginger Cat",
+                     "Zencefil Kedi"
+                 ],
+                 [
+                     "25031E79:0:-1:0",
+                     "Red Beetle",
+                     "Kırmızı Böcek"
+                 ],
+                 [
+                     "25031E7A:0:-1:0",
+                     "Umber Goat",
+                     "Esmer Keçi"
+                 ],
+                 [
+                     "25031E7B:0:-1:0",
+                     "Light Brown Goat",
+                     "Açık Kahverengi Keçi"
+                 ],
+                 [
+                     "25032683:0:-1:0",
+                     "Rat-catcher Cat",
+                     "Fare Avcısı Kedi"
+                 ],
+                 [
+                     "2503276E:0:-1:0",
+                     "Striped Pelennor Pig",
+                     "Çizgili Pelennor Domuz"
+                 ],
+                 [
+                     "250328AF:0:-1:0",
+                     "White Squirrel",
+                     "Beyaz Sincap"
+                 ],
+                 [
+                     "250328B0:0:-1:0",
+                     "Blue Beetle",
+                     "Mavi Böcek"
+                 ],
+                 [
+                     "250328B1:0:-1:0",
+                     "Brown Snake",
+                     "Kahverengi Yılan"
+                 ],
+                 [
+                     "250329BE:0:-1:0",
+                     "Green Beetle",
+                     "Yeşil Böcek"
+                 ],
+                 [
+                     "250329C4:0:-1:0",
+                     "Blue Lizard",
+                     "Mavi Kertenkele"
+                 ],
+                 [
+                     "25032B26:0:-1:0",
+                     "Ice Salamander",
+                     "Buz Semenderi"
+                 ],
+                 [
+                     "25032B27:0:-1:0",
+                     "Red Eagle",
+                     "Kırmızı Kartal"
+                 ],
+                 [
+                     "25032B29:0:-1:0",
+                     "Tanglemane",
+                     "Düğülyele"
+                 ],
+                 [
+                     "25033302:0:-1:0",
+                     "Willem Whisker",
+                     "Willem Bıyık"
+                 ],
+                 [
+                     "25033303:0:-1:0",
+                     "Willem\u0027s Cub",
+                     "Willem\u0027in Yavrusu"
+                 ],
+                 [
+                     "25033304:0:-1:0",
+                     "Old Rattlepacks",
+                     "Eski Gürültü Sürüsü"
+                 ],
+                 [
+                     "25033305:0:-1:0",
+                     "Miniature Grodbog Warrior",
+                     "Minyatür Grodbog Savaşçısı"
+                 ],
+                 [
+                     "25033306:0:-1:0",
+                     "Rohirric Follower",
+                     "Rohir Yoldaşı"
+                 ],
+                 [
+                     "25033307:0:-1:0",
+                     "Distant Cousin",
+                     "Uzak Kuzen"
+                 ],
+                 [
+                     "25033308:0:-1:0",
+                     "Skittish Black Horse",
+                     "Ürkek Kara At"
+                 ],
+                 [
+                     "25033A0D:0:-1:0",
+                     "Swan-knight Rider",
+                     "Kuğu Şövalyesi Binicisi"
+                 ],
+                 [
+                     "25033A0E:0:-1:0",
+                     "Loyal Swan-knight",
+                     "Sadık Kuğu Şövalyesi"
+                 ],
+                 [
+                     "25033A10:0:-1:0",
+                     "Tamed Variag Hound",
+                     "Evcilleştirilmiş Variag Tazısı"
+                 ],
+                 [
+                     "25033A12:0:-1:0",
+                     "Sunny Summer Kite",
+                     "Güneşli Yaz Uçurtması"
+                 ],
+                 [
+                     "25033A15:0:-1:0",
+                     "Shobdo the Little Mûmak",
+                     "Küçük Mûmak Shobdo"
+                 ],
+                 [
+                     "25033A16:0:-1:0",
+                     "Little Mûmak",
+                     "Küçük Mûmak"
+                 ],
+                 [
+                     "25033AE6:0:-1:0",
+                     "Soaring Bird Kite",
+                     "Süzülen Kuş Uçurtması"
+                 ],
+                 [
+                     "2503464B:0:-1:0",
+                     "Stripey Bat",
+                     "Çizgili Yarasa"
+                 ],
+                 [
+                     "2503464D:0:-1:0",
+                     "Tattered Bat",
+                     "Yırtık Yarasa"
+                 ],
+                 [
+                     "2503464E:0:-1:0",
+                     "Blood-red Bat",
+                     "Kan Kırmızısı Yarasa"
+                 ],
+                 [
+                     "25034650:0:-1:0",
+                     "Black Bat",
+                     "Kara Yarasa"
+                 ],
+                 [
+                     "25034652:0:-1:0",
+                     "Brown Bat",
+                     "Kahverengi Yarasa"
+                 ],
+                 [
+                     "25034655:0:-1:0",
+                     "Flying Fox",
+                     "Uçan Tilki"
+                 ],
+                 [
+                     "25034656:0:-1:0",
+                     "Tan Bat",
+                     "Taba Yarasa"
+                 ],
+                 [
+                     "25034657:0:-1:0",
+                     "Injured Bat",
+                     "Yaralı Yarasa"
+                 ],
+                 [
+                     "25034659:0:-1:0",
+                     "Golden Bat",
+                     "Altın Yarasa"
+                 ],
+                 [
+                     "25034664:0:-1:0",
+                     "Red Fox",
+                     "Kırmızı Tilki"
+                 ],
+                 [
+                     "25034666:0:-1:0",
+                     "Red Squirrel",
+                     "Kırmızı Sincap"
+                 ],
+                 [
+                     "2503940E:0:-1:0",
+                     "Trout Kite",
+                     "Alabalık Uçurtması"
+                 ],
+                 [
+                     "25039436:0:-1:0",
+                     "Sky of a Perfect Day Kite",
+                     "Mükemmel Günün Gökyüzü Uçurtması"
+                 ],
+                 [
+                     "25039437:0:-1:0",
+                     "Midsummer\u0027s Comet Kite",
+                     "Yaz Ortası Kuyruklu Yıldızı Uçurtması"
+                 ],
+                 [
+                     "25039461:0:-1:0",
+                     "Summer Flower Kite",
+                     "Yaz Çiçeği Uçurtması"
+                 ],
+                 [
+                     "25039462:0:-1:0",
+                     "Rohirric Follower",
+                     "Rohir Yoldaşı"
+                 ],
+                 [
+                     "25039762:0:-1:0",
+                     "Kite of the Sickle",
+                     "Orak Uçurtması"
+                 ],
+                 [
+                     "25039763:0:-1:0",
+                     "Hallows-eve Kite",
+                     "Ölüler Gecesi Uçurtması"
+                 ],
+                 [
+                     "25039764:0:-1:0",
+                     "Storm-wing Kite",
+                     "Fırtına Kanadı Uçurtması"
+                 ],
+                 [
+                     "25039765:0:-1:0",
+                     "Wildfowl Kite",
+                     "Yaban Kuşu Uçurtması"
+                 ],
+                 [
+                     "25039766:0:-1:0",
+                     "Black-wing Kite",
+                     "Kara Kanatlı Uçurtma"
+                 ],
+                 [
+                     "25039767:0:-1:0",
+                     "Gloaming Kite",
+                     "Alacakaranlık Uçurtma"
+                 ],
+                 [
+                     "25039768:0:-1:0",
+                     "Leaf-fall Kite",
+                     "Yaprak Dökümü Uçurtması"
+                 ],
+                 [
+                     "25039769:0:-1:0",
+                     "Maple Kite",
+                     "Akçaağaç Uçurtma"
+                 ],
+                 [
+                     "2503976A:0:-1:0",
+                     "Dusk-wing Kite",
+                     "Alacakaranlık Kanadı Uçurtma"
+                 ],
+                 [
+                     "2503976B:0:-1:0",
+                     "Oaken Kite",
+                     "Meşe Uçurtma"
+                 ],
+                 [
+                     "2503977A:0:-1:0",
+                     "Ithilien Fox",
+                     "Ithilien Tilki"
+                 ],
+                 [
+                     "25039F58:0:-1:0",
+                     "Winter\u0027s Flower",
+                     "Kış Çiçeği"
+                 ],
+                 [
+                     "25039F5B:0:-1:0",
+                     "Frosty Kite",
+                     "Buzlu Uçurtma"
+                 ],
+                 [
+                     "25039F5D:0:-1:0",
+                     "Winter\u0027s Wind",
+                     "Kış Rüzgârı"
+                 ],
+                 [
+                     "25039F5E:0:-1:0",
+                     "Winter Dove Kite",
+                     "Kış Kumrusu Uçurtması"
+                 ],
+                 [
+                     "2503A423:0:-1:0",
+                     "Helpful Hound",
+                     "Yardımsever Tazı"
+                 ],
+                 [
+                     "2503A424:0:-1:0",
+                     "Well-supplied Hound",
+                     "İyi Donanımlı Tazı"
+                 ],
+                 [
+                     "2503A54A:0:-1:0",
+                     "Faroth",
+                     "Faroth Yoldaşı"
+                 ],
+                 [
+                     "2503A562:0:-1:0",
+                     "Bumblebee Kite",
+                     "Bombus Arısı Uçurtması"
+                 ],
+                 [
+                     "2503A563:0:-1:0",
+                     "Silver Dragon Kite",
+                     "Gümüş Ejderha Uçurtması"
+                 ],
+                 [
+                     "2503A569:0:-1:0",
+                     "Midnight Dragon Kite",
+                     "Geceyarısı Ejderhası Uçurtması"
+                 ],
+                 [
+                     "2503A56B:0:-1:0",
+                     "Moth Kite",
+                     "Güve Uçurtması"
+                 ],
+                 [
+                     "2503A574:0:-1:0",
+                     "Floral Kite",
+                     "Çiçekli Uçurtma"
+                 ],
+                 [
+                     "2503A575:0:-1:0",
+                     "Crimson Dragon Kite",
+                     "Kızıl Ejderha Uçurtması"
+                 ],
+                 [
+                     "2503A578:0:-1:0",
+                     "Golden Dragon Kite",
+                     "Altın Ejderha Uçurtması"
+                 ],
+                 [
+                     "2503B78C:0:-1:0",
+                     "Sunflower Kite",
+                     "Ayçiçeği Uçurtması"
+                 ],
+                 [
+                     "2503B799:0:-1:0",
+                     "Noble Eagle Kite",
+                     "Asil Kartal Uçurtması"
+                 ],
+                 [
+                     "2503B79E:0:-1:0",
+                     "Hopeful Swan Kite",
+                     "Umutlu Kuğu Uçurtması"
+                 ],
+                 [
+                     "2503C62C:0:-1:0",
+                     "Beer-loving Badgers Kite",
+                     "Bira Seven Porsuklar Uçurtması"
+                 ],
+                 [
+                     "2503C62D:0:-1:0",
+                     "Harvest Revelry Kite",
+                     "Hasat Şenliği Uçurtması"
+                 ],
+                 [
+                     "2503C62E:0:-1:0",
+                     "Golden Grain Kite",
+                     "Altın Tahıl Uçurtması"
+                 ],
+                 [
+                     "2503CAB5:0:-1:0",
+                     "Thicket Mole-rat",
+                     "Çalılık Köstebek Faresi"
+                 ],
+                 [
+                     "2503CAB6:0:-1:0",
+                     "Blight Frog",
+                     "Veba Kurbağa"
+                 ],
+                 [
+                     "2503CAB7:0:-1:0",
+                     "Lhingris Crawler",
+                     "Lhingris Sürüngeni"
+                 ],
+                 [
+                     "2503CAB8:0:-1:0",
+                     "Lhingris Wormling",
+                     "Lhingris Solucancığı"
+                 ],
+                 [
+                     "2503CAB9:0:-1:0",
+                     "Agarnaith Wormling",
+                     "Agarnaith Solucancığı"
+                 ],
+                 [
+                     "2503CABA:0:-1:0",
+                     "Agarnaith Crawler",
+                     "Agarnaith Sürüngeni"
+                 ],
+                 [
+                     "2503CABB:0:-1:0",
+                     "Plateau Mole-rat",
+                     "Yayla Köstebek Faresi"
+                 ],
+                 [
+                     "2503CABC:0:-1:0",
+                     "Gorgoroth Crawler",
+                     "Gorgoroth Sürüngeni"
+                 ],
+                 [
+                     "2503CABD:0:-1:0",
+                     "Ash Frog",
+                     "Kül Kurbağa"
+                 ],
+                 [
+                     "2503CABE:0:-1:0",
+                     "Toxic Frogling",
+                     "Zehirli Kurbağacık"
+                 ],
+                 [
+                     "2503CAC0:0:-1:0",
+                     "Striped Snake",
+                     "Çizgili Yılan"
+                 ],
+                 [
+                     "2503CAC2:0:-1:0",
+                     "Mordor Snake",
+                     "Mordor Yılan"
+                 ],
+                 [
+                     "2503CAC4:0:-1:0",
+                     "Yellow Snake",
+                     "Sarı Yılan"
+                 ],
+                 [
+                     "2503CACA:0:-1:0",
+                     "Banded Snake",
+                     "Şeritli Yılan"
+                 ],
+                 [
+                     "2503CAD0:0:-1:0",
+                     "Red Snake",
+                     "Kırmızı Yılan"
+                 ],
+                 [
+                     "2503CAD3:0:-1:0",
+                     "Diamondback Snake",
+                     "Elmas Sırtlı Yılan"
+                 ],
+                 [
+                     "2503CAD4:0:-1:0",
+                     "Agarnaith Snake",
+                     "Agarnaith Yılan"
+                 ],
+                 [
+                     "2503CC97:0:-1:0",
+                     "Gourd-lurker",
+                     "Kabak Pusucusu"
+                 ],
+                 [
+                     "2503CC9B:0:-1:0",
+                     "Lantern Gourd-lurker",
+                     "Fener Kabak Pusucusu"
+                 ],
+                 [
+                     "2503CF19:0:-1:0",
+                     "Snow Owl",
+                     "Kar Baykuşu"
+                 ],
+                 [
+                     "2503CF1A:0:-1:0",
+                     "White Hare",
+                     "Beyaz Yaban Tavşanı"
+                 ],
+                 [
+                     "2503D7DB:0:-1:0",
+                     "Thrush",
+                     "Ardıç Kuşu"
+                 ],
+                 [
+                     "2503D7DC:0:-1:0",
+                     "Smaug Kite",
+                     "Smaug Uçurtması"
+                 ],
+                 [
+                     "2503D7DD:0:-1:0",
+                     "Lasgalen Grey Owl",
+                     "Lasgalen Gri Baykuşu"
+                 ],
+                 [
+                     "2503D7DE:0:-1:0",
+                     "Dale Calf",
+                     "Dale Buzağısı"
+                 ],
+                 [
+                     "2503D9EE:0:-1:0",
+                     "Spring Pheasant - Female",
+                     "İlkbahar Sülün Dişi"
+                 ],
+                 [
+                     "2503D9EF:0:-1:0",
+                     "Hedgehog",
+                     "Kirpi"
+                 ],
+                 [
+                     "2503D9F0:0:-1:0",
+                     "Spring Pheasant - Male",
+                     "İlkbahar Sülün Erkek"
+                 ],
+                 [
+                     "2503DC2A:0:-1:0",
+                     "Eager Beaver",
+                     "Hevesli Kunduz"
+                 ],
+                 [
+                     "2503DC32:0:-1:0",
+                     "Beaver",
+                     "Kunduz"
+                 ],
+                 [
+                     "2503DC4E:0:-1:0",
+                     "Russet Hedgehog",
+                     "Kızıl Kahverengi Kirpi"
+                 ],
+                 [
+                     "2503DD94:0:-1:0",
+                     "White Peahen",
+                     "Beyaz Dişi Tavuskuşu"
+                 ],
+                 [
+                     "2503DD95:0:-1:0",
+                     "Silver Goat Kid",
+                     "Gümüş Keçi Oğlak"
+                 ],
+                 [
+                     "2503DD96:0:-1:0",
+                     "White Peacock",
+                     "Beyaz Tavuskuşu"
+                 ],
+                 [
+                     "2503DD97:0:-1:0",
+                     "Black Peahen",
+                     "Kara Dişi Tavuskuşu"
+                 ],
+                 [
+                     "2503DD98:0:-1:0",
+                     "Blue Peacock",
+                     "Mavi Tavuskuşu"
+                 ],
+                 [
+                     "2503DD99:0:-1:0",
+                     "Toffee Goat Kid",
+                     "Karamel Keçi Oğlak"
+                 ],
+                 [
+                     "2503DD9A:0:-1:0",
+                     "Green Peahen",
+                     "Yeşil Dişi Tavuskuşu"
+                 ],
+                 [
+                     "2503DD9B:0:-1:0",
+                     "Mottled Goat Kid",
+                     "Alacalı Keçi Oğlak"
+                 ],
+                 [
+                     "2503DD9C:0:-1:0",
+                     "Green Peacock",
+                     "Yeşil Tavuskuşu"
+                 ],
+                 [
+                     "2503DD9D:0:-1:0",
+                     "Big Kid",
+                     "Büyük Oğlak"
+                 ],
+                 [
+                     "2503DD9E:0:-1:0",
+                     "Black Peacock",
+                     "Kara Tavuskuşu"
+                 ],
+                 [
+                     "2503DD9F:0:-1:0",
+                     "Blue Peahen",
+                     "Mavi Dişi Tavuskuşu"
+                 ],
+                 [
+                     "2503DDA0:0:-1:0",
+                     "Teacup Goat Kid",
+                     "Fincan Keçi Oğlak"
+                 ],
+                 [
+                     "2503DDA1:0:-1:0",
+                     "Little Kid",
+                     "Küçük Oğlak"
+                 ],
+                 [
+                     "2503DEA7:0:-1:0",
+                     "Picnic Pony",
+                     "Piknik Midilli"
+                 ],
+                 [
+                     "2503DF50:0:-1:0",
+                     "Rain-cloud",
+                     "Yağmur Bulutu"
+                 ],
+                 [
+                     "2503E006:0:-1:0",
+                     "Songbird",
+                     "Ötücü Kuş"
+                 ],
+                 [
+                     "2503E00A:0:-1:0",
+                     "White Fox",
+                     "Beyaz Tilki"
+                 ],
+                 [
+                     "2503E3B8:0:-1:0",
+                     "Storm-cloud",
+                     "Fırtına Bulutu"
+                 ],
+                 [
+                     "2503EED1:0:-1:0",
+                     "Fiery Red Beetle",
+                     "Ateşli Kırmızı Böcek"
+                 ],
+                 [
+                     "2503EED7:0:-1:0",
+                     "Rustflake Dust Devil",
+                     "Pas Pullu Toz Şeytanı"
+                 ],
+                 [
+                     "2503EF65:0:-1:0",
+                     "Yule Rabbit",
+                     "Yule Tavşanı"
+                 ],
+                 [
+                     "2503F747:0:-1:0",
+                     "Black Mastiff",
+                     "Kara Mastif"
+                 ],
+                 [
+                     "2503F7F5:0:-1:0",
+                     "Black Cat",
+                     "Kara Kedi"
+                 ],
+                 [
+                     "2503FD40:0:-1:0",
+                     "Snow Not-so-grim",
+                     "Pek de Kasvetli Olmayan Kar Yaratığı"
+                 ],
+                 [
+                     "2503FD41:0:-1:0",
+                     "Snowy Barn Owl",
+                     "Karlı Ahır Baykuşu"
+                 ],
+                 [
+                     "2503FD42:0:-1:0",
+                     "Golden Barn Owl",
+                     "Altın Ahır Baykuşu"
+                 ],
+                 [
+                     "2503FF38:0:-1:0",
+                     "Sienna Goat",
+                     "Kestane Keçi"
+                 ],
+                 [
+                     "2503FF3A:0:-1:0",
+                     "Fiery Yellow Beetle",
+                     "Ateşli Sarı Böcek"
+                 ],
+                 [
+                     "2503FF3B:0:-1:0",
+                     "Corrupted Craban",
+                     "Bozulmuş Craban"
+                 ],
+                 [
+                     "2503FFFB:0:-1:0",
+                     "Tan Fox",
+                     "Taba Tilki"
+                 ],
+                 [
+                     "2503FFFD:0:-1:0",
+                     "Golden Sheep",
+                     "Altın Koyun"
+                 ],
+                 [
+                     "2503FFFE:0:-1:0",
+                     "Brown Pig",
+                     "Kahverengi Domuz"
+                 ],
+                 [
+                     "25040000:0:-1:0",
+                     "Black Rabbit",
+                     "Kara Tavşan"
+                 ],
+                 [
+                     "25040002:0:-1:0",
+                     "Night Squirrel",
+                     "Gece Sincap"
+                 ],
+                 [
+                     "2504037F:0:-1:0",
+                     "Sentinel-in-training",
+                     "Eğitimdeki Muhafız"
+                 ],
+                 [
+                     "2504045E:0:-1:0",
+                     "Orange Glow Worm",
+                     "Turuncu Işıltılı Solucan"
+                 ],
+                 [
+                     "25040460:0:-1:0",
+                     "Green Glow Worm",
+                     "Yeşil Işıltılı Solucan"
+                 ],
+                 [
+                     "25040742:0:-1:0",
+                     "Topaz Neekerbreeker",
+                     "Topaz Neekerböceği"
+                 ],
+                 [
+                     "25040743:0:-1:0",
+                     "Sapphire Neekerbreeker",
+                     "Safir Neekerböceği"
+                 ],
+                 [
+                     "25040744:0:-1:0",
+                     "Amethyst Neekerbreeker",
+                     "Ametist Neekerböceği"
+                 ],
+                 [
+                     "25040822:0:-1:0",
+                     "Big Honey Bee",
+                     "Büyük Bal Arısı"
+                 ],
+                 [
+                     "25040823:0:-1:0",
+                     "Big Wasp",
+                     "Büyük Eşekarısı"
+                 ],
+                 [
+                     "25040824:0:-1:0",
+                     "Big Blue Carpenter Bee",
+                     "Büyük Mavi Marangoz Arısı"
+                 ],
+                 [
+                     "25040825:0:-1:0",
+                     "Big Bumblebee",
+                     "Büyük Bombus Arısı"
+                 ],
+                 [
+                     "25040A09:0:-1:0",
+                     "Black Pig",
+                     "Kara Domuz"
+                 ],
+                 [
+                     "25040A0C:0:-1:0",
+                     "Spotted Pig",
+                     "Benekli Domuz"
+                 ],
+                 [
+                     "25040A0E:0:-1:0",
+                     "Little Brown Pig",
+                     "Küçük Kahverengi Domuz"
+                 ],
+                 [
+                     "25040A10:0:-1:0",
+                     "Pink Pig",
+                     "Pembe Domuz"
+                 ],
+                 [
+                     "25040A47:0:-1:0",
+                     "Silverback Badger",
+                     "Gümüş Sırtlı Porsuk"
+                 ],
+                 [
+                     "2504168F:0:-1:0",
+                     "Shepherd Dog",
+                     "Çoban Köpeği"
+                 ],
+                 [
+                     "25041692:0:-1:0",
+                     "Harnessed Shepherd Dog",
+                     "Koşumlu Çoban Köpeği"
+                 ],
+                 [
+                     "25041717:0:-1:0",
+                     "Badger",
+                     "Porsuk"
+                 ],
+                 [
+                     "25041DA9:0:-1:0",
+                     "Tan Wolf-dog",
+                     "Taba Kurt Köpeği"
+                 ],
+                 [
+                     "25041DAA:0:-1:0",
+                     "Brown Wolf-dog",
+                     "Kahverengi Kurt Köpeği"
+                 ],
+                 [
+                     "25041DAB:0:-1:0",
+                     "Black Wolf-dog",
+                     "Kara Kurt Köpeği"
+                 ],
+                 [
+                     "25041DAD:0:-1:0",
+                     "Black Marble Wolf-dog",
+                     "Kara Mermer Kurt Köpeği"
+                 ],
+                 [
+                     "25041DB1:0:-1:0",
+                     "White Wolf-dog",
+                     "Beyaz Kurt Köpeği"
+                 ],
+                 [
+                     "25041DB3:0:-1:0",
+                     "Brown Marble Wolf-dog",
+                     "Kahverengi Mermer Kurt Köpeği"
+                 ],
+                 [
+                     "25041DB4:0:-1:0",
+                     "Husky Wolf-dog",
+                     "Husky Kurt Köpeği"
+                 ],
+                 [
+                     "2504253F:0:-1:0",
+                     "Winter Celebration Pig",
+                     "Kış Kutlama Domuz"
+                 ],
+                 [
+                     "25042540:0:-1:0",
+                     "Present-bearing Pet Pony",
+                     "Hediye Taşıyan Evcil Midilli"
+                 ],
+                 [
+                     "25042937:0:-1:0",
+                     "Smoky-grey Cat",
+                     "Dumanlı Gri Kedi"
+                 ],
+                 [
+                     "25043051:0:-1:0",
+                     "White Huorn",
+                     "Beyaz Huorn"
+                 ],
+                 [
+                     "2504309E:0:-1:0",
+                     "Enchanted Vessel",
+                     "Büyülü Kap"
+                 ],
+                 [
+                     "2504333C:0:-1:0",
+                     "Anniversary Celebration Pig",
+                     "Yıldönümü Kutlama Domuz"
+                 ],
+                 [
+                     "2504334A:0:-1:0",
+                     "White-headed Hawk",
+                     "Beyaz Başlı Şahin"
+                 ],
+                 [
+                     "2504334C:0:-1:0",
+                     "Woodland Rabbit",
+                     "Ormanlık Tavşan"
+                 ],
+                 [
+                     "25043366:0:-1:0",
+                     "Goose",
+                     "Kaz"
+                 ],
+                 [
+                     "250436FB:0:-1:0",
+                     "Swarm of Bees",
+                     "Arı Sürüsü"
+                 ],
+                 [
+                     "250437A7:0:-1:0",
+                     "Mysterious Celebration Pig",
+                     "Gizemli Kutlama Domuz"
+                 ],
+                 [
+                     "25043B68:0:-1:0",
+                     "Purple Firefly",
+                     "Mor Ateşböceği"
+                 ],
+                 [
+                     "25043B6A:0:-1:0",
+                     "Green Firefly",
+                     "Yeşil Ateşböceği"
+                 ],
+                 [
+                     "25043B6B:0:-1:0",
+                     "Red Firefly",
+                     "Kırmızı Ateşböceği"
+                 ],
+                 [
+                     "25043B6E:0:-1:0",
+                     "Blue Firefly",
+                     "Mavi Ateşböceği"
+                 ],
+                 [
+                     "25043ED6:0:-1:0",
+                     "White Goose",
+                     "Beyaz Kaz"
+                 ],
+                 [
+                     "25043ED8:0:-1:0",
+                     "Cart Pony",
+                     "Araba Midillisi"
+                 ],
+                 [
+                     "25043EE0:0:-1:0",
+                     "Decorated Goose",
+                     "Süslemeli Kaz"
+                 ],
+                 [
+                     "2504479D:0:-1:0",
+                     "Wild Black Donkey",
+                     "Vahşi Kara Eşek"
+                 ],
+                 [
+                     "2504479E:0:-1:0",
+                     "Alabaster Donkey",
+                     "Kaymaktaşı Eşek"
+                 ],
+                 [
+                     "2504479F:0:-1:0",
+                     "Cask-laden Donkey",
+                     "Fıçı Yüklü Eşek"
+                 ],
+                 [
+                     "250447A1:0:-1:0",
+                     "Treasure-laden Donkey",
+                     "Hazine Yüklü Eşek"
+                 ],
+                 [
+                     "250447A6:0:-1:0",
+                     "Silver Donkey",
+                     "Gümüş Eşek"
+                 ],
+                 [
+                     "250447A9:0:-1:0",
+                     "Buff Donkey",
+                     "Açık Kahverengi Eşek"
+                 ],
+                 [
+                     "250447AB:0:-1:0",
+                     "Wild Spotted Donkey",
+                     "Vahşi Benekli Eşek"
+                 ],
+                 [
+                     "250447AC:0:-1:0",
+                     "Wild Chocolate Donkey",
+                     "Vahşi Çikolata Eşek"
+                 ],
+                 [
+                     "250447AD:0:-1:0",
+                     "Mountaineering Donkey",
+                     "Dağcı Eşek"
+                 ],
+                 [
+                     "250447B0:0:-1:0",
+                     "Feed-laden Donkey",
+                     "Yem Yüklü Eşek"
+                 ],
+                 [
+                     "250447B2:0:-1:0",
+                     "Wild Grey Donkey",
+                     "Vahşi Gri Eşek"
+                 ],
+                 [
+                     "250447B3:0:-1:0",
+                     "Wild Cinnamon Donkey",
+                     "Vahşi Tarçın Eşek"
+                 ],
+                 [
+                     "250447B4:0:-1:0",
+                     "Battle-adorned Pig",
+                     "Savaş Süslemeli Domuz"
+                 ],
+                 [
+                     "25044A69:0:-1:0",
+                     "Lively Slug",
+                     "Canlı Sümüklüböcek"
+                 ],
+                 [
+                     "25044AC1:0:-1:0",
+                     "Spooky Jackdaw",
+                     "Ürkütücü Küçük Karga"
+                 ],
+                 [
+                     "25044AC2:0:-1:0",
+                     "Blood Craban",
+                     "Kan Craban"
+                 ],
+                 [
+                     "25044AC4:0:-1:0",
+                     "Mottled Craban",
+                     "Alacalı Craban"
+                 ],
+                 [
+                     "25044AC6:0:-1:0",
+                     "Harbinger of the Sage\u0027s Storm",
+                     "Bilgenin Fırtına Habercisi"
+                 ],
+                 [
+                     "25044ACA:0:-1:0",
+                     "Night Sky Craban",
+                     "Gece Gökyüzü Craban"
+                 ],
+                 [
+                     "25044AD3:0:-1:0",
+                     "Soot-feathered Crow",
+                     "Kurum Tüylü Karga"
+                 ],
+                 [
+                     "25044E8F:0:-1:0",
+                     "Poinsettia-wreathed Huorn",
+                     "Atatürk Çiçeği Taçlı Huorn"
+                 ],
+                 [
+                     "25044E92:0:-1:0",
+                     "Brown Bear Cub",
+                     "Kahverengi Ayı Yavru"
+                 ],
+                 [
+                     "25044F85:0:-1:0",
+                     "Yule Tree Huorn",
+                     "Yule Ağacı Huornu"
+                 ],
+                 [
+                     "25045367:0:-1:0",
+                     "Ill Omened Crawler",
+                     "Uğursuz Sürüngen"
+                 ],
+                 [
+                     "25045368:0:-1:0",
+                     "Ill Omened Worm",
+                     "Uğursuz Solucan"
+                 ],
+                 [
+                     "25045369:0:-1:0",
+                     "Ill Omened Hound",
+                     "Uğursuz Tazı"
+                 ],
+                 [
+                     "2504536A:0:-1:0",
+                     "Ill Omened Beast",
+                     "Uğursuz Yaratık"
+                 ],
+                 [
+                     "2504549C:0:-1:0",
+                     "Red Gecko",
+                     "Kırmızı Geko"
+                 ],
+                 [
+                     "2504549D:0:-1:0",
+                     "Spotted Pig",
+                     "Benekli Domuz"
+                 ],
+                 [
+                     "2504549E:0:-1:0",
+                     "Ashen Eagle",
+                     "Küllü Kartal"
+                 ],
+                 [
+                     "2504549F:0:-1:0",
+                     "Two-toned Sheep",
+                     "İki Renkli Koyun"
+                 ],
+                 [
+                     "250454A1:0:-1:0",
+                     "Copper Goat",
+                     "Bakır Keçi"
+                 ],
+                 [
+                     "25045736:0:-1:0",
+                     "Tame Wildwood Tusker",
+                     "Evcilleştirilmiş Yabanorman Fildişilisi"
+                 ],
+                 [
+                     "25045737:0:-1:0",
+                     "Tame Wildwood Huorn",
+                     "Evcilleştirilmiş Yabanorman Huornu"
+                 ],
+                 [
+                     "25045BAB:0:-1:0",
+                     "Bog-lurker Buddy",
+                     "Bataklık Pusucusu Dostu"
+                 ],
+                 [
+                     "25045BAC:0:-1:0",
+                     "Adventurous Lurker",
+                     "Maceracı Pusucu"
+                 ],
+                 [
+                     "25045BAD:0:-1:0",
+                     "Cozy Grey Cat",
+                     "Şirin Gri Kedi"
+                 ],
+                 [
+                     "25045BAE:0:-1:0",
+                     "Cozy Tabby Cat",
+                     "Şirin Tekir Kedi"
+                 ],
+                 [
+                     "25045BAF:0:-1:0",
+                     "Dappled Tri-colour Cat",
+                     "Benekli Üç Renkli Kedi"
+                 ],
+                 [
+                     "25046209:0:-1:0",
+                     "Silver Chipmunk",
+                     "Gümüş Çizgili Sincap"
+                 ],
+                 [
+                     "2504620A:0:-1:0",
+                     "Umber Nether-hound",
+                     "Esmer Öte Tazısı"
+                 ],
+                 [
+                     "25046210:0:-1:0",
+                     "Nether-hound",
+                     "Öte Tazısı"
+                 ],
+                 [
+                     "25046212:0:-1:0",
+                     "Dusky Nether-hound",
+                     "Alacakaranlık Öte Tazısı"
+                 ],
+                 [
+                     "25046213:0:-1:0",
+                     "Mushroom Nether-hound",
+                     "Mantarlı Öte Tazısı"
+                 ],
+                 [
+                     "25046214:0:-1:0",
+                     "Copper Nether-hound",
+                     "Bakır Öte Tazısı"
+                 ],
+                 [
+                     "25046218:0:-1:0",
+                     "Chipmunk",
+                     "Çizgili Sincap"
+                 ],
+                 [
+                     "25046219:0:-1:0",
+                     "Delving Nether-hound",
+                     "Derinlik Öte Tazısı"
+                 ],
+                 [
+                     "2504632C:0:-1:0",
+                     "Snowy Mountain Eagle",
+                     "Karlı Dağ Kartal"
+                 ],
+                 [
+                     "25046559:0:-1:0",
+                     "Golden Cave-claw",
+                     "Altın Mağara Pençesi"
+                 ],
+                 [
+                     "2504655D:0:-1:0",
+                     "Woodland Hart",
+                     "Ormanlık Erkek Geyiği"
+                 ],
+                 [
+                     "2504655F:0:-1:0",
+                     "Woodland Doe",
+                     "Ormanlık Dişi Geyik"
+                 ],
+                 [
+                     "25046561:0:-1:0",
+                     "Spotted Woodland Fawn",
+                     "Benekli Ormanlık Geyik Yavrusu"
+                 ],
+                 [
+                     "2504776D:0:-1:0",
+                     "Crystal Grim",
+                     "Kristal Kasvetlisi"
+                 ],
+                 [
+                     "25047771:0:-1:0",
+                     "Gundabad Ukhrash",
+                     "Gundabad Ukhrash Yoldaşı"
+                 ],
+                 [
+                     "25049E6A:0:-1:0",
+                     "Autumn Heartwood Stag",
+                     "Sonbahar Özodun Geyik"
+                 ],
+                 [
+                     "25049E6B:0:-1:0",
+                     "White Heartwood Fawn",
+                     "Beyaz Özodun Geyik Yavrusu"
+                 ],
+                 [
+                     "25049EAB:0:-1:0",
+                     "Tame Gundabad Bat",
+                     "Evcilleştirilmiş Gundabad Yarasası"
+                 ],
+                 [
+                     "25049EAC:0:-1:0",
+                     "Crystal Spider",
+                     "Kristal Örümcek"
+                 ],
+                 [
+                     "25049EAF:0:-1:0",
+                     "Craggy Slug",
+                     "Kayalık Sümüklüböcek"
+                 ],
+                 [
+                     "25049EB0:0:-1:0",
+                     "Little Deep Toad",
+                     "Küçük Derin Karakurbağası"
+                 ],
+                 [
+                     "2504AD10:0:-1:0",
+                     "Cinder Hawk",
+                     "Kor Şahin"
+                 ],
+                 [
+                     "2504B1BB:0:-1:0",
+                     "Rust Corgi",
+                     "Pas Korgi"
+                 ],
+                 [
+                     "2504B1BC:0:-1:0",
+                     "Spotted Corgi",
+                     "Benekli Korgi"
+                 ],
+                 [
+                     "2504B1BF:0:-1:0",
+                     "Fireworks Corgi",
+                     "Havai Fişekli Korgi"
+                 ],
+                 [
+                     "2504B1C2:0:-1:0",
+                     "Prepared Corgi",
+                     "Hazır Korgi"
+                 ],
+                 [
+                     "2504B1C3:0:-1:0",
+                     "Golden Crystal Beetle",
+                     "Altın Kristal Böcek"
+                 ],
+                 [
+                     "2504B1C4:0:-1:0",
+                     "Tri-colour Corgi",
+                     "Üç Renkli Korgi"
+                 ],
+                 [
+                     "2504B1C5:0:-1:0",
+                     "Brick Corgi",
+                     "Tuğla Korgi"
+                 ],
+                 [
+                     "2504B1CA:0:-1:0",
+                     "Library Corgi",
+                     "Kütüphane Korgi"
+                 ],
+                 [
+                     "2504B1CB:0:-1:0",
+                     "Russet Corgi",
+                     "Kızıl Kahverengi Korgi"
+                 ],
+                 [
+                     "2504B1CD:0:-1:0",
+                     "Anniversary Celebration Corgi",
+                     "Yıldönümü Kutlama Korgi"
+                 ],
+                 [
+                     "2504B1CE:0:-1:0",
+                     "Blonde Corgi",
+                     "Sarışın Korgi"
+                 ],
+                 [
+                     "2504B1D0:0:-1:0",
+                     "Cream Corgi",
+                     "Krem Korgi"
+                 ],
+                 [
+                     "2504B1D1:0:-1:0",
+                     "Chestnut Corgi",
+                     "Kestane Korgi"
+                 ],
+                 [
+                     "2504B1D3:0:-1:0",
+                     "Formal Corgi",
+                     "Resmî Korgi"
+                 ],
+                 [
+                     "2504B588:0:-1:0",
+                     "Friendly Bear Cub",
+                     "Dost Ayı Yavru"
+                 ],
+                 [
+                     "2504B58B:0:-1:0",
+                     "Black Bear Cub",
+                     "Kara Ayı Yavru"
+                 ],
+                 [
+                     "2504B767:0:-1:0",
+                     "Noble Starling",
+                     "Asil Sığırcık"
+                 ],
+                 [
+                     "2504B9C1:0:-1:0",
+                     "Red Salamander",
+                     "Kırmızı Semender"
+                 ],
+                 [
+                     "2504BF7D:0:-1:0",
+                     "Loyal Turtle",
+                     "Sadık Kaplumbağa"
+                 ],
+                 [
+                     "2504BF7E:0:-1:0",
+                     "Friendly Egret",
+                     "Dost Ak Balıkçıl"
+                 ],
+                 [
+                     "2504BF83:0:-1:0",
+                     "Friendly Heron",
+                     "Dost Balıkçıl"
+                 ],
+                 [
+                     "2504BF88:0:-1:0",
+                     "Friendly Stork",
+                     "Dost Leylek"
+                 ],
+                 [
+                     "2504C8B9:0:-1:0",
+                     "Spooky Barrow-lurker",
+                     "Ürkütücü Tümülüs Pusucusu"
+                 ],
+                 [
+                     "2504CBFE:0:-1:0",
+                     "Rakish Feline",
+                     "Çapkın Kedigiller"
+                 ],
+                 [
+                     "2504CBFF:0:-1:0",
+                     "Charming Feline",
+                     "Büyüleyici Kedigiller"
+                 ],
+                 [
+                     "2504CC00:0:-1:0",
+                     "Dashing Feline",
+                     "Atılgan Kedigiller"
+                 ],
+                 [
+                     "2504CF1C:0:-1:0",
+                     "Evergreen Sickle-fly",
+                     "Daima Yeşil Orak Sineği"
+                 ],
+                 [
+                     "2504CF27:0:-1:0",
+                     "Frost-tusk Youngling",
+                     "Buz Dişli Yavrusu"
+                 ],
+                 [
+                     "2504CF2C:0:-1:0",
+                     "Twilight Fire-fly",
+                     "Alacakaranlık Ateşböceği"
+                 ],
+                 [
+                     "2504CF2D:0:-1:0",
+                     "Deep-claw Whelp",
+                     "Derin Pençe Yavrusu"
+                 ],
+                 [
+                     "2504CF2F:0:-1:0",
+                     "Adorable Sickle-fly",
+                     "Sevimli Orak Sineği"
+                 ],
+                 [
+                     "2504CF33:0:-1:0",
+                     "Ferocious Battle-kitten",
+                     "Vahşi Savaş Yavru Kedisi"
+                 ],
+                 [
+                     "2504CF37:0:-1:0",
+                     "Pure Seagull",
+                     "Saf Martı"
+                 ],
+                 [
+                     "2504CF3A:0:-1:0",
+                     "Amber Fire-fly",
+                     "Kehribar Ateşböceği"
+                 ],
+                 [
+                     "2504CF3E:0:-1:0",
+                     "Snow-covered Aurochs",
+                     "Karla Kaplı Yaban Sığırı"
+                 ],
+                 [
+                     "2504CF3F:0:-1:0",
+                     "Rohan Aurochs",
+                     "Rohan Yaban Sığırı"
+                 ],
+                 [
+                     "2504CF4F:0:-1:0",
+                     "Fiery Blue Beetle",
+                     "Ateşli Mavi Böcek"
+                 ],
+                 [
+                     "2504D444:0:-1:0",
+                     "Sewer Rat",
+                     "Kanalizasyon Sıçanı"
+                 ],
+                 [
+                     "2504D449:0:-1:0",
+                     "Rat King",
+                     "Sıçan Kralı"
+                 ],
+                 [
+                     "2504D51F:0:-1:0",
+                     "White Puppy",
+                     "Beyaz Yavru Köpek"
+                 ],
+                 [
+                     "2504D9BE:0:-1:0",
+                     "Dappled Grey Miniature Draught Horse",
+                     "Benekli Gri Minyatür Yük At"
+                 ],
+                 [
+                     "2504D9C4:0:-1:0",
+                     "Homesteader\u0027s Miniature Draught Horse",
+                     "Ev Sakinlerinin Minyatür Yük At"
+                 ],
+                 [
+                     "2504D9C8:0:-1:0",
+                     "Black Miniature Draught Horse",
+                     "Kara Minyatür Yük At"
+                 ],
+                 [
+                     "2504D9D0:0:-1:0",
+                     "Autumn Aurochs",
+                     "Sonbahar Yaban Sığırı"
+                 ],
+                 [
+                     "2504D9D2:0:-1:0",
+                     "Feisty Wolverine",
+                     "Hırçın Rosomak"
+                 ],
+                 [
+                     "2504D9DD:0:-1:0",
+                     "Black Bull",
+                     "Kara Boğa"
+                 ],
+                 [
+                     "2504D9E2:0:-1:0",
+                     "Young Moose",
+                     "Genç Sığın"
+                 ],
+                 [
+                     "2504D9E9:0:-1:0",
+                     "Cave Slug",
+                     "Mağara Sümüklüböcek"
+                 ],
+                 [
+                     "2504D9EC:0:-1:0",
+                     "Tawny Aurochs",
+                     "Boz Yaban Sığırı"
+                 ],
+                 [
+                     "2504D9F1:0:-1:0",
+                     "Spiky Avanc",
+                     "Dikenli Avank"
+                 ],
+                 [
+                     "2504D9F8:0:-1:0",
+                     "Curious Slug",
+                     "Meraklı Sümüklüböcek"
+                 ],
+                 [
+                     "2504D9FB:0:-1:0",
+                     "Frost Aurochs",
+                     "Buzlu Yaban Sığırı"
+                 ],
+                 [
+                     "2504D9FE:0:-1:0",
+                     "Slate Aurochs",
+                     "Kayrak Yaban Sığırı"
+                 ],
+                 [
+                     "2504DA02:0:-1:0",
+                     "Brown Cow",
+                     "Kahverengi İnek"
+                 ],
+                 [
+                     "2504DB2E:0:-1:0",
+                     "Anniversary Celebration Goat",
+                     "Yıldönümü Kutlama Keçi"
+                 ],
+                 [
+                     "2504E029:0:-1:0",
+                     "The King\u0027s Pony",
+                     "Kralın Midillisi"
+                 ],
+                 [
+                     "2504E2BA:0:-1:0",
+                     "Black Draught Horse",
+                     "Kara Yük At"
+                 ],
+                 [
+                     "2504E2BB:0:-1:0",
+                     "Homesteader\u0027s Draught Horse",
+                     "Ev Sakinlerinin Yük At"
+                 ],
+                 [
+                     "2504E2C0:0:-1:0",
+                     "Dappled Grey Draught Horse",
+                     "Benekli Gri Yük At"
+                 ],
+                 [
+                     "2504E2C6:0:-1:0",
+                     "Striped Jerboa",
+                     "Çizgili Arap Tavşanı"
+                 ],
+                 [
+                     "2504E2CE:0:-1:0",
+                     "Summer Concert Firefly",
+                     "Yaz Konser Ateşböceği"
+                 ],
+                 [
+                     "2504E2D0:0:-1:0",
+                     "Slate Jerboa",
+                     "Kayrak Arap Tavşanı"
+                 ],
+                 [
+                     "2504E2D4:0:-1:0",
+                     "Spotted Jerboa",
+                     "Benekli Arap Tavşanı"
+                 ],
+                 [
+                     "2504E2D5:0:-1:0",
+                     "Brown Jerboa",
+                     "Kahverengi Arap Tavşanı"
+                 ],
+                 [
+                     "2504E2D9:0:-1:0",
+                     "Jerboa",
+                     "Arap Tavşanı"
+                 ],
+                 [
+                     "2504E2DA:0:-1:0",
+                     "Albino Jerboa",
+                     "Albino Arap Tavşanı"
+                 ],
+                 [
+                     "2504ED3C:0:-1:0",
+                     "Fennec Fox",
+                     "Fennek Tilki"
+                 ],
+                 [
+                     "2504ED3D:0:-1:0",
+                     "Fire-fox Bandit",
+                     "Ateş Tilkisi Haydudu"
+                 ],
+                 [
+                     "2504ED3E:0:-1:0",
+                     "Butterflies",
+                     "Kelebekler"
+                 ],
+                 [
+                     "2504F33F:0:-1:0",
+                     "Goat of the Forest-spirit",
+                     "Orman Ruhunun Keçisi"
+                 ],
+                 [
+                     "2504FD8F:0:-1:0",
+                     "Parrot",
+                     "Papağan"
+                 ],
+                 [
+                     "25050541:0:-1:0",
+                     "Crocodile Hatchling",
+                     "Timsah Yavrusu"
+                 ],
+                 [
+                     "25050545:0:-1:0",
+                     "Umbari Huorn",
+                     "Umbar Huornu"
+                 ],
+                 [
+                     "25050552:0:-1:0",
+                     "Lion Cub",
+                     "Aslan Yavru"
+                 ],
+                 [
+                     "25050554:0:-1:0",
+                     "Wily Macaque",
+                     "Kurnaz Makak"
+                 ],
+                 [
+                     "25050B64:0:-1:0",
+                     "Sea-side Sand-lurker",
+                     "Deniz Kıyısı Kum Pusucusu"
+                 ],
+                 [
+                     "25050B65:0:-1:0",
+                     "Harmonious Falcon",
+                     "Uyumlu Doğan"
+                 ],
+                 [
+                     "25050B6B:0:-1:0",
+                     "Tidal Dune-lurker",
+                     "Gelgit Kumul Pusucusu"
+                 ],
+                 [
+                     "25050C11:0:-1:0",
+                     "Sublime Piglet",
+                     "Yüce Domuz Yavrusu"
+                 ],
+                 [
+                     "25050C12:0:-1:0",
+                     "Icy Expeditions Sheep",
+                     "Buzlu Sefer Koyun"
+                 ],
+                 [
+                     "25050C38:0:-1:0",
+                     "Sublime Boar",
+                     "Yüce Yaban Domuzu"
+                 ],
+                 [
+                     "25050EFA:0:-1:0",
+                     "Pebbled Snake",
+                     "Çakıllı Yılan"
+                 ],
+                 [
+                     "25050EFD:0:-1:0",
+                     "Fiery Desert Snake",
+                     "Ateşli Çöl Yılan"
+                 ],
+                 [
+                     "25050EFF:0:-1:0",
+                     "Ill Omened Crab",
+                     "Uğursuz Uğursuz Yengeç"
+                 ],
+                 [
+                     "25050F02:0:-1:0",
+                     "Jade Speckled Snake",
+                     "Yeşim Benekli Yılan"
+                 ],
+                 [
+                     "25050F03:0:-1:0",
+                     "Ill Omened Jackal",
+                     "Uğursuz Uğursuz Çakal"
+                 ],
+                 [
+                     "25050F04:0:-1:0",
+                     "Leafy Green Snake",
+                     "Yapraklı Yeşil Yılan"
+                 ],
+                 [
+                     "25050F09:0:-1:0",
+                     "Grabby Crab",
+                     "Kapkaççı Yengeç"
+                 ],
+                 [
+                     "25050F0A:0:-1:0",
+                     "Turquoise Snake",
+                     "Turkuaz Yılan"
+                 ],
+                 [
+                     "25050F0B:0:-1:0",
+                     "Vivid Green Snake",
+                     "Canlı Yeşil Yılan"
+                 ],
+                 [
+                     "25050F0E:0:-1:0",
+                     "Ill Omened Snake",
+                     "Uğursuz Uğursuz Yılan"
+                 ],
+                 [
+                     "25050F10:0:-1:0",
+                     "Deep Emerald Snake",
+                     "Derin Zümrüt Yılan"
+                 ],
+                 [
+                     "25050F12:0:-1:0",
+                     "Wine-red Snake",
+                     "Şarap Kırmızısı Yılan"
+                 ],
+                 [
+                     "250515CD:0:-1:0",
+                     "Chestnut Sand Worm",
+                     "Kestane Kum Solucan"
+                 ],
+                 [
+                     "250515D3:0:-1:0",
+                     "Adorable Sand Worm",
+                     "Sevimli Kum Solucan"
+                 ],
+                 [
+                     "250515DB:0:-1:0",
+                     "Ruby Sand Worm",
+                     "Yakut Kum Solucan"
+                 ],
+                 [
+                     "250519B2:0:-1:0",
+                     "Perfect Curl Garden Snail",
+                     "Mükemmel Kıvrımlı Bahçe Salyangozu"
+                 ],
+                 [
+                     "25051B91:0:-1:0",
+                     "Sitaka",
+                     "Sitaka Yoldaşı"
+                 ],
+                 [
+                     "25051D50:0:-1:0",
+                     "White Hamster",
+                     "Beyaz Hamster"
+                 ],
+                 [
+                     "25051D51:0:-1:0",
+                     "Taupe Hamster",
+                     "Boz Hamster"
+                 ],
+                 [
+                     "25051D52:0:-1:0",
+                     "Heather Hamster",
+                     "Funda Hamster"
+                 ],
+                 [
+                     "25051D53:0:-1:0",
+                     "Sienna Hamster",
+                     "Kestane Hamster"
+                 ],
+                 [
+                     "25051D54:0:-1:0",
+                     "Spotted Hamster",
+                     "Benekli Hamster"
+                 ],
+                 [
+                     "25051D55:0:-1:0",
+                     "Merrymaking Hamster",
+                     "Şenlik Hamster"
+                 ],
+                 [
+                     "25051D56:0:-1:0",
+                     "Whimsical Woodland Critters",
+                     "Tuhaf Orman Yaratıkları"
+                 ],
+                 [
+                     "25052040:0:-1:0",
+                     "Parrot of Umbar Baharbêl",
+                     "Umbar Papağanı Baharbêl"
+                 ],
+                 [
+                     "25052041:0:-1:0",
+                     "Dusky Parrot",
+                     "Alacakaranlık Papağan"
+                 ],
+                 [
+                     "25052042:0:-1:0",
+                     "Parrot of the Fiery Sands",
+                     "Ateşli Kumların Papağanı"
+                 ],
+                 [
+                     "25052053:0:-1:0",
+                     "Parrot of Light",
+                     "Işık Papağanı"
+                 ],
+                 [
+                     "25052056:0:-1:0",
+                     "Parrot of Darkness",
+                     "Karanlık Papağanı"
+                 ],
+                 [
+                     "2505205B:0:-1:0",
+                     "Dashing Dusky Parrot",
+                     "Atılgan Alacakaranlık Papağan"
+                 ],
+                 [
+                     "2505205C:0:-1:0",
+                     "Water Buffalo Bull",
+                     "Su Mandası Boğası"
+                 ],
+                 [
+                     "25052065:0:-1:0",
+                     "Maned Lion",
+                     "Yeleli Aslan"
+                 ],
+                 [
+                     "25052066:0:-1:0",
+                     "Water Buffalo Calf",
+                     "Su Mandası Buzağısı"
+                 ],
+                 [
+                     "25052069:0:-1:0",
+                     "Proud Lioness",
+                     "Gururlu Dişi Aslan"
+                 ],
+                 [
+                     "2505206F:0:-1:0",
+                     "Water Buffalo Cow",
+                     "Su Mandası İneği"
+                 ],
+                 [
+                     "25052EBE:0:-1:0",
+                     "Shadow Nether-hound[e]",
+                     "Gölge Öte Tazısı[e]"
+                 ],
+                 [
+                     "25052EBF:0:-1:0",
+                     "Shadow Cat[e]",
+                     "Gölge Kedi[e]"
+                 ],
+                 [
+                     "25052EC0:0:-1:0",
+                     "Shadow Spider[e]",
+                     "Gölge Örümcek[e]"
+                 ],
+                 [
+                     "25052EC5:0:-1:0",
+                     "Shadow Raven[e]",
+                     "Gölge Kuzgun[e]"
+                 ],
+                 [
+                     "25052EC7:0:-1:0",
+                     "Fierce Hedgehog[e]",
+                     "Vahşi Kirpi[e]"
+                 ],
+                 [
+                     "25052EC8:0:-1:0",
+                     "Mirkwood Sabre-cat[e]",
+                     "Kuyutorman Kılıçdişli Kedi[e]"
+                 ],
+                 [
+                     "25052ECA:0:-1:0",
+                     "Shadow Lion[e]",
+                     "Gölge Aslan[e]"
+                 ],
+                 [
+                     "25052ECC:0:-1:0",
+                     "Shadow Hedgehog[e]",
+                     "Gölge Kirpi[e]"
+                 ],
+                 [
+                     "25052FB5:0:-1:0",
+                     "Potato Farmer\u0027s Fine Cow[e]",
+                     "Patates Çiftçisinin Seçkin İneği[e]"
+                 ],
+                 [
+                     "25052FF8:0:-1:0",
+                     "Ametrine Drakeling[v]",
+                     "Ametrin Ejderha Yavrusu[v]"
+                 ],
+                 [
+                     "25052FFB:0:-1:0",
+                     "Moonstone Drakeling[e]",
+                     "Aytaşı Ejderha Yavrusu[e]"
+                 ],
+                 [
+                     "25052FFC:0:-1:0",
+                     "Golden Drakeling[e]",
+                     "Altın Ejderha Yavrusu[e]"
+                 ],
+                 [
+                     "25052FFF:0:-1:0",
+                     "Sapphire Drakeling[e]",
+                     "Safir Ejderha Yavrusu[e]"
+                 ],
+                 [
+                     "25053006:0:-1:0",
+                     "Sunstone Drakeling[e]",
+                     "Güneştaşı Ejderha Yavrusu[e]"
+                 ],
+                 [
+                     "2505300A:0:-1:0",
+                     "Amethyst Drakeling[v]",
+                     "Ametist Ejderha Yavrusu[v]"
+                 ],
+                 [
+                     "2505300C:0:-1:0",
+                     "Emerald Drakeling[v]",
+                     "Zümrüt Ejderha Yavrusu[v]"
+                 ],
+                 [
+                     "2505300E:0:-1:0",
+                     "Ruby Drakeling[e]",
+                     "Yakut Ejderha Yavrusu[e]"
+                 ],
+                 [
+                     "2505347C:0:-1:0",
+                     "Sophisticated Chaffinch[e]",
+                     "Zarif İspinoz[e]"
+                 ],
+                 [
+                     "2505347D:0:-1:0",
+                     "Sophisticated Magpie[e]",
+                     "Zarif Saksağan[e]"
+                 ],
+                 [
+                     "25053753:0:-1:0",
+                     "Ghostly Cat[e]",
+                     "Hayaletimsi Kedi[e]"
+                 ],
+                 [
+                     "25053754:0:-1:0",
+                     "Windfell Owl[e]",
+                     "Rüzgâr Ovası Baykuş[e]"
+                 ],
+                 [
+                     "25053755:0:-1:0",
+                     "Cobra[e]",
+                     "Kobra[e]"
+                 ],
+                 [
+                     "25053756:0:-1:0",
+                     "Treasured Jackal[e]",
+                     "Değerli Çakal[e]"
+                 ],
+                 [
+                     "25054256:0:-1:0",
+                     "Herding Dog of the Rohirrim[e]",
+                     "Rohirrim Çoban Köpeği[e]"
+                 ],
+                 [
+                     "250542B4:0:-1:0",
+                     "Snowy Evening Pig[e]",
+                     "Karlı Akşam Domuz[e]"
+                 ],
+                 [
+                     "25054933:0:-1:0",
+                     "Mushroom Hunter\u0027s Corgi[e]",
+                     "Mantar Avcısının Korgisi[e]"
+                 ],
+                 [
+                     "25054934:0:-1:0",
+                     "Mushroom Hunter\u0027s Frog[e]",
+                     "Mantar Avcısının Kurbağası[e]"
+                 ],
+                 [
+                     "25054F91:0:-1:0",
+                     "Hedgehog and Hare Parade[e]",
+                     "Kirpi ve Yaban Tavşanı Geçidi[e]"
+                 ],
+                 [
+                     "25055192:0:-1:0",
+                     "Terror of the Sands[s]",
+                     "Kumların Dehşeti[s]"
+                 ],
+                 [
+                     "250554D7:0:-1:0",
+                     "Black Cobra[e]",
+                     "Kara Kobra[e]"
+                 ],
+                 [
+                     "25055556:0:-1:0",
+                     "Baker\u0027s Delight Cub[e]",
+                     "Fırıncının Neşe Yavrusu[e]"
+                 ],
+                 [
+                     "2505571F:0:-1:0",
+                     "Able Ice-shore Fisher[v]",
+                     "Usta Buz Kıyısı Balıkçısı[v]"
+                 ],
+                 [
+                     "25055C00:0:-1:0",
+                     "Loyal Goose of Gondor[e]",
+                     "Sadık Kaz Gondor[e]"
+                 ],
+                 [
+                     "25055C01:0:-1:0",
+                     "Sea-side Kite[e]",
+                     "Deniz Kıyısı Uçurtması[e]"
+                 ],
+                 [
+                     "25055E74:0:-1:0",
+                     "Terror of the Caverns[s]",
+                     "Mağaraların Dehşeti[s]"
+                 ],
+                 [
+                     "25055E75:0:-1:0",
+                     "Striped Deep-claw Whelp[e]",
+                     "Çizgili Derin Pençe Yavrusu[e]"
+                 ],
+                 [
+                     "25055E7F:0:-1:0",
+                     "Pale Deep-claw Whelp[e]",
+                     "Soluk Derin Pençe Yavrusu[e]"
+                 ],
+                 [
+                     "25055E85:0:-1:0",
+                     "Tame Hyena[e]",
+                     "Evcilleştirilmiş Sırtlan[e]"
+                 ],
+                 [
+                     "25055E88:0:-1:0",
+                     "Young Tawny Oryx[e]",
+                     "Genç Boz Oryx[e]"
+                 ],
+                 [
+                     "25055E95:0:-1:0",
+                     "Tawny Oryx[e]",
+                     "Boz Oryx[e]"
+                 ],
+                 [
+                     "25055E99:0:-1:0",
+                     "Young Brown Oryx[e]",
+                     "Genç Kahverengi Oryx[e]"
+                 ],
+                 [
+                     "25055E9D:0:-1:0",
+                     "Silver Scorpion[e]",
+                     "Gümüş Akrep[e]"
+                 ],
+                 [
+                     "25055EA2:0:-1:0",
+                     "Verdant Deep-claw Whelp[e]",
+                     "Yemyeşil Derin Pençe Yavrusu[e]"
+                 ],
+                 [
+                     "25055EA4:0:-1:0",
+                     "Death-light Scorpion[e]",
+                     "Ölüm Işığı Akrep[e]"
+                 ],
+                 [
+                     "25055EA5:0:-1:0",
+                     "Bright Grodbog Protector[e]",
+                     "Parlak Grodbog Koruyucusu[e]"
+                 ],
+                 [
+                     "25055EA8:0:-1:0",
+                     "Pitch-dark Scorpion[e]",
+                     "Zifiri Karanlık Akrep[e]"
+                 ],
+                 [
+                     "25055EA9:0:-1:0",
+                     "Dusky Grodbog Queen[f]",
+                     "Alacakaranlık Grodbog Kraliçesi[f]"
+                 ],
+                 [
+                     "25055EAD:0:-1:0",
+                     "Obsidian Deep-claw Whelp[v]",
+                     "Obsidyen Derin Pençe Yavrusu[v]"
+                 ],
+                 [
+                     "25055EAF:0:-1:0",
+                     "Pale Scorpion[e]",
+                     "Soluk Akrep[e]"
+                 ],
+                 [
+                     "25055EB2:0:-1:0",
+                     "Verdant Grodbog Queen[f]",
+                     "Yemyeşil Grodbog Kraliçesi[f]"
+                 ],
+                 [
+                     "25055EBB:0:-1:0",
+                     "Crimson Deep-claw Whelp[e]",
+                     "Kızıl Derin Pençe Yavrusu[e]"
+                 ],
+                 [
+                     "25055EBC:0:-1:0",
+                     "Young Striped Oryx[e]",
+                     "Genç Çizgili Oryx[e]"
+                 ],
+                 [
+                     "25055EC5:0:-1:0",
+                     "Aggressive Grodbog Queen[fv]",
+                     "Saldırgan Grodbog Kraliçesi[fv]"
+                 ],
+                 [
+                     "25055EC7:0:-1:0",
+                     "Blood Scorpion[e]",
+                     "Kan Akrep[e]"
+                 ],
+                 [
+                     "25055EC8:0:-1:0",
+                     "Helpful Deep-claw Whelp[e]",
+                     "Yardımsever Derin Pençe Yavrusu[e]"
+                 ],
+                 [
+                     "25055EC9:0:-1:0",
+                     "Armoured Scorpion[v]",
+                     "Zırhlı Akrep[v]"
+                 ],
+                 [
+                     "25055ED0:0:-1:0",
+                     "Lush Grodbog Protector[e]",
+                     "Gür Grodbog Koruyucusu[e]"
+                 ],
+                 [
+                     "25055ED4:0:-1:0",
+                     "Affable Grodbog Queen[fv]",
+                     "Cana Yakın Grodbog Kraliçesi[fv]"
+                 ],
+                 [
+                     "25055ED5:0:-1:0",
+                     "Copper Scorpion[e]",
+                     "Bakır Akrep[e]"
+                 ],
+                 [
+                     "25055ED6:0:-1:0",
+                     "Marsh Scorpion[e]",
+                     "Bataklık Akrep[e]"
+                 ],
+                 [
+                     "25055EDA:0:-1:0",
+                     "Striped Grodbog Protector[e]",
+                     "Çizgili Grodbog Koruyucusu[e]"
+                 ],
+                 [
+                     "25055EDC:0:-1:0",
+                     "Cobalt Grodbog Protector[e]",
+                     "Kobalt Grodbog Koruyucusu[e]"
+                 ],
+                 [
+                     "25055EDD:0:-1:0",
+                     "Dark Grodbog Queen[f]",
+                     "Koyu Grodbog Kraliçesi[f]"
+                 ],
+                 [
+                     "25055EDF:0:-1:0",
+                     "Pony of Umbar[e]",
+                     "Umbar Midillisi[e]"
+                 ],
+                 [
+                     "25055EE3:0:-1:0",
+                     "Striped Oryx[e]",
+                     "Çizgili Oryx[e]"
+                 ],
+                 [
+                     "25055EE5:0:-1:0",
+                     "Brown Oryx[e]",
+                     "Kahverengi Oryx[e]"
+                 ],
+                 [
+                     "25055EEE:0:-1:0",
+                     "Poisonous Grodbog Protector[e]",
+                     "Zehirli Grodbog Koruyucusu[e]"
+                 ],
+                 [
+                     "25057636:0:-1:0",
+                     "Jaunty Monkey[e]",
+                     "Neşeli Maymun[e]"
+                 ],
+                 [
+                     "25057A34:0:-1:0",
+                     "Vigilant Cobra[e]",
+                     "Tetikte Kobra[e]"
+                 ],
+                 [
+                     "25057A35:0:-1:0",
+                     "Pumpkin Huorn[e]",
+                     "Kabak Huornu[e]"
+                 ],
+                 [
+                     "25057A37:0:-1:0",
+                     "Sandpiper[e]",
+                     "Kum Kuşu[e]"
+                 ],
+                 [
+                     "25057A39:0:-1:0",
+                     "Baby Camel[e]",
+                     "Yavru Deve[e]"
+                 ],
+                 [
+                     "25057A3A:0:-1:0",
+                     "Leaping Fish Kite[e]",
+                     "Sıçrayan Balık Uçurtması[e]"
+                 ],
+                 [
+                     "25058476:0:-1:0",
+                     "Caravan Trade Goods Camel[e]",
+                     "Kervan Erzak Devesi[e]"
+                 ],
+                 [
+                     "250585EB:0:-1:0",
+                     "Ivory Mûrai Herding Dog[v]",
+                     "Fildişi Mûrai Çoban Köpeği[v]"
+                 ],
+                 [
+                     "250585EC:0:-1:0",
+                     "Rusty Mûrai Herding Dog[e]",
+                     "Paslı Mûrai Çoban Köpeği[e]"
+                 ],
+                 [
+                     "250585EE:0:-1:0",
+                     "Mûrai Herding Dog[e]",
+                     "Mûrai Çoban Köpeği[e]"
+                 ],
+                 [
+                     "250585F1:0:-1:0",
+                     "Toffee Mûrai Herding Dog[e]",
+                     "Karamel Mûrai Çoban Köpeği[e]"
+                 ],
+                 [
+                     "250585F2:0:-1:0",
+                     "Ginger Mûrai Herding Dog[e]",
+                     "Zencefil Mûrai Çoban Köpeği[e]"
+                 ],
+                 [
+                     "25058787:0:-1:0",
+                     "Snow-dusted Farm-yard Horse[e]",
+                     "Kar Tozlu Çiftlik At[e]"
+                 ],
+                 [
+                     "25058788:0:-1:0",
+                     "Jingle Turtle[e]",
+                     "Çıngıraklı Kaplumbağa[e]"
+                 ],
+                 [
+                     "250587DD:0:-1:0",
+                     "Twilight Mûmak Calf[e]",
+                     "Alacakaranlık Mûmak Buzağı[e]"
+                 ],
+                 [
+                     "250587E2:0:-1:0",
+                     "Crafty Worm[e]",
+                     "Usta Solucan[e]"
+                 ],
+                 [
+                     "250587E5:0:-1:0",
+                     "Sea-borne Slime[e]",
+                     "Denizden Gelen Balçık[e]"
+                 ],
+                 [
+                     "250587E6:0:-1:0",
+                     "Skulking Worm[e]",
+                     "Gizlenen Solucan[e]"
+                 ],
+                 [
+                     "250587E9:0:-1:0",
+                     "Marsh Crocodile Hatchling[e]",
+                     "Bataklık Timsah Yavrusu[e]"
+                 ],
+                 [
+                     "250587F0:0:-1:0",
+                     "Dusty Worm[e]",
+                     "Tozlu Solucan[e]"
+                 ],
+                 [
+                     "2505880A:0:-1:0",
+                     "Vibrant Spotted Boglurker[e]",
+                     "Canlı Benekli Bataklık Pusucusu[e]"
+                 ],
+                 [
+                     "25058810:0:-1:0",
+                     "Night-born Slime[e]",
+                     "Gece Doğumlu Balçık[e]"
+                 ],
+                 [
+                     "25058813:0:-1:0",
+                     "Rose-coloured Mûmak Calf[e]",
+                     "Gül Renkli Mûmak Buzağı[e]"
+                 ],
+                 [
+                     "25058814:0:-1:0",
+                     "Shade-born Zizanu[e]",
+                     "Gölge Doğumlu Zizanu[e]"
+                 ],
+                 [
+                     "25058816:0:-1:0",
+                     "Ruby Worm[e]",
+                     "Yakut Solucan[e]"
+                 ],
+                 [
+                     "25058825:0:-1:0",
+                     "Rust Slime[e]",
+                     "Pas Balçığı[e]"
+                 ],
+                 [
+                     "25058826:0:-1:0",
+                     "Diligent Mûmak Calf[e]",
+                     "Çalışkan Mûmak Buzağı[e]"
+                 ],
+                 [
+                     "25058827:0:-1:0",
+                     "Burdened Mûmak Calf[e]",
+                     "Yüklü Mûmak Buzağı[e]"
+                 ],
+                 [
+                     "25058828:0:-1:0",
+                     "Marble Mûmak Calf[e]",
+                     "Mermer Mûmak Buzağı[e]"
+                 ],
+                 [
+                     "2505882C:0:-1:0",
+                     "Well-laden Mûmak Calf[e]",
+                     "İyi Yüklü Mûmak Buzağı[e]"
+                 ],
+                 [
+                     "25058834:0:-1:0",
+                     "Industrious Mûmak Calf[v]",
+                     "Çalışkan Mûmak Buzağı[v]"
+                 ],
+                 [
+                     "25058838:0:-1:0",
+                     "Raspberry Slime[e]",
+                     "Ahududu Balçığı[e]"
+                 ],
+                 [
+                     "2505883B:0:-1:0",
+                     "Mottled Vulture[e]",
+                     "Alacalı Akbaba[e]"
+                 ],
+                 [
+                     "2505883C:0:-1:0",
+                     "Gold Zizanu[e]",
+                     "Altın Zizanu[e]"
+                 ],
+                 [
+                     "25058840:0:-1:0",
+                     "Humming Sunbird[e]",
+                     "Vızıldayan Güneşkuşu[e]"
+                 ],
+                 [
+                     "25058845:0:-1:0",
+                     "Armoured Desert Wasp[v]",
+                     "Zırhlı Çöl Eşekarısı[v]"
+                 ],
+                 [
+                     "25058846:0:-1:0",
+                     "Brown Mûmak Calf[e]",
+                     "Kahverengi Mûmak Buzağı[e]"
+                 ],
+                 [
+                     "25058857:0:-1:0",
+                     "Stone Mûmak Calf[e]",
+                     "Taş Mûmak Buzağı[e]"
+                 ],
+                 [
+                     "25058861:0:-1:0",
+                     "Battle-worn Worm[e]",
+                     "Savaş Yorgunu Solucan[e]"
+                 ],
+                 [
+                     "25058871:0:-1:0",
+                     "Sun-laden Mûmak Calf[e]",
+                     "Güneş Yüklü Mûmak Buzağı[e]"
+                 ],
+                 [
+                     "25058872:0:-1:0",
+                     "Desert Slime[e]",
+                     "Çöl Balçığı[e]"
+                 ],
+                 [
+                     "25058876:0:-1:0",
+                     "Emerald Slime[v]",
+                     "Zümrüt Balçığı[v]"
+                 ],
+                 [
+                     "25058877:0:-1:0",
+                     "Pale Zizanu[e]",
+                     "Soluk Zizanu[e]"
+                 ],
+                 [
+                     "25058879:0:-1:0",
+                     "Overgrown Boglurker[v]",
+                     "Aşırı Büyümüş Bataklık Pusucusu[v]"
+                 ],
+                 [
+                     "2505887A:0:-1:0",
+                     "Copper Zizanu[e]",
+                     "Bakır Zizanu[e]"
+                 ],
+                 [
+                     "2505887B:0:-1:0",
+                     "Redstone Mûmak Calf[e]",
+                     "Kızıltaş Mûmak Buzağı[e]"
+                 ],
+                 [
+                     "25059145:0:-1:0",
+                     "Daffodil Celebration Kid[e]",
+                     "Nergis Kutlaması Oğlağı[e]"
+                 ],
+                 [
+                     "2505940A:0:-1:0",
+                     "Quintessential Fawn[e]",
+                     "Benzersiz Geyik Yavrusu[e]"
+                 ],
+                 [
+                     "250596F4:0:-1:0",
+                     "Timeless Elf-hawk[e]",
+                     "Zamansız Elf Doğanı[e]"
+                 ],
+                 [
+                     "25059EEB:0:-1:0",
+                     "Eagle-Owl of the Flowering Sun[v]",
+                     "Çiçeklenen Güneşin Kartal Baykuşu[v]"
+                 ],
+                 [
+                     "2505A286:0:-1:0",
+                     "Golden Fawn[e]",
+                     "Altın Geyik Yavrusu[e]"
+                 ],
+                 [
+                     "2505A287:0:-1:0",
+                     "Regal Grove Fawn[e]",
+                     "Görkemli Koruluk Geyik Yavrusu[e]"
+                 ],
+                 [
+                     "2505A28A:0:-1:0",
+                     "White-necked Stag[m]",
+                     "Beyaz Boyunlu Geyik[m]"
+                 ],
+                 [
+                     "2505A28B:0:-1:0",
+                     "Spring Copse Stag[m]",
+                     "İlkbahar Koruluğu Geyiği[m]"
+                 ],
+                 [
+                     "2505A28F:0:-1:0",
+                     "Regal Grove Doe[f]",
+                     "Görkemli Koruluk Dişi Geyik[f]"
+                 ],
+                 [
+                     "2505A291:0:-1:0",
+                     "Golden Doe[f]",
+                     "Altın Dişi Geyik[f]"
+                 ],
+                 [
+                     "2505A292:0:-1:0",
+                     "White-necked Doe[f]",
+                     "Beyaz Boyunlu Dişi Geyik[f]"
+                 ],
+                 [
+                     "2505A297:0:-1:0",
+                     "Regal Grove Stag[m]",
+                     "Görkemli Koruluk Geyik[m]"
+                 ],
+                 [
+                     "2505A298:0:-1:0",
+                     "Golden Stag[m]",
+                     "Altın Geyik[m]"
+                 ],
+                 [
+                     "2505A29B:0:-1:0",
+                     "White-necked Fawn[e]",
+                     "Beyaz Boyunlu Geyik Yavrusu[e]"
+                 ],
+                 [
+                     "2505A29E:0:-1:0",
+                     "Mottled Mirkwood Doe[f]",
+                     "Alacalı Kuyutorman Dişi Geyik[f]"
+                 ],
+                 [
+                     "2505A2A4:0:-1:0",
+                     "Mottled Mirkwood Stag[m]",
+                     "Alacalı Kuyutorman Geyik[m]"
+                 ],
+                 [
+                     "2505A2A5:0:-1:0",
+                     "Mottled Mirkwood Fawn[e]",
+                     "Alacalı Kuyutorman Geyik Yavrusu[e]"
+                 ],
+                 [
+                     "2505A62E:0:-1:0",
+                     "Calf of High-land Pastures[s]",
+                     "Yayla Meralarının Buzağısı[s]"
+                 ],
+                 [
+                     "2505A8F4:0:-1:0",
+                     "Hound of Promised Allies[s]",
+                     "Vaat Edilen Müttefiklerin Tazısı[s]"
+                 ],
+                 [
+                     "2505AF34:0:-1:0",
+                     "Treasure Grim[e]",
+                     "Hazine Kasvetlisi[e]"
+                 ]
+             ]
 }
