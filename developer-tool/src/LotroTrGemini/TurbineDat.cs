@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
+using System.Runtime.ExceptionServices;
 using System.Text;
 
 namespace LotroTrGemini;
@@ -46,7 +47,9 @@ public sealed class TurbineDat : IDisposable
 		Path = path;
 		_writable = writable;
 		_entryPos = null;
-		_fs = new FileStream(path, FileMode.Open, (!writable) ? FileAccess.Read : FileAccess.ReadWrite, writable ? FileShare.Read : FileShare.ReadWrite, 4194304, writable ? FileOptions.RandomAccess : FileOptions.SequentialScan);
+		// Directory and localization reads seek throughout the DAT. A multi-MB
+		// sequential buffer repeatedly reads unrelated data at each small seek.
+		_fs = new FileStream(path, FileMode.Open, (!writable) ? FileAccess.Read : FileAccess.ReadWrite, writable ? FileShare.Read : FileShare.ReadWrite, 64 * 1024, FileOptions.RandomAccess);
 		_br = new BinaryReader(_fs, Encoding.Unicode, leaveOpen: true);
 		_fs.Position = 320L;
 		if (_br.ReadUInt32() != 21570)
@@ -118,45 +121,54 @@ public sealed class TurbineDat : IDisposable
 
 	public void Close()
 	{
-		if (_br != null)
+		BinaryReader reader = _br;
+		FileStream stream = _fs;
+		_br = null;
+		_fs = null;
+		Exception failure = null;
+		if (reader != null)
 		{
 			try
 			{
-				_br.Dispose();
+				reader.Dispose();
 			}
-			catch
+			catch (Exception ex)
 			{
+				failure = ex;
 			}
-			_br = null;
 		}
-		if (_fs == null)
-		{
-			return;
-		}
-		try
+		if (stream != null)
 		{
 			if (_writable)
 			{
-				_fs.Flush(flushToDisk: true);
+				try
+				{
+					stream.Flush(flushToDisk: true);
+				}
+				catch (Exception ex)
+				{
+					if (failure == null) failure = ex;
+				}
+			}
+			try
+			{
+				stream.Dispose();
+			}
+			catch (Exception ex)
+			{
+				if (failure == null) failure = ex;
 			}
 		}
-		catch
-		{
-		}
-		try
-		{
-			_fs.Dispose();
-		}
-		catch
-		{
-		}
-		_fs = null;
+		// A candidate is not complete until buffered writes reach the disk.
+		// Always release both handles, then preserve the first failure and its
+		// original stack so callers reject and remove the candidate.
+		if (failure != null) ExceptionDispatchInfo.Capture(failure).Throw();
 	}
 
 	public List<DatEntry> ListLocalization()
 	{
 		List<DatEntry> list = new List<DatEntry>(4096);
-		Walk(DirectoryOffset, list, 0);
+		Walk(DirectoryOffset, list, 0, new HashSet<uint>());
 		list.Sort((DatEntry a, DatEntry b) => a.Id.CompareTo(b.Id));
 		List<DatEntry> list2 = new List<DatEntry>();
 		foreach (DatEntry item in list)
@@ -169,13 +181,13 @@ public sealed class TurbineDat : IDisposable
 		return list2;
 	}
 
-	private void Walk(uint offset, List<DatEntry> list, int depth)
+	private void Walk(uint offset, List<DatEntry> list, int depth, HashSet<uint> visited)
 	{
-		if (depth > 40 || offset == 0 || offset >= _fs.Length)
-		{
-			return;
-		}
-		_fs.Position = offset + 8;
+		if (depth > 40 || offset == 0 || (long)offset + 508 > _fs.Length)
+			throw new InvalidDataException("DAT directory node is outside the valid bounds.");
+		if (!visited.Add(offset))
+			throw new InvalidDataException("DAT directory contains a cycle or repeated node.");
+		_fs.Position = (long)offset + 8;
 		List<uint> list2 = new List<uint>();
 		for (int i = 0; i < 62; i++)
 		{
@@ -190,11 +202,11 @@ public sealed class TurbineDat : IDisposable
 				list2.Add(num2);
 			}
 		}
-		_fs.Position = offset + 504;
+		_fs.Position = (long)offset + 504;
 		uint num3 = _br.ReadUInt32();
-		if (num3 > 500000)
+		if (num3 > 500000 || (long)num3 * 32 > _fs.Length - _fs.Position)
 		{
-			throw new InvalidDataException("directory count");
+			throw new InvalidDataException("DAT directory entry count is invalid.");
 		}
 		for (uint num4 = 0u; num4 < num3; num4++)
 		{
@@ -224,7 +236,7 @@ public sealed class TurbineDat : IDisposable
 		int num7 = Math.Min(list2.Count, (int)(num3 + 1));
 		for (int j = 0; j < num7; j++)
 		{
-			Walk(list2[j], list, depth + 1);
+			Walk(list2[j], list, depth + 1, visited);
 		}
 	}
 
@@ -601,8 +613,10 @@ public sealed class TurbineDat : IDisposable
 
 	public void BuildEntryIndex()
 	{
-		_entryPos = new Dictionary<int, long>(300000);
-		IndexWalk(DirectoryOffset, 0);
+		_entryPos = null;
+		Dictionary<int, long> positions = new Dictionary<int, long>(300000);
+		IndexWalk(DirectoryOffset, 0, positions, new HashSet<uint>());
+		_entryPos = positions;
 	}
 
 	public bool TryGetEntry(int id, out DatEntry entry)
@@ -639,18 +653,31 @@ public sealed class TurbineDat : IDisposable
 		return true;
 	}
 
-	private void IndexWalk(uint offset, int depth)
+	private void IndexWalk(uint offset, int depth, Dictionary<int, long> positions, HashSet<uint> visited)
 	{
-		if (depth > 40 || offset == 0 || offset >= _fs.Length)
-		{
-			return;
-		}
-		_fs.Position = offset + 8;
+		if (depth > 40 || offset == 0 || (long)offset + 508 > _fs.Length)
+			throw new InvalidDataException("DAT directory node is outside the valid bounds.");
+		if (!visited.Add(offset))
+			throw new InvalidDataException("DAT directory contains a cycle or repeated node.");
+
+		_fs.Position = (long)offset + 8;
+		byte[] header = _br.ReadBytes(500);
+		if (header.Length != 500)
+			throw new InvalidDataException("DAT directory header is truncated.");
+		uint count = BitConverter.ToUInt32(header, 496);
+		long position = (long)offset + 508;
+		if (count > 500000 || (long)count * 32 > _fs.Length - position)
+			throw new InvalidDataException("DAT directory entry count is invalid.");
+		// Read a node's entry table once. Seeking for each four-byte ID would
+		// refill the FileStream buffer hundreds of thousands of times.
+		byte[] entries = _br.ReadBytes(checked((int)count * 32));
+		if (entries.Length != (long)count * 32)
+			throw new InvalidDataException("DAT directory entry table is truncated.");
 		List<uint> list = new List<uint>();
 		for (int i = 0; i < 62; i++)
 		{
-			uint num = _br.ReadUInt32();
-			uint num2 = _br.ReadUInt32();
+			uint num = BitConverter.ToUInt32(header, i * 8);
+			uint num2 = BitConverter.ToUInt32(header, i * 8 + 4);
 			if (num == 0 && num2 == 0)
 			{
 				break;
@@ -660,20 +687,17 @@ public sealed class TurbineDat : IDisposable
 				list.Add(num2);
 			}
 		}
-		_fs.Position = offset + 504;
-		uint num3 = _br.ReadUInt32();
-		long position = _fs.Position;
-		for (uint num4 = 0u; num4 < num3; num4++)
+		for (int i = 0; i < count; i++)
 		{
-			long num5 = position + num4 * 32;
-			_fs.Position = num5 + 4;
-			int key = (int)_br.ReadUInt32();
-			_entryPos[key] = num5;
+			int key = BitConverter.ToInt32(entries, i * 32 + 4);
+			if (positions.ContainsKey(key))
+				throw new InvalidDataException("DAT directory contains a duplicate entry ID: 0x" + key.ToString("X8"));
+			positions.Add(key, position + (long)i * 32);
 		}
-		int num6 = Math.Min(list.Count, (int)(num3 + 1));
+		int num6 = Math.Min(list.Count, (int)(count + 1));
 		for (int j = 0; j < num6; j++)
 		{
-			IndexWalk(list[j], depth + 1);
+			IndexWalk(list[j], depth + 1, positions, visited);
 		}
 	}
 

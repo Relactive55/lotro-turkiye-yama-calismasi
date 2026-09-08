@@ -11,10 +11,15 @@
   "properties": {
     "schema_version": {"type": "integer", "const": 1},
     "patch_kind": {"type": "string", "const": "semantic_delta_patch"},
+    "patch_mode": {"type": ["string", "null"], "enum": ["full", "incremental", null]},
     "patch_version": {"type": "string", "minLength": 1, "maxLength": 120},
     "source_dat_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
     "source_dat_size": {"type": "integer", "minimum": 1},
     "source_catalog_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "base_patch_version": {"type": ["string", "null"], "minLength": 1, "maxLength": 120},
+    "base_candidate_dat_sha256": {"type": ["string", "null"], "pattern": "^[A-Fa-f0-9]{64}$"},
+    "base_candidate_dat_size": {"type": ["integer", "null"], "minimum": 0},
+    "base_candidate_catalog_sha256": {"type": ["string", "null"], "pattern": "^[A-Fa-f0-9]{64}$"},
     "translation_catalog_version": {"type": "string", "maxLength": 120},
     "patch_generator_version": {"type": "string", "maxLength": 120},
     "translation_provider": {"type": "string", "maxLength": 80},
@@ -60,5 +65,19 @@
         "critical_ui": {"type": "boolean"}
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {"required": ["patch_mode"], "properties": {"patch_mode": {"const": "incremental"}}},
+      "then": {
+        "required": ["base_patch_version", "base_candidate_dat_sha256", "base_candidate_dat_size", "base_candidate_catalog_sha256"],
+        "properties": {
+          "base_patch_version": {"type": "string"},
+          "base_candidate_dat_sha256": {"type": "string"},
+          "base_candidate_dat_size": {"type": "integer", "minimum": 1},
+          "base_candidate_catalog_sha256": {"type": "string"}
+        }
+      }
+    }
+  ]
 }

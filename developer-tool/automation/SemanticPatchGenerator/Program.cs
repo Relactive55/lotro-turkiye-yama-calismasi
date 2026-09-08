@@ -24,9 +24,11 @@ internal static class Program
 
     private static int Main(string[] args)
     {
-        if (args.Length < 4 || args.Length > 7)
+        if (args.Length > 0 && args[0] == "--incremental") return IncrementalGeneration.Run(args);
+        if (args.Length > 0 && args[0] == "--verified-root") return RootGeneration.Run(args);
+        if (args.Length < 4 || args.Length > 8)
         {
-            Console.Error.WriteLine("Usage: SemanticPatchGenerator <source.dat> <candidates.jsonl> <output.json> <patch-version> [verified-reference.dat] [private-review.jsonl] [manual-decisions.jsonl]");
+            Console.Error.WriteLine("Usage: SemanticPatchGenerator <source.dat> <candidates.jsonl> <output.json> <patch-version> [verified-reference.dat] [private-review.jsonl] [manual-decisions.jsonl] [reference-source.dat]");
             return 2;
         }
         string sourcePath = Path.GetFullPath(args[0]);
@@ -35,9 +37,13 @@ internal static class Program
         string patchVersion = args[3];
         string referencePath = args.Length >= 5 && args[4] != "-" ? Path.GetFullPath(args[4]) : null;
         string reviewPath = args.Length >= 6 && args[5] != "-" ? Path.GetFullPath(args[5]) : null;
-        string decisionsPath = args.Length == 7 && args[6] != "-" ? Path.GetFullPath(args[6]) : null;
+        string decisionsPath = args.Length >= 7 && args[6] != "-" ? Path.GetFullPath(args[6]) : null;
+        string referenceSourcePath = args.Length == 8 && args[7] != "-" ? Path.GetFullPath(args[7]) : null;
+        if ((referencePath == null) != (referenceSourcePath == null))
+            throw new InvalidDataException("Reference reuse requires both verified-reference.dat and its original clean reference-source.dat. Use '-' for unused optional arguments.");
         if (!File.Exists(sourcePath) || !File.Exists(candidatePath)) throw new FileNotFoundException("Source DAT or candidate pool is missing.");
         if (referencePath != null && !File.Exists(referencePath)) throw new FileNotFoundException("Verified reference DAT is missing.", referencePath);
+        if (referenceSourcePath != null && !File.Exists(referenceSourcePath)) throw new FileNotFoundException("Original clean reference source DAT is missing.", referenceSourcePath);
 
         Console.WriteLine("Aday havuzu okunuyor...");
         Dictionary<string, TranslationCandidate> candidates = LoadCandidates(candidatePath);
@@ -54,18 +60,24 @@ internal static class Program
         Dictionary<string, string> referenceTargets = referencePath == null
             ? new Dictionary<string, string>(StringComparer.Ordinal)
             : ExtractTargets(referencePath);
+        Dictionary<string, CatalogRecord> referenceSources = referenceSourcePath == null
+            ? new Dictionary<string, CatalogRecord>(StringComparer.Ordinal)
+            : (string.Equals(referenceSourcePath, sourcePath, StringComparison.OrdinalIgnoreCase)
+                ? records
+                : ExtractCatalog(referenceSourcePath)).ToDictionary(record => record.Key, StringComparer.Ordinal);
         if (referencePath != null) Console.WriteLine("Doğrulanmış referans satırı: " + referenceTargets.Count);
 
         SemanticPatchDocument document = new SemanticPatchDocument
         {
             schema_version = 1,
             patch_kind = SemanticPatchBuilder.PatchKind,
+            patch_mode = SemanticPatchBuilder.FullPatchMode,
             patch_version = patchVersion,
             source_dat_sha256 = HashFile(sourcePath),
             source_dat_size = new FileInfo(sourcePath).Length,
             source_catalog_sha256 = sourceCatalogHash,
             translation_catalog_version = Path.GetFileNameWithoutExtension(candidatePath),
-            patch_generator_version = "semantic-generator-v1",
+            patch_generator_version = "semantic-generator-v2",
             translation_provider = "curated-pool",
             translation_model_version = "mixed-audited",
             translation_model_sha256 = string.Empty,
@@ -75,6 +87,7 @@ internal static class Program
 
         int rejected = 0;
         int unmatchedCritical = 0;
+        int referenceSourceMismatch = 0;
         List<ReviewRow> rejectedReview = new List<ReviewRow>();
         foreach (CatalogRecord record in records)
         {
@@ -90,13 +103,18 @@ internal static class Program
                 if (string.Equals(decision.action, "preserve", StringComparison.Ordinal)) continue;
             }
             candidates.TryGetValue(record.Key, out TranslationCandidate candidate);
-            // A previously game-tested DAT restores broad Turkish coverage.
-            // Structural tables are excluded above and every restored target
-            // still passes the format, mojibake and repetition validators.
+            // A translation is tied to the English source that originally
+            // produced it. Re-stamping an old target with today's digest would
+            // silently approve stale meaning when an update reuses the DAT key.
             if (referenceTargets.TryGetValue(record.Key, out string referenceTarget)
                 && !string.Equals(referenceTarget, record.Source, StringComparison.Ordinal))
             {
-                if (candidate == null || !string.Equals(candidate.target, referenceTarget, StringComparison.Ordinal))
+                referenceSources.TryGetValue(record.Key, out CatalogRecord referenceSource);
+                if (!CanReuseReference(record, referenceSource))
+                {
+                    referenceSourceMismatch++;
+                }
+                else if (candidate == null || !string.Equals(candidate.target, referenceTarget, StringComparison.Ordinal))
                 {
                     candidate = new TranslationCandidate
                     {
@@ -120,6 +138,9 @@ internal static class Program
             }
             if (decision != null && string.Equals(decision.action, "translate", StringComparison.Ordinal))
             {
+                if (!SourceDigest.Matches(record.SourceDigest, decision.source_digest)
+                    || !string.Equals(record.TokenSignature, decision.token_signature, StringComparison.OrdinalIgnoreCase))
+                    throw new InvalidDataException("Manual decision source changed or is unproven: " + record.Key);
                 candidate = new TranslationCandidate
                 {
                     entry_identity = record.EntryIdentity,
@@ -193,6 +214,7 @@ internal static class Program
         ReplaceAtomic(temporary, outputPath);
         Console.WriteLine("SEMANTIC_PATCH_GENERATED|entries=" + document.entries.Count
             + "|rejected=" + rejected + "|critical_review=" + unmatchedCritical
+            + "|reference_source_mismatch=" + referenceSourceMismatch
             + "|review_rows=" + rejectedReview.Count
             + "|bytes=" + new FileInfo(outputPath).Length + "|sha256=" + HashFile(outputPath));
         return 0;
@@ -255,14 +277,16 @@ internal static class Program
         }
     }
 
-    private sealed class ManualDecision
+    internal sealed class ManualDecision
     {
         public string dat_key { get; set; }
         public string action { get; set; }
         public string target { get; set; }
+        public string source_digest { get; set; }
+        public string token_signature { get; set; }
     }
 
-    private static Dictionary<string, TranslationCandidate> LoadCandidates(string path)
+    internal static Dictionary<string, TranslationCandidate> LoadCandidates(string path)
     {
         Dictionary<string, TranslationCandidate> result = new Dictionary<string, TranslationCandidate>(StringComparer.Ordinal);
         JavaScriptSerializer json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue, RecursionLimit = 100 };
@@ -283,7 +307,7 @@ internal static class Program
         return result;
     }
 
-    private static Dictionary<string, ManualDecision> LoadDecisions(string path)
+    internal static Dictionary<string, ManualDecision> LoadDecisions(string path)
     {
         Dictionary<string, ManualDecision> result = new Dictionary<string, ManualDecision>(StringComparer.Ordinal);
         JavaScriptSerializer json = new JavaScriptSerializer { MaxJsonLength = int.MaxValue };
@@ -295,7 +319,8 @@ internal static class Program
             ManualDecision decision = json.Deserialize<ManualDecision>(line);
             if (decision == null || string.IsNullOrWhiteSpace(decision.dat_key)
                 || (decision.action != "preserve" && decision.action != "translate")
-                || (decision.action == "translate" && string.IsNullOrWhiteSpace(decision.target)))
+                || (decision.action == "translate" && (string.IsNullOrWhiteSpace(decision.target)
+                    || !SourceDigest.IsValid(decision.source_digest) || !SourceDigest.IsValid(decision.token_signature))))
                 throw new InvalidDataException("Invalid manual decision at line " + lineNumber + ".");
             if (result.ContainsKey(decision.dat_key))
                 throw new InvalidDataException("Duplicate manual decision DAT key: " + decision.dat_key);
@@ -304,13 +329,14 @@ internal static class Program
         return result;
     }
 
-    private static List<CatalogRecord> ExtractCatalog(string path)
+    internal static List<CatalogRecord> ExtractCatalog(string path)
     {
         List<CatalogRecord> records = new List<CatalogRecord>(850000);
         long position = 0;
         using (TurbineDat dat = new TurbineDat())
         {
             dat.Open(path, false);
+            dat.ValidateLocalizationChains();
             foreach (DatEntry entry in dat.ListLocalization())
             {
                 byte[] raw = dat.ReadRaw(entry);
@@ -337,20 +363,29 @@ internal static class Program
                     throw new InvalidDataException("Compressed localization entry could not be read: 0x" + entry.Id.ToString("X8"));
                 foreach (LocRow row in LocBin.Parse(payload, entry.Id).GetRows(entry.Id))
                 {
-                    if (!result.ContainsKey(row.Key)) result.Add(row.Key, row.Original ?? string.Empty);
+                    if (result.ContainsKey(row.Key)) throw new InvalidDataException("Duplicate reference DAT key: " + row.Key);
+                    result.Add(row.Key, row.Original ?? string.Empty);
                 }
             }
         }
         return result;
     }
 
-    private static bool IsExcluded(CatalogRecord record)
+    internal static bool CanReuseReference(CatalogRecord current, CatalogRecord referenceSource)
+    {
+        return current != null && referenceSource != null
+            && string.Equals(current.Key, referenceSource.Key, StringComparison.Ordinal)
+            && SourceDigest.Matches(current.SourceDigest, referenceSource.SourceDigest)
+            && string.Equals(current.TokenSignature, referenceSource.TokenSignature, StringComparison.OrdinalIgnoreCase);
+    }
+
+    internal static bool IsExcluded(CatalogRecord record)
     {
         return StructuralPreserveDids.Contains(record.Did)
             || CatalogIdentity.IsExcludedFromTranslation(record.Did, record.RecordIndex, record.GroupIndex, record.IndexInGroup);
     }
 
-    private static string Validate(CatalogRecord record, TranslationCandidate candidate)
+    internal static string Validate(CatalogRecord record, TranslationCandidate candidate)
     {
         if (!TranslationStatuses.IsPatchable(candidate.translation_status)) return "status";
         if (record.CriticalUi && !string.Equals(candidate.translation_status, TranslationStatuses.HumanApproved, StringComparison.Ordinal)) return "critical";
@@ -384,7 +419,7 @@ internal static class Program
         return false;
     }
 
-    private static string HashFile(string path)
+    internal static string HashFile(string path)
     {
         using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024 * 1024, FileOptions.SequentialScan))
         using (SHA256 sha = SHA256.Create())

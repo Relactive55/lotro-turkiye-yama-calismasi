@@ -15,6 +15,8 @@ public static class KnownUiFixes
 	private const int CharacterSelectionDid = unchecked((int)0x250001BDu);
 	private const int FellowshipMenuDid = unchecked((int)0x250001AFu);
 	private const int FellowshipUiDid = unchecked((int)0x250001BBu);
+	private static readonly string[] CharacterSelectionSource = { "", " of ", " Character Slots Used" };
+	private static readonly string[] CharacterSelectionTarget = { "", " / ", " KARAKTER YUVASI KULLANILIYOR" };
 
 	private sealed class FlatUiFix
 	{
@@ -206,6 +208,40 @@ public static class KnownUiFixes
 		new FlatUiFix("250001BB:926:-1:0", "Cancel", "İptal")
 	};
 
+	/// <summary>
+	/// Content identity for caches that already include these corrections.
+	/// Update the domain version if correction semantics change; table or
+	/// character-selection text changes invalidate caches automatically.
+	/// </summary>
+	public static string ContentRevisionSha256
+	{
+		get
+		{
+			using (MemoryStream stream = new MemoryStream())
+			using (BinaryWriter writer = new BinaryWriter(stream, Encoding.UTF8, true))
+			using (System.Security.Cryptography.SHA256 sha = System.Security.Cryptography.SHA256.Create())
+			{
+				writer.Write("lotro-known-ui-fixes-v1");
+				writer.Write(CharacterSelectionDid);
+				writer.Write(CharacterSelectionSource.Length);
+				foreach (string value in CharacterSelectionSource) writer.Write(value);
+				writer.Write(CharacterSelectionTarget.Length);
+				foreach (string value in CharacterSelectionTarget) writer.Write(value);
+				writer.Write(FellowshipMenuDid);
+				writer.Write(FellowshipUiDid);
+				writer.Write(FlatFixes.Length);
+				foreach (FlatUiFix fix in FlatFixes.OrderBy(item => item.Key, StringComparer.Ordinal))
+				{
+					writer.Write(fix.Key);
+					writer.Write(fix.Source);
+					writer.Write(fix.Target);
+				}
+				writer.Flush();
+				return BitConverter.ToString(sha.ComputeHash(stream.ToArray())).Replace("-", "").ToLowerInvariant();
+			}
+		}
+	}
+
 	public static bool HasAutomaticFix(int did)
 	{
 		return did == CharacterSelectionDid || did == FellowshipMenuDid || did == FellowshipUiDid;
@@ -222,8 +258,8 @@ public static class KnownUiFixes
 
 	private static byte[] ApplyCharacterSelectionFix(byte[] payload)
 	{
-		byte[] source = BuildRecord("", " of ", " Character Slots Used");
-		byte[] target = BuildRecord("", " / ", " KARAKTER YUVASI KULLANILIYOR");
+		byte[] source = BuildRecord(CharacterSelectionSource);
+		byte[] target = BuildRecord(CharacterSelectionTarget);
 		int sourceOffset = IndexOf(payload, source);
 		if (sourceOffset < 0)
 		{

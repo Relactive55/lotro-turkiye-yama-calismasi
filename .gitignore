@@ -39,6 +39,11 @@ backups/
 *.tmp
 *.log
 *.jsonl
+# Local catalog caches contain original game text even when compressed.
+*.jsonl.gz
+*.bin.gz
+*.records.json
+*.catalog-cache.json
 *.building
 gpu_job_*/
 gpu_quality_log.tsv

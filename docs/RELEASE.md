@@ -1,5 +1,20 @@
 # Release modeli
 
+## Zincirli küçük düzeltmeler
+
+İlk kararlı semantic paket zincirin tam köküdür ve yaklaşık 440 MB olarak bir
+kez indirilir. Sonraki düzeltmeler `patch_mode=incremental` ile yalnızca
+değişen kayıtları içerir. Manifest; predecessor release/tag/asset kimliğini,
+predecessor DAT ve katalog SHA-256 değerlerini ve zincir derinliğini taşır.
+Updater önce bu kimlikleri doğrular, yalnız eksik katmanları indirir ve
+katmanları kökten güncele sırayla uygular. Böylece mevcut kullanıcı için normal
+düzeltme indirmesi KB/MB seviyesine iner; predecessor asset her release'e
+yeniden yüklenmez.
+
+Yeni bir kök semantic paket, oyun DAT temeli değiştiğinde veya zincir bakımı
+gerektiğinde yayımlanır. Zincir 32 katmanla sınırlıdır; her katman bağımsız
+SHA-256, katalog ve rollback doğrulamasından geçer.
+
 İki ayrı kanal planlanır:
 
 - Patch release: manifest ve doğrulanmış `semantic_delta_patch` asset'i.

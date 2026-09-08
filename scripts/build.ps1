@@ -1,6 +1,6 @@
 [CmdletBinding()]
 param(
-    [ValidateSet('DeveloperTool','Updater','Tests','All')][string]$Project = 'All',
+    [ValidateSet('DeveloperTool','SemanticGenerator','Updater','Tests','All')][string]$Project = 'All',
     [string]$DotnetPath
 )
 
@@ -22,6 +22,7 @@ try {
     if (-not $dotnet) { throw 'dotnet SDK bulunamadı; build çalıştırılmadı.' }
     $projects = @()
     if ($Project -in @('DeveloperTool','All')) { $projects += Join-Path $repo 'developer-tool\LotroTrGemini.csproj' }
+    if ($Project -in @('SemanticGenerator','All')) { $projects += Join-Path $repo 'developer-tool\automation\SemanticPatchGenerator\SemanticPatchGenerator.csproj' }
     if ($Project -in @('Updater','All')) { $projects += Join-Path $repo 'updater\LOTRO.TurkceYama.Setup.csproj' }
     if ($Project -in @('Tests','All')) { $projects += Join-Path $repo 'tests\LOTRO.Setup.Tests.csproj' }
     foreach ($projectPath in $projects) {

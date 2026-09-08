@@ -93,6 +93,9 @@ internal static class UpdaterBehaviorTests
                 if (!File.Exists(state)) throw new Exception("state not written");
                 if (Directory.GetFiles(Path.Combine(game, ".lotro-turkce-backups")).Length != 1) throw new Exception("backup not written");
                 Pass("fake LOTRO backup/install/state");
+                ExpectCancellationAtProgress(updater, game, Path.Combine(cache, patchName), manifest, state,
+                    "Tam DAT güvenli biçimde yerleştiriliyor",
+                    "full DAT final-progress cancellation preserves live DAT timestamp and state");
             }
             finally { TryDeleteDirectory(game); }
 
@@ -224,6 +227,29 @@ internal static class UpdaterBehaviorTests
         semanticManifest.critical_review_required_count = 1;
         Expect("MANIFEST_INVALID", () => ManifestValidator.Validate(semanticManifest, semanticRelease, semanticRelease.assets[0]), "semantic release with unresolved critical rows rejected");
         semanticManifest.critical_review_required_count = 0;
+        ReleaseManifest futureUpdaterManifest = CloneManifest(semanticManifest);
+        futureUpdaterManifest.minimum_updater_version = "9999.0.0.0";
+        Expect("UPDATER_TOO_OLD", () => ManifestValidator.Validate(futureUpdaterManifest, semanticRelease, semanticRelease.assets[0]),
+            "future minimum updater version is rejected clearly");
+        ReleaseManifest malformedUpdaterManifest = CloneManifest(semanticManifest);
+        malformedUpdaterManifest.minimum_updater_version = "not-a-version";
+        Expect("MANIFEST_INVALID", () => ManifestValidator.Validate(malformedUpdaterManifest, semanticRelease, semanticRelease.assets[0]),
+            "malformed minimum updater version is rejected");
+        foreach (Tuple<string, long> pair in new[]
+        {
+            Tuple.Create<string, long>(null, 1),
+            Tuple.Create<string, long>(null, -1),
+            Tuple.Create(" ", 1L),
+            Tuple.Create("", 0L),
+            Tuple.Create(new string('0', 64), 0L)
+        })
+        {
+            ReleaseManifest unpairedCandidate = CloneManifest(semanticManifest);
+            unpairedCandidate.candidate_dat_sha256 = pair.Item1;
+            unpairedCandidate.candidate_dat_size = pair.Item2;
+            Expect("MANIFEST_INVALID", () => ManifestValidator.Validate(unpairedCandidate, semanticRelease, semanticRelease.assets[0]),
+                "candidate DAT digest and size must be a valid pair");
+        }
         string semanticCache = CreateTemp();
         try
         {
@@ -260,6 +286,281 @@ internal static class UpdaterBehaviorTests
                 Pass("semantic DAT patch backup/install/round-trip");
                 Pass("semantic writer preserves official storage representation");
                 Pass("semantic writer preserves official in-place allocation metadata");
+
+                string installedDatPath = Path.Combine(semanticGame, "client_local_English.dat");
+                string installedStatePath = Path.Combine(semanticGame, "installed_patch.json");
+                if (!LotroReleaseUpdater.IsInstalledFileValid(installed, CancellationToken.None, semanticGame))
+                    throw new Exception("verified installed state was rejected");
+                string otherGame = CreateTemp();
+                try
+                {
+                    if (LotroReleaseUpdater.IsInstalledFileValid(installed, CancellationToken.None, otherGame))
+                        throw new Exception("installed state accepted for a different game directory");
+                    Pass("installed state is bound to the selected game directory");
+                }
+                finally { TryDeleteDirectory(otherGame); }
+                byte[] installedBytes = File.ReadAllBytes(installedDatPath);
+                DateTime installedTime = File.GetLastWriteTimeUtc(installedDatPath);
+                byte[] tamperedInstalled = (byte[])installedBytes.Clone();
+                tamperedInstalled[tamperedInstalled.Length - 1] ^= 1;
+                File.WriteAllBytes(installedDatPath, tamperedInstalled);
+                if (LotroReleaseUpdater.IsInstalledFileValid(installed, CancellationToken.None, semanticGame))
+                    throw new Exception("same-size installed DAT modification was trusted");
+                Pass("installed state rejects same-size DAT content changes");
+                File.WriteAllBytes(installedDatPath, installedBytes);
+                File.SetLastWriteTimeUtc(installedDatPath, installedTime);
+
+                ReleaseManifest wrongRootDigest = CloneManifest(semanticManifest);
+                wrongRootDigest.release_id += 100; // Exercise a new release, not the idempotent exit.
+                wrongRootDigest.candidate_dat_size = installed.size;
+                wrongRootDigest.candidate_dat_sha256 = new string('0', 64);
+                ExpectInstallationUnchanged("CANDIDATE_DAT_MISMATCH", installedDatPath, installedStatePath,
+                    () => semanticUpdater.InstallPatchAsync(semanticGame, Path.Combine(semanticCache, semanticName),
+                        wrongRootDigest, installedStatePath, CancellationToken.None).GetAwaiter().GetResult(),
+                    "wrong root candidate digest preserves installed DAT and state");
+                ReleaseManifest wrongRootSize = CloneManifest(wrongRootDigest);
+                wrongRootSize.candidate_dat_sha256 = installed.sha256;
+                wrongRootSize.candidate_dat_size = installed.size + 1;
+                ExpectInstallationUnchanged("CANDIDATE_DAT_MISMATCH", installedDatPath, installedStatePath,
+                    () => semanticUpdater.InstallPatchAsync(semanticGame, Path.Combine(semanticCache, semanticName),
+                        wrongRootSize, installedStatePath, CancellationToken.None).GetAwaiter().GetResult(),
+                    "wrong root candidate size preserves installed DAT and state");
+
+                ReleaseManifest cancelledRoot = CloneManifest(wrongRootDigest);
+                cancelledRoot.candidate_dat_sha256 = installed.sha256;
+                using (CancellationTokenSource cancellation = new CancellationTokenSource())
+                {
+                    bool candidateCreated = false;
+                    ExpectInstallationUnchanged("CANCELLED", installedDatPath, installedStatePath,
+                        () => semanticUpdater.InstallPatchAsync(semanticGame, Path.Combine(semanticCache, semanticName),
+                            cancelledRoot, installedStatePath, cancellation.Token, message =>
+                            {
+                                if (message.StartsWith("Türkçe satırlar DAT adayına yazılıyor", StringComparison.Ordinal))
+                                {
+                                    candidateCreated = File.Exists(installedDatPath + ".lotro-candidate.part");
+                                    cancellation.Cancel();
+                                }
+                            }).GetAwaiter().GetResult(),
+                        "cancellation after candidate copy cleans temporary DAT without restoring the live DAT");
+                    if (!candidateCreated) throw new Exception("cancellation did not reach a created candidate");
+                }
+                ExpectCancellationAtProgress(semanticUpdater, semanticGame, Path.Combine(semanticCache, semanticName),
+                    cancelledRoot, installedStatePath, "Aday DAT baştan sona doğrulanıyor ve yerleştiriliyor",
+                    "root final-progress cancellation preserves live DAT timestamp and state");
+
+                // The existing backup is an exact match for this manifest,
+                // but it must not justify replacing a newly changed live DAT.
+                Verify(installed.source_backup_file, semanticSource.Length, semanticSourceHash);
+                byte[] updatedWithoutMatchingRelease = (byte[])installedBytes.Clone();
+                updatedWithoutMatchingRelease[updatedWithoutMatchingRelease.Length - 1] ^= 1;
+                File.WriteAllBytes(installedDatPath, updatedWithoutMatchingRelease);
+                ExpectInstallationUnchanged("PATCH_RELEASE_PENDING", installedDatPath, installedStatePath,
+                    () => semanticUpdater.InstallPatchAsync(semanticGame, Path.Combine(semanticCache, semanticName),
+                        semanticManifest, installedStatePath, CancellationToken.None).GetAwaiter().GetResult(),
+                    "an exact old clean backup cannot downgrade a newer official DAT");
+                File.WriteAllBytes(installedDatPath, installedBytes);
+                File.SetLastWriteTimeUtc(installedDatPath, installedTime);
+
+                // A chained correction changes only the row that needs a fix.
+                // The predecessor release/asset is resolved by tag, but is not
+                // downloaded when the installed state already matches it.
+                string incrementalGame = CreateTemp();
+                try
+                {
+                    File.WriteAllBytes(Path.Combine(incrementalGame, "client_local_English.dat"), semanticSource);
+                    File.WriteAllBytes(Path.Combine(incrementalGame, "LotroLauncher.exe"), new byte[] { 0 });
+                    string incrementalStatePath = Path.Combine(incrementalGame, "installed_patch.json");
+                    InstalledPatchState baseInstalled = await semanticUpdater.InstallPatchAsync(
+                        incrementalGame,
+                        Path.Combine(semanticCache, semanticName),
+                        semanticManifest,
+                        incrementalStatePath,
+                        CancellationToken.None);
+                    string baseDatPath = Path.Combine(incrementalGame, "client_local_English.dat");
+                    List<CatalogRecord> baseCatalog = ReadCatalog(baseDatPath);
+                    CatalogRecord baseRecord = baseCatalog[0];
+                    SemanticPatchDocument incrementalDocument = new SemanticPatchDocument
+                    {
+                        schema_version = 1,
+                        patch_kind = SemanticPatchBuilder.PatchKind,
+                        patch_mode = SemanticPatchBuilder.IncrementalPatchMode,
+                        patch_version = "tr-2026.09.07.incremental",
+                        source_dat_sha256 = semanticSourceHash,
+                        source_dat_size = semanticSource.Length,
+                        source_catalog_sha256 = semanticSourceCatalogHash,
+                        base_patch_version = semanticDocument.patch_version,
+                        base_candidate_dat_sha256 = baseInstalled.sha256,
+                        base_candidate_dat_size = baseInstalled.size,
+                        base_candidate_catalog_sha256 = baseInstalled.candidate_catalog_sha256,
+                        translation_catalog_version = "catalog-test-incremental",
+                        patch_generator_version = "generator-test",
+                        translation_provider = "OPUS",
+                        translation_model_version = "unverified",
+                        counts = new SemanticPatchCounts { safe_translated_count = 1 },
+                        entries = new List<SemanticPatchEntry>
+                        {
+                            new SemanticPatchEntry
+                            {
+                                entry_identity = baseRecord.EntryIdentity,
+                                dat_key = baseRecord.Key,
+                                did = baseRecord.Did,
+                                record_index = baseRecord.RecordIndex,
+                                group_index = baseRecord.GroupIndex,
+                                index_in_group = baseRecord.IndexInGroup,
+                                source_digest = baseRecord.SourceDigest,
+                                token_signature = baseRecord.TokenSignature,
+                                target = "Düzeltilmiş",
+                                translation_status = TranslationStatuses.HumanApproved,
+                                translation_engine = "fixture",
+                                translation_engine_version = "2",
+                                classification = DiffClassification.UNCHANGED.ToString(),
+                                critical_ui = false
+                            }
+                        }
+                    };
+                    string previewPath = Path.Combine(incrementalGame, "incremental-preview.dat");
+                    ManagedSemanticDatPatcher.Result preview = ManagedSemanticDatPatcher.BuildIncrementalCandidate(
+                        baseDatPath,
+                        previewPath,
+                        incrementalDocument,
+                        null,
+                        CancellationToken.None);
+                    TryDelete(previewPath);
+                    byte[] incrementalBytes = Encoding.UTF8.GetBytes(SemanticPatchSerializer.Serialize(incrementalDocument));
+                    // Different releases may reuse an asset name. Their cached
+                    // contents must remain distinct when the full chain is needed.
+                    string incrementalName = semanticName;
+                    ReleaseManifest incrementalManifest = new ReleaseManifest
+                    {
+                        schema_version = 1,
+                        patch_version = incrementalDocument.patch_version,
+                        patch_mode = SemanticPatchBuilder.IncrementalPatchMode,
+                        release_tag = "tr-2026.09.07-incremental",
+                        release_id = 46,
+                        asset_id = 7,
+                        asset_name = incrementalName,
+                        asset_size = incrementalBytes.Length,
+                        asset_sha256 = Hash(incrementalBytes),
+                        source_dat_sha256 = semanticSourceHash,
+                        source_dat_size = semanticSource.Length,
+                        source_catalog_sha256 = semanticSourceCatalogHash,
+                        candidate_catalog_sha256 = preview.CatalogSha256,
+                        candidate_dat_sha256 = preview.DatSha256,
+                        candidate_dat_size = preview.DatSize,
+                        game_version = "fixture-3",
+                        asset_kind = LotroReleaseUpdater.SemanticPatchKind,
+                        base_patch_version = semanticManifest.patch_version,
+                        base_release_tag = semanticManifest.release_tag,
+                        base_release_id = semanticRelease.id,
+                        base_asset_id = semanticManifest.asset_id,
+                        base_asset_name = semanticManifest.asset_name,
+                        base_asset_size = semanticManifest.asset_size,
+                        base_asset_sha256 = semanticManifest.asset_sha256,
+                        base_candidate_dat_sha256 = baseInstalled.sha256,
+                        base_candidate_dat_size = baseInstalled.size,
+                        base_candidate_catalog_sha256 = baseInstalled.candidate_catalog_sha256,
+                        chain_depth = 1,
+                        safe_translated_count = 1,
+                        skipped_changed_count = 0,
+                        critical_review_required_count = 0
+                    };
+                    StableRelease incrementalRelease = new StableRelease
+                    {
+                        id = incrementalManifest.release_id,
+                        tag_name = incrementalManifest.release_tag,
+                        draft = false,
+                        prerelease = false,
+                        assets = new[]
+                        {
+                            new ReleaseAsset { id = 6, name = "manifest.json", browser_download_url = "https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/download/" + incrementalManifest.release_tag + "/manifest.json" },
+                            new ReleaseAsset { id = incrementalManifest.asset_id, name = incrementalName, size = incrementalBytes.Length, browser_download_url = "https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/download/" + incrementalManifest.release_tag + "/" + incrementalName }
+                        }
+                    };
+                    string incrementalManifestJson = new JavaScriptSerializer().Serialize(incrementalManifest);
+                    incrementalRelease.assets[0].size = Encoding.UTF8.GetByteCount(incrementalManifestJson);
+                    ManifestValidator.Validate(incrementalManifest, incrementalRelease, incrementalRelease.assets[0]);
+                    ChainTransport chainTransport = new ChainTransport(
+                        semanticRelease,
+                        new JavaScriptSerializer().Serialize(semanticManifest),
+                        semanticBytes,
+                        incrementalRelease,
+                        incrementalManifestJson,
+                        incrementalBytes);
+                    LotroReleaseUpdater chainUpdater = new LotroReleaseUpdater(chainTransport);
+                    string chainCache = CreateTemp();
+                    try
+                    {
+                        List<PatchPackage> packages = await chainUpdater.DownloadPatchChainAsync(
+                            incrementalRelease,
+                            incrementalManifest,
+                            chainCache,
+                            baseInstalled,
+                            CancellationToken.None);
+                        if (packages.Count != 1 || packages[0].manifest.patch_version != incrementalManifest.patch_version)
+                            throw new Exception("chain did not trim the installed predecessor");
+                        if (chainTransport.Downloaded.Count != 1 || chainTransport.Downloaded[0].IndexOf(incrementalName, StringComparison.Ordinal) < 0)
+                            throw new Exception("chain downloaded the large predecessor unexpectedly");
+
+                        string staleCache = CreateTemp();
+                        byte[] verifiedBaseBytes = File.ReadAllBytes(baseDatPath);
+                        DateTime verifiedBaseTime = File.GetLastWriteTimeUtc(baseDatPath);
+                        try
+                        {
+                            byte[] staleBytes = (byte[])verifiedBaseBytes.Clone();
+                            staleBytes[staleBytes.Length - 1] ^= 1;
+                            File.WriteAllBytes(baseDatPath, staleBytes);
+                            int requestsBefore = chainTransport.Downloaded.Count;
+                            List<PatchPackage> fullChain = await chainUpdater.DownloadPatchChainAsync(
+                                incrementalRelease, incrementalManifest, staleCache, baseInstalled, CancellationToken.None);
+                            if (fullChain.Count != 2 || chainTransport.Downloaded.Count != requestsBefore + 2)
+                                throw new Exception("stale installed state incorrectly trimmed the predecessor");
+                            Pass("same-size stale DAT state downloads the complete patch chain");
+                            if (string.Equals(fullChain[0].path, fullChain[1].path, StringComparison.OrdinalIgnoreCase)
+                                || Path.GetFileName(fullChain[0].path) != Path.GetFileName(fullChain[1].path))
+                                throw new Exception("same-named release assets did not receive separate cache paths");
+                            Verify(fullChain[0].path, semanticBytes.Length, Hash(semanticBytes));
+                            Verify(fullChain[1].path, incrementalBytes.Length, Hash(incrementalBytes));
+                            Pass("same asset filename in two releases keeps both verified cache contents");
+                        }
+                        finally
+                        {
+                            File.WriteAllBytes(baseDatPath, verifiedBaseBytes);
+                            File.SetLastWriteTimeUtc(baseDatPath, verifiedBaseTime);
+                            TryDeleteDirectory(staleCache);
+                        }
+
+                        ReleaseManifest wrongIncrementalDigest = CloneManifest(incrementalManifest);
+                        wrongIncrementalDigest.candidate_dat_sha256 = new string('0', 64);
+                        ExpectInstallationUnchanged("CANDIDATE_DAT_MISMATCH", baseDatPath, incrementalStatePath,
+                            () => chainUpdater.InstallPatchAsync(incrementalGame, packages[0].path,
+                                wrongIncrementalDigest, incrementalStatePath, CancellationToken.None).GetAwaiter().GetResult(),
+                            "wrong incremental candidate digest preserves predecessor DAT and state");
+                        ReleaseManifest wrongIncrementalSize = CloneManifest(incrementalManifest);
+                        wrongIncrementalSize.candidate_dat_size++;
+                        ExpectInstallationUnchanged("CANDIDATE_DAT_MISMATCH", baseDatPath, incrementalStatePath,
+                            () => chainUpdater.InstallPatchAsync(incrementalGame, packages[0].path,
+                                wrongIncrementalSize, incrementalStatePath, CancellationToken.None).GetAwaiter().GetResult(),
+                            "wrong incremental candidate size preserves predecessor DAT and state");
+                        ExpectCancellationAtProgress(chainUpdater, incrementalGame, packages[0].path,
+                            incrementalManifest, incrementalStatePath, "Türkçe düzeltme adayı doğrulanıyor ve yerleştiriliyor",
+                            "incremental final-progress cancellation preserves predecessor DAT timestamp and state");
+                        InstalledPatchState incrementalInstalled = await chainUpdater.InstallPatchChainAsync(
+                            incrementalGame,
+                            packages,
+                            incrementalStatePath,
+                            CancellationToken.None);
+                        List<CatalogRecord> incrementalCatalog = ReadCatalog(baseDatPath);
+                        if (incrementalCatalog.Count != 1 || incrementalCatalog[0].Source != "Düzeltilmiş")
+                            throw new Exception("incremental correction target not installed");
+                        if (incrementalInstalled.source_dat_sha256 != semanticSourceHash
+                            || incrementalInstalled.candidate_catalog_sha256 != preview.CatalogSha256)
+                            throw new Exception("incremental state baseline/candidate mismatch");
+                        Pass("incremental semantic chain downloads only the correction layer");
+                        Pass("incremental semantic layer applies directly to predecessor DAT");
+                    }
+                    finally { TryDeleteDirectory(chainCache); }
+                }
+                finally { TryDeleteDirectory(incrementalGame); }
 
                 // Simulate the official launcher updating a DAT that already
                 // contains our Turkish row. The binary version changes while
@@ -306,6 +607,9 @@ internal static class UpdaterBehaviorTests
                     asset_kind = LotroReleaseUpdater.SemanticPatchKind,
                     safe_translated_count = 1
                 };
+                ExpectCancellationAtProgress(semanticUpdater, semanticGame, nextPatchPath, nextManifest,
+                    Path.Combine(semanticGame, "installed_patch.json"), "Güncellenen DAT güvenle birleştiriliyor",
+                    "recovery final-progress cancellation preserves updated live DAT timestamp and state");
                 InstalledPatchState upgraded = await semanticUpdater.InstallPatchAsync(
                     semanticGame,
                     nextPatchPath,
@@ -329,12 +633,15 @@ internal static class UpdaterBehaviorTests
                 newerWithoutRelease[newerWithoutRelease.Length - 2] ^= 0x01;
                 File.WriteAllBytes(Path.Combine(semanticGame, "client_local_English.dat"), newerWithoutRelease);
                 string pendingHash = Hash(newerWithoutRelease);
-                Expect("PATCH_RELEASE_PENDING", () => semanticUpdater.InstallPatchAsync(
+                if (!File.Exists(upgraded.source_backup_file)) throw new Exception("pending-release test requires the prior clean backup");
+                Verify(upgraded.source_backup_file, new FileInfo(upgraded.source_backup_file).Length, upgraded.source_backup_sha256);
+                ExpectInstallationUnchanged("PATCH_RELEASE_PENDING", Path.Combine(semanticGame, "client_local_English.dat"),
+                    Path.Combine(semanticGame, "installed_patch.json"), () => semanticUpdater.InstallPatchAsync(
                     semanticGame,
                     nextPatchPath,
                     nextManifest,
                     Path.Combine(semanticGame, "installed_patch.json"),
-                    CancellationToken.None).GetAwaiter().GetResult(), "new official version waits for matching Turkish release");
+                    CancellationToken.None).GetAwaiter().GetResult(), "new official version waits for matching release despite an existing clean backup");
                 Verify(Path.Combine(semanticGame, "client_local_English.dat"), newerWithoutRelease.Length, pendingHash);
             }
             finally { TryDeleteDirectory(semanticGame); }
@@ -344,6 +651,8 @@ internal static class UpdaterBehaviorTests
         FakeTransport draftTransport = new FakeTransport(new StableRelease { id = 43, tag_name = "draft", draft = true, prerelease = false, assets = new ReleaseAsset[0] }, "{}", patch);
         Expect("NO_STABLE_RELEASE", () => new LotroReleaseUpdater(draftTransport).CheckLatestAsync(CancellationToken.None).GetAwaiter().GetResult(), "draft release rejected");
         DeveloperSafetyTests.Run();
+        _passed += PatcherRegressionTests.Run();
+        _passed += CacheRegressionTests.Run();
         Console.WriteLine("behavior_tests_passed=" + _passed);
     }
 
@@ -351,6 +660,49 @@ internal static class UpdaterBehaviorTests
 
     private static string CreateTemp() { string p = Path.Combine(Path.GetTempPath(), "lotro-test-" + Guid.NewGuid().ToString("N")); Directory.CreateDirectory(p); return p; }
     private static string Hash(byte[] bytes) { using (SHA256 sha = SHA256.Create()) return FixedGitHubTransport.ToHex(sha.ComputeHash(bytes)); }
+    private static ReleaseManifest CloneManifest(ReleaseManifest manifest)
+    {
+        JavaScriptSerializer serializer = new JavaScriptSerializer();
+        return serializer.Deserialize<ReleaseManifest>(serializer.Serialize(manifest));
+    }
+
+    private static void ExpectCancellationAtProgress(LotroReleaseUpdater updater, string gameDirectory, string patchPath,
+        ReleaseManifest manifest, string statePath, string phase, string name)
+    {
+        using (CancellationTokenSource cancellation = new CancellationTokenSource())
+        {
+            bool reached = false;
+            ExpectInstallationUnchanged("CANCELLED", Path.Combine(gameDirectory, "client_local_English.dat"), statePath,
+                () => updater.InstallPatchAsync(gameDirectory, patchPath, manifest, statePath, cancellation.Token, message =>
+                {
+                    if (message.StartsWith(phase, StringComparison.Ordinal))
+                    {
+                        reached = true;
+                        cancellation.Cancel();
+                    }
+                }).GetAwaiter().GetResult(), name);
+            if (!reached) throw new Exception("cancellation did not reach the final replacement phase");
+        }
+    }
+
+    private static void ExpectInstallationUnchanged(string code, string target, string statePath, Action action, string name)
+    {
+        long size = new FileInfo(target).Length;
+        string hash = LotroReleaseUpdater.HashFile(target);
+        DateTime timestamp = File.GetLastWriteTimeUtc(target);
+        string state = File.Exists(statePath) ? Convert.ToBase64String(File.ReadAllBytes(statePath)) : null;
+        bool rejected = false;
+        try { action(); }
+        catch (UpdaterFailure ex) { if (ex.Code != code) throw; rejected = true; }
+        catch (OperationCanceledException) { if (code != "CANCELLED") throw; rejected = true; }
+        if (!rejected) throw new Exception("expected " + code);
+        Verify(target, size, hash);
+        if (File.GetLastWriteTimeUtc(target) != timestamp) throw new Exception("rejected candidate rewrote the live DAT");
+        string currentState = File.Exists(statePath) ? Convert.ToBase64String(File.ReadAllBytes(statePath)) : null;
+        if (state != currentState) throw new Exception("rejected candidate changed installed state");
+        if (File.Exists(target + ".lotro-candidate.part")) throw new Exception("rejected candidate left a temporary DAT");
+        Pass(name);
+    }
     private static List<CatalogRecord> ReadCatalog(string path)
     {
         List<CatalogRecord> records = new List<CatalogRecord>();
@@ -433,6 +785,7 @@ internal static class UpdaterBehaviorTests
         }
     }
     private static void Verify(string path, long size, string hash) { if (!File.Exists(path) || new FileInfo(path).Length != size || !string.Equals(LotroReleaseUpdater.HashFile(path), hash, StringComparison.OrdinalIgnoreCase)) throw new Exception("verify " + path); }
+    private static void TryDelete(string path) { try { if (File.Exists(path)) File.Delete(path); } catch { } }
     private static void TryDeleteDirectory(string path) { try { if (Directory.Exists(path)) Directory.Delete(path, true); } catch { } }
 
     private sealed class FakeTransport : IReleaseTransport
@@ -445,6 +798,59 @@ internal static class UpdaterBehaviorTests
             File.WriteAllBytes(partPath, _patch);
             return Task.FromResult(new DownloadResult { Size = _patch.Length, Sha256 = Hash(_patch) });
         }
+        public void Dispose() { }
+    }
+
+    private sealed class ChainTransport : IReleaseTransport
+    {
+        private readonly StableRelease _baseRelease;
+        private readonly string _baseManifest;
+        private readonly byte[] _basePatch;
+        private readonly StableRelease _latestRelease;
+        private readonly string _latestManifest;
+        private readonly byte[] _latestPatch;
+        public readonly List<string> Downloaded = new List<string>();
+
+        public ChainTransport(
+            StableRelease baseRelease,
+            string baseManifest,
+            byte[] basePatch,
+            StableRelease latestRelease,
+            string latestManifest,
+            byte[] latestPatch)
+        {
+            _baseRelease = baseRelease;
+            _baseManifest = baseManifest;
+            _basePatch = basePatch;
+            _latestRelease = latestRelease;
+            _latestManifest = latestManifest;
+            _latestPatch = latestPatch;
+        }
+
+        public Task<string> GetStringAsync(Uri uri, CancellationToken cancellationToken)
+        {
+            string absolute = uri.AbsoluteUri;
+            if (absolute.EndsWith("/releases/latest", StringComparison.Ordinal))
+                return Task.FromResult(new JavaScriptSerializer().Serialize(_latestRelease));
+            if (absolute.IndexOf("/releases/tags/" + _baseRelease.tag_name, StringComparison.Ordinal) >= 0)
+                return Task.FromResult(new JavaScriptSerializer().Serialize(_baseRelease));
+            if (absolute.IndexOf("/" + _baseRelease.tag_name + "/manifest.json", StringComparison.Ordinal) >= 0)
+                return Task.FromResult(_baseManifest);
+            if (absolute.IndexOf("/" + _latestRelease.tag_name + "/manifest.json", StringComparison.Ordinal) >= 0)
+                return Task.FromResult(_latestManifest);
+            throw new InvalidOperationException("unexpected GET " + absolute);
+        }
+
+        public Task<DownloadResult> DownloadAsync(Uri uri, string partPath, long expectedSize, string expectedSha256, CancellationToken cancellationToken)
+        {
+            string absolute = uri.AbsoluteUri;
+            bool latest = absolute.IndexOf("/" + _latestRelease.tag_name + "/", StringComparison.Ordinal) >= 0;
+            byte[] bytes = latest ? _latestPatch : _basePatch;
+            Downloaded.Add(absolute);
+            File.WriteAllBytes(partPath, bytes);
+            return Task.FromResult(new DownloadResult { Size = bytes.Length, Sha256 = Hash(bytes) });
+        }
+
         public void Dispose() { }
     }
 }

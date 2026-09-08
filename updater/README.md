@@ -1,5 +1,16 @@
 # LOTRO_Turkce_Yama_Setup
 
+Zincirli semantic yayınlarda ilk kök paket bir kez alınır. `patch_mode=incremental`
+manifestleri predecessor release ve DAT/katalog SHA-256 kimliklerini doğrular;
+kurulum aracı yalnız eksik küçük düzeltme katmanlarını indirip sırayla uygular.
+Bu nedenle mevcut kullanıcı sonraki düzeltmelerde 440 MB'lık kök paketi yeniden
+indirmez. Temiz kurulumda kök ve ardından gerekli katmanlar otomatik çözülür.
+DAT okuma/yeniden oluşturma arayüzü kilitlemez: kurulum ayrı iş parçacığında
+çalışır, aşama mesajı ve hareketli ilerleme çubuğu gösterilir; **İptal** düğmesi
+güvenli iptal başlatır. Dosya yolu, boyutu ve SHA-256 birlikte doğrulanır;
+kullanıcı aynı boyutta orijinal DAT kopyaladıysa eski kurulum kaydına güvenilmez.
+Pencere kapatılırsa devam eden iptal/geri alma bitmeden süreç kapatılmaz.
+
 Bu, `LOTRÇEVİRİ.exe` geliştirici aracından ayrı son kullanıcı updater'ıdır. AI/translation/TM/glossary/GPU/Qwen/OPUS bileşeni taşımaz.
 
 Akış:
@@ -15,6 +26,8 @@ Akış:
 8. Resmî oyun güncellemesi Türkçe DAT üzerine gelirse güncellenmiş DAT, önceki
    temiz yedek ve yeni semantic patch'i otomatik birleştirme; temiz ve Türkçe
    katalog kimlikleri bütünüyle doğrulanmazsa hiçbir oyun dosyasını değiştirmeme.
+9. Kaynak veya sonuç kimliği uyuşmuyorsa işlem güvenli biçimde durur; paket
+   üretimindeki bir hata otomatik olarak bozuk orijinal DAT sayılmaz.
 
 Updater manifestteki `asset_kind=semantic_delta_patch` sözleşmesini indirip
 doğrular (kaynak DAT/katalog kimliği, asset boyutu/SHA-256, şema ve token

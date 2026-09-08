@@ -1,5 +1,9 @@
 # LOTRO Türkiye Yama Çalışması
 
+Sonraki semantic düzeltmeler için [zincirli küçük paket akışına](docs/SEMANTIC-CHAIN.md)
+bakın. İlk kök paket bir kez indirilir; güncellemeler yalnız eksik küçük
+`incremental` katmanları indirir.
+
 ## Güncel programı indir
 
 [**LOTRO Türkçe Yama programını indir (Windows)**](https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/latest/download/LOTRO_Turkce_Yama_Setup.exe)
@@ -43,14 +47,21 @@ Tam DAT, RAR, ham katalog, özel çeviri havuzu, model dosyası veya oyuna ait n
 
 ## Hızlı düzeltme akışı
 
-Bakımcılar için katalog önbelleği, temiz DAT'ı bir kez okuyup sonraki terim ve
-semantic düzeltmelerini DAT'ı yeniden açmadan üretir. Kaynak SHA-256/ boyut veya
-katalog özeti değişmedikçe tam tarama tekrarlanmaz. Ayrıntılı akış ve fail-closed
+Bakımcılar için katalog önbelleği, terim seçimini DAT'ı yeniden açmadan hızlandırır.
+Değişmiş bir adayın sonuç hash'i kayıt önbelleğinden tahmin edilmez: bazı tabloların
+kayıt kimliği komşu metnin baytlarına bağlıdır. Yayın kimlikleri gerçek adayın tam
+yazma/yeniden okuma sonucundan alınır. Ayrıntılı akış ve fail-closed
 kuralları [`docs/FAST-CORRECTION-WORKFLOW.md`](docs/FAST-CORRECTION-WORKFLOW.md)
 belgesinde, metadata sözleşmesi ise [`schemas/catalog-cache.schema.json`](schemas/catalog-cache.schema.json)
 dosyasındadır.
 
 ## Otomatik güncelleme
+
+8 Eylül denetimi, v9'un önbellekten hesaplanmış sonuç katalog kimliğinde hata
+buldu. Gerçek adayın bütün çeviri hedefleri doğrulandı; mevcut v9 manifestiyle
+eşleşme testi ise geçmedi. Bu bulgu ve yerel düzeltmeler, yukarıdaki önceki sürüm
+doğrulama sonuçlarıyla karıştırılmamalıdır. Ayrıntılar:
+[güvenlik ve hız denetimi](docs/AUDIT-2026-09-08.md).
 
 `Watch official LOTRO version` işi Standing Stone Games'in resmî `Game.Version` değerini günde bir kez, Türkiye saatiyle yaklaşık 12:17'de denetler ve yeni sürüm için tek takip kaydı açar. Steam zorunlu değildir. Sürüm sinyali tek başına yama yayımlamaz; güvenilir Windows kaynak makinesinde güncel DAT özeti değişimi doğrulanır, yalnız yeni/değişen İngilizce kayıtlar çeviri hattına alınır ve bütün kalite kapıları geçerse yeni release hazırlanır.
 

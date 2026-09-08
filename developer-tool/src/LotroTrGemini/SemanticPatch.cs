@@ -63,10 +63,21 @@ public sealed class SemanticPatchDocument
 {
     public int schema_version { get; set; }
     public string patch_kind { get; set; }
+    /// <summary>
+    /// A full patch is applied to the official clean DAT. An incremental patch
+    /// is applied to the exact translated output identified by the base fields
+    /// below. Missing values are treated as "full" for backward compatibility
+    /// with releases produced before chained deltas were introduced.
+    /// </summary>
+    public string patch_mode { get; set; }
     public string patch_version { get; set; }
     public string source_dat_sha256 { get; set; }
     public long source_dat_size { get; set; }
     public string source_catalog_sha256 { get; set; }
+    public string base_patch_version { get; set; }
+    public string base_candidate_dat_sha256 { get; set; }
+    public long base_candidate_dat_size { get; set; }
+    public string base_candidate_catalog_sha256 { get; set; }
     public string translation_catalog_version { get; set; }
     public string patch_generator_version { get; set; }
     public string translation_provider { get; set; }
@@ -110,6 +121,8 @@ public sealed class SemanticPatchApplyResult
 public static class SemanticPatchBuilder
 {
     public const string PatchKind = "semantic_delta_patch";
+    public const string FullPatchMode = "full";
+    public const string IncrementalPatchMode = "incremental";
 
     public static SemanticPatchDocument Build(
         string patchVersion,
@@ -134,6 +147,7 @@ public static class SemanticPatchBuilder
         {
             schema_version = 1,
             patch_kind = PatchKind,
+            patch_mode = FullPatchMode,
             patch_version = patchVersion,
             source_dat_sha256 = sourceDatSha256.ToLowerInvariant(),
             source_dat_size = sourceDatSize,
@@ -171,7 +185,7 @@ public static class SemanticPatchBuilder
                 continue;
             }
 
-            TranslationCandidate candidate = FindCandidate(byIdentity, current);
+            TranslationCandidate candidate = FindCandidate(byIdentity, current, item);
             if (candidate == null)
             {
                 if (item.Classification == DiffClassification.NEW || item.Classification == DiffClassification.MODIFIED)
@@ -227,6 +241,55 @@ public static class SemanticPatchBuilder
         return document;
     }
 
+    /// <summary>
+    /// Builds a small correction layer over a previously installed translated
+    /// output. The source DAT/catalog identity remains the official clean
+    /// baseline; base_* identifies the exact translated output that this layer
+    /// expects, so the updater can fail closed instead of guessing.
+    /// </summary>
+    public static SemanticPatchDocument BuildIncremental(
+        string patchVersion,
+        string sourceDatSha256,
+        long sourceDatSize,
+        string sourceCatalogSha256,
+        string basePatchVersion,
+        string baseCandidateDatSha256,
+        long baseCandidateDatSize,
+        string baseCandidateCatalogSha256,
+        IList<CatalogDiffRecord> diff,
+        IEnumerable<TranslationCandidate> candidates,
+        string translationCatalogVersion,
+        string patchGeneratorVersion,
+        string translationProvider,
+        string translationModelVersion,
+        string translationModelSha256)
+    {
+        if (string.IsNullOrWhiteSpace(basePatchVersion)) throw new ArgumentException("basePatchVersion");
+        if (!SourceDigest.IsValid(baseCandidateDatSha256)) throw new ArgumentException("baseCandidateDatSha256");
+        if (baseCandidateDatSize < 1) throw new ArgumentOutOfRangeException(nameof(baseCandidateDatSize));
+        if (!SourceDigest.IsValid(baseCandidateCatalogSha256)) throw new ArgumentException("baseCandidateCatalogSha256");
+
+        SemanticPatchDocument document = Build(
+            patchVersion,
+            sourceDatSha256,
+            sourceDatSize,
+            sourceCatalogSha256,
+            diff,
+            candidates,
+            translationCatalogVersion,
+            patchGeneratorVersion,
+            translationProvider,
+            translationModelVersion,
+            translationModelSha256);
+        document.patch_mode = IncrementalPatchMode;
+        document.base_patch_version = basePatchVersion;
+        document.base_candidate_dat_sha256 = baseCandidateDatSha256.ToLowerInvariant();
+        document.base_candidate_dat_size = baseCandidateDatSize;
+        document.base_candidate_catalog_sha256 = baseCandidateCatalogSha256.ToLowerInvariant();
+        SemanticPatchValidator.EnsureValid(document);
+        return document;
+    }
+
     private static Dictionary<string, List<TranslationCandidate>> IndexCandidates(IEnumerable<TranslationCandidate> candidates)
     {
         Dictionary<string, List<TranslationCandidate>> result = new Dictionary<string, List<TranslationCandidate>>(StringComparer.Ordinal);
@@ -252,12 +315,20 @@ public static class SemanticPatchBuilder
         list.Add(candidate);
     }
 
-    private static TranslationCandidate FindCandidate(Dictionary<string, List<TranslationCandidate>> byIdentity, CatalogRecord record)
+    private static TranslationCandidate FindCandidate(Dictionary<string, List<TranslationCandidate>> byIdentity, CatalogRecord record, CatalogDiffRecord diff)
     {
+        // An explicit key is a scope boundary, not a hint. Two values may
+        // share source text and record identity while having different roles.
+        if (byIdentity.TryGetValue(record.Key, out List<TranslationCandidate> byKey))
+            return byKey.Count == 1 ? byKey[0] : null;
         if (byIdentity.TryGetValue(record.EntryIdentity, out List<TranslationCandidate> direct) && direct.Count == 1)
-            return direct[0];
-        if (byIdentity.TryGetValue(record.Key, out List<TranslationCandidate> byKey) && byKey.Count == 1)
-            return byKey[0];
+        {
+            TranslationCandidate candidate = direct[0];
+            if (string.IsNullOrWhiteSpace(candidate.dat_key)
+                || (diff.Classification == DiffClassification.MOVED && diff.OldRecord != null
+                    && string.Equals(candidate.dat_key, diff.OldRecord.Key, StringComparison.Ordinal)))
+                return candidate;
+        }
         return null;
     }
 
@@ -274,13 +345,14 @@ public static class SemanticPatchBuilder
             rejection = "critical UI requires human approval";
             return false;
         }
-        if (!SourceDigest.Matches(record.SourceDigest, candidate.source_digest ?? record.SourceDigest))
+        if (!SourceDigest.IsValid(candidate.source_digest)
+            || !SourceDigest.Matches(record.SourceDigest, candidate.source_digest))
         {
             rejection = "source digest differs from current catalog";
             return false;
         }
-        if (!string.IsNullOrWhiteSpace(candidate.token_signature)
-            && !string.Equals(candidate.token_signature, record.TokenSignature, StringComparison.OrdinalIgnoreCase))
+        if (!SourceDigest.IsValid(candidate.token_signature)
+            || !string.Equals(candidate.token_signature, record.TokenSignature, StringComparison.OrdinalIgnoreCase))
         {
             rejection = "token signature differs from current catalog";
             return false;
@@ -318,11 +390,23 @@ public static class SemanticPatchValidator
         reason = null;
         if (document == null || document.schema_version != 1 || document.patch_kind != SemanticPatchBuilder.PatchKind)
             return Fail("schema_version or patch_kind is invalid", out reason);
+        string mode = string.IsNullOrWhiteSpace(document.patch_mode)
+            ? SemanticPatchBuilder.FullPatchMode
+            : document.patch_mode;
+        if (mode != SemanticPatchBuilder.FullPatchMode && mode != SemanticPatchBuilder.IncrementalPatchMode)
+            return Fail("patch_mode is invalid", out reason);
         if (string.IsNullOrWhiteSpace(document.patch_version)
             || !SourceDigest.IsValid(document.source_dat_sha256)
             || document.source_dat_size < 1
             || !SourceDigest.IsValid(document.source_catalog_sha256))
             return Fail("patch identity or source baseline is invalid", out reason);
+        if (mode == SemanticPatchBuilder.IncrementalPatchMode
+            && (string.IsNullOrWhiteSpace(document.base_patch_version)
+                || !SourceDigest.IsValid(document.base_candidate_dat_sha256)
+                || document.base_candidate_dat_size < 1
+                || !SourceDigest.IsValid(document.base_candidate_catalog_sha256)
+                || string.Equals(document.base_patch_version, document.patch_version, StringComparison.Ordinal)))
+            return Fail("incremental patch base identity is invalid", out reason);
         if (document.counts == null || document.entries == null)
             return Fail("counts and entries are required", out reason);
         if (document.counts.safe_translated_count != document.entries.Count)
@@ -339,6 +423,15 @@ public static class SemanticPatchValidator
                 return Fail("duplicate DAT key", out reason);
             if (entry.did < 0 || entry.record_index < 0 || entry.group_index < -1 || entry.index_in_group < 0)
                 return Fail("entry coordinates are invalid", out reason);
+            string coordinateKey = entry.did.ToString("X8", System.Globalization.CultureInfo.InvariantCulture) + ":"
+                + entry.record_index.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":"
+                + entry.group_index.ToString(System.Globalization.CultureInfo.InvariantCulture) + ":"
+                + entry.index_in_group.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            if ((entry.did & unchecked((int)0xFF000000)) != 0x25000000
+                || !string.Equals(entry.dat_key, coordinateKey, StringComparison.Ordinal))
+                return Fail("DAT key does not match localization coordinates", out reason);
+            if (entry.critical_ui != CatalogIdentity.IsCriticalUiDid(entry.did))
+                return Fail("critical UI scope does not match DID", out reason);
             if (!SourceDigest.IsValid(entry.source_digest) || !SourceDigest.IsValid(entry.token_signature))
                 return Fail("entry digest or token signature is invalid", out reason);
             if (string.IsNullOrWhiteSpace(entry.target) || entry.target.IndexOf('\0') >= 0)
@@ -411,23 +504,31 @@ public static class SemanticPatchApplier
             return result;
         }
 
-        Dictionary<string, List<CatalogRecord>> byIdentity = IndexRecords(currentRecords, record => record.EntryIdentity);
-        Dictionary<string, List<CatalogRecord>> byDigest = IndexRecords(
-            currentRecords,
-            record => record.Did.ToString("X8") + "|" + record.SourceDigest + "|" + record.TokenSignature);
         Dictionary<string, CatalogRecord> recordsByKey = new Dictionary<string, CatalogRecord>(StringComparer.Ordinal);
         foreach (CatalogRecord record in currentRecords ?? new List<CatalogRecord>())
-            if (record != null && !recordsByKey.ContainsKey(record.Key)) recordsByKey.Add(record.Key, record);
+        {
+            if (record == null) continue;
+            if (recordsByKey.ContainsKey(record.Key)) throw new InvalidDataException("Duplicate current catalog key: " + record.Key);
+            recordsByKey.Add(record.Key, record);
+        }
         Dictionary<string, LocRow> byKey = new Dictionary<string, LocRow>(StringComparer.Ordinal);
         foreach (LocRow row in rows ?? new List<LocRow>())
         {
-            if (row != null && !byKey.ContainsKey(row.Key)) byKey.Add(row.Key, row);
+            if (row == null) continue;
+            if (byKey.ContainsKey(row.Key)) throw new InvalidDataException("Duplicate writable row key: " + row.Key);
+            byKey.Add(row.Key, row);
         }
 
         foreach (SemanticPatchEntry entry in patch.entries)
         {
-            CatalogRecord record = FindRecord(entry, recordsByKey, byIdentity, byDigest, result);
-            if (record == null) continue;
+            // Moves are resolved when generating a new source-bound patch.
+            // At application time equal text/identity does not prove equal role.
+            if (!recordsByKey.TryGetValue(entry.dat_key, out CatalogRecord record))
+            {
+                result.Missing++;
+                result.Warnings.Add(entry.dat_key + ": exact current key not found; source kept");
+                continue;
+            }
             if (!SourceDigest.Matches(record.SourceDigest, entry.source_digest))
             {
                 result.SourceChanged++;
@@ -464,50 +565,4 @@ public static class SemanticPatchApplier
         return result;
     }
 
-    private static CatalogRecord FindRecord(
-        SemanticPatchEntry entry,
-        Dictionary<string, CatalogRecord> byKey,
-        Dictionary<string, List<CatalogRecord>> byIdentity,
-        Dictionary<string, List<CatalogRecord>> byDigest,
-        SemanticPatchApplyResult result)
-    {
-        if (byKey.TryGetValue(entry.dat_key, out CatalogRecord exact)) return exact;
-        if (byIdentity.TryGetValue(entry.entry_identity, out List<CatalogRecord> direct))
-        {
-            if (direct.Count == 1) return direct[0];
-            result.Ambiguous++;
-            result.Warnings.Add(entry.entry_identity + ": duplicate stable identity");
-            return null;
-        }
-        string digestKey = entry.did.ToString("X8") + "|" + entry.source_digest + "|" + entry.token_signature;
-        if (byDigest.TryGetValue(digestKey, out List<CatalogRecord> fallback))
-        {
-            if (fallback.Count == 1) return fallback[0];
-            result.Ambiguous++;
-            result.Warnings.Add(entry.entry_identity + ": duplicate source digest");
-            return null;
-        }
-        result.Missing++;
-        result.Warnings.Add(entry.entry_identity + ": current source identity not found");
-        return null;
-    }
-
-    private static Dictionary<string, List<CatalogRecord>> IndexRecords(
-        IEnumerable<CatalogRecord> records,
-        Func<CatalogRecord, string> key)
-    {
-        Dictionary<string, List<CatalogRecord>> result = new Dictionary<string, List<CatalogRecord>>(StringComparer.Ordinal);
-        foreach (CatalogRecord record in records ?? Enumerable.Empty<CatalogRecord>())
-        {
-            if (record == null) continue;
-            string value = key(record) ?? string.Empty;
-            if (!result.TryGetValue(value, out List<CatalogRecord> list))
-            {
-                list = new List<CatalogRecord>();
-                result.Add(value, list);
-            }
-            list.Add(record);
-        }
-        return result;
-    }
 }

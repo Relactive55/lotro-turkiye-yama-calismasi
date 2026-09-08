@@ -132,6 +132,39 @@ internal static class DeveloperSafetyTests
 			"");
 		Check(semanticPatch.entries.Count == 1 && semanticPatch.counts.safe_translated_count == 1, "semantic patch builder emits safe entry");
 		passed++;
+		SemanticPatchDocument incrementalPatch = SemanticPatchBuilder.BuildIncremental(
+			"tr-2026.09.05.2",
+			syntheticDatHash,
+			123,
+			syntheticCatalogHash,
+			"tr-2026.09.05.1",
+			CatalogIdentity.Sha256Hex("candidate-dat-A"),
+			456,
+			CatalogIdentity.Sha256Hex("candidate-catalog-A"),
+			sourceDiff,
+			new List<TranslationCandidate>
+			{
+				new TranslationCandidate
+				{
+					entry_identity = sourceA.EntryIdentity,
+					dat_key = sourceA.Key,
+					source_digest = sourceA.SourceDigest,
+					token_signature = sourceA.TokenSignature,
+					target = "Ork'u Yen",
+					translation_status = TranslationStatuses.HumanApproved
+				}
+			},
+			"catalog-A-incremental",
+			"generator-test",
+			"NONE",
+			"none",
+			"");
+		Check(incrementalPatch.patch_mode == SemanticPatchBuilder.IncrementalPatchMode
+			&& incrementalPatch.base_patch_version == "tr-2026.09.05.1"
+			&& incrementalPatch.base_candidate_dat_size == 456
+			&& incrementalPatch.entries.Count == 1,
+			"incremental semantic patch builder records predecessor identity");
+		passed++;
 		CatalogRecord sourceASecond = Make(0x25000020, 0, 0, 1, "Defeat the Warg", "quest-context-2", 11, "record-q", "shape-q");
 		IList<CatalogDiffRecord> sameRecordDiff = CatalogDiff.Compare(
 			new List<CatalogRecord>(), new List<CatalogRecord> { sourceA, sourceASecond });
@@ -245,8 +278,67 @@ internal static class DeveloperSafetyTests
 			Check(true, "source bundle validator rejects unsafe classification");
 			passed++;
 		}
+		passed += VerifyTranslationScope();
 		Console.WriteLine("developer_tests_passed=" + passed);
 		return passed;
+	}
+
+	private static int VerifyTranslationScope()
+	{
+		CatalogRecord first = Make(0x25000020, 0, 0, 0, "Open", "context", 0, "record", "shape");
+		CatalogRecord second = Make(0x25000020, 0, 0, 1, "Open", "context", 1, "record", "shape");
+		TranslationCandidate candidate = new TranslationCandidate
+		{
+			entry_identity = first.EntryIdentity, dat_key = first.Key, source_digest = first.SourceDigest,
+			token_signature = first.TokenSignature, target = "Aç", translation_status = TranslationStatuses.HumanApproved
+		};
+		Func<TranslationCandidate[], SemanticPatchDocument> build = candidates => SemanticPatchBuilder.Build(
+			"scope-test", CatalogIdentity.Sha256Hex("dat"), 123, CatalogIdentity.Sha256Hex("catalog"),
+			CatalogDiff.Compare(new List<CatalogRecord>(), new List<CatalogRecord> { first, second }), candidates,
+			"catalog", "test", "NONE", "none", "");
+		Check(first.EntryIdentity == second.EntryIdentity && first.SourceDigest == second.SourceDigest,
+			"scope fixture shares identity and text across two distinct DAT keys");
+		SemanticPatchDocument patch = build(new[] { candidate });
+		Check(patch.entries.Count == 1 && patch.entries[0].dat_key == first.Key,
+			"explicit candidate key never leaks to a neighboring identical string");
+		TranslationCandidate other = new TranslationCandidate
+		{
+			entry_identity = second.EntryIdentity, dat_key = second.Key, source_digest = second.SourceDigest,
+			token_signature = second.TokenSignature, target = "Açık", translation_status = TranslationStatuses.HumanApproved
+		};
+		Check(build(new[] { candidate, other }).entries.Count == 2, "explicit per-key translations survive shared record identity");
+		Check(build(new[] { candidate, candidate }).entries.Count == 0, "duplicate candidate keys are rejected without identity fallback");
+		candidate.source_digest = null;
+		Check(build(new[] { candidate }).entries.Count == 0, "missing source proof cannot be restamped");
+		candidate.source_digest = first.SourceDigest;
+		candidate.token_signature = null;
+		Check(build(new[] { candidate }).entries.Count == 0, "missing token proof cannot be restamped");
+		candidate.token_signature = first.TokenSignature;
+		patch = build(new[] { candidate });
+		patch.entries[0].index_in_group++;
+		Check(!SemanticPatchValidator.TryValidate(patch, out _), "semantic coordinates must agree with DAT key");
+		patch = build(new[] { candidate });
+		patch.entries[0].critical_ui = !patch.entries[0].critical_ui;
+		Check(!SemanticPatchValidator.TryValidate(patch, out _), "critical UI flag cannot contradict actual DID");
+		patch = build(new[] { candidate });
+		LocRow remainingRow = new LocRow { Did = second.Did, RecordIndex = second.RecordIndex,
+			GroupIndex = second.GroupIndex, IndexInGroup = second.IndexInGroup, Original = second.Source, Translation = second.Source };
+		SemanticPatchApplyResult result = SemanticPatchApplier.ApplyToRows(patch, new[] { second }, new[] { remainingRow });
+		Check(result.Applied == 0 && result.Missing == 1 && remainingRow.Translation == second.Source,
+			"removed key never redirects patch to surviving identical string");
+		try
+		{
+			SemanticPatchApplier.ApplyToRows(patch, new[] { first, first }, new[] { remainingRow });
+			throw new Exception("duplicate catalog accepted");
+		}
+		catch (InvalidDataException) { Check(true, "duplicate catalog rejected before row mutation"); }
+		try
+		{
+			SemanticPatchApplier.ApplyToRows(patch, new[] { first }, new[] { remainingRow, remainingRow });
+			throw new Exception("duplicate writable rows accepted");
+		}
+		catch (InvalidDataException) { Check(true, "duplicate writable rows rejected before mutation"); }
+		return 11;
 	}
 
 	private static CatalogRecord Make(int did, int record, int group, int index, string source, string context, long position, string recordFingerprint, string structuralFingerprint)

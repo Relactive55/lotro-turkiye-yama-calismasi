@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
@@ -35,12 +36,40 @@ public static class ManagedSemanticDatPatcher
     private sealed class Unit
     {
         public DatEntry Entry;
-        public byte[] Raw;
+        public long RawLength;
         public byte[] Payload;
         public bool WasCompressed;
         public LocBin Bin;
         public List<LocRow> Rows;
         public HashSet<string> ChangedKeys = new HashSet<string>(StringComparer.Ordinal);
+    }
+
+    private sealed class PhaseProgress
+    {
+        private readonly Action<string> _progress;
+        private readonly string _phase;
+        private readonly long _total;
+        private readonly bool _bytes;
+        private readonly Stopwatch _timer = Stopwatch.StartNew();
+
+        public PhaseProgress(Action<string> progress, string phase, long total, bool bytes = false)
+        {
+            _progress = progress;
+            _phase = phase;
+            _total = total;
+            _bytes = bytes;
+            _progress?.Invoke(_phase + "...");
+        }
+
+        public void Report(long completed)
+        {
+            if (_progress == null || (completed < _total && _timer.ElapsedMilliseconds < 1000)) return;
+            string count = _bytes
+                ? (completed / (1024 * 1024)).ToString("N0") + "/" + (_total / (1024 * 1024)).ToString("N0") + " MB"
+                : completed.ToString("N0") + "/" + _total.ToString("N0");
+            _progress(_phase + "... " + count);
+            _timer.Restart();
+        }
     }
 
     public static Result BuildCandidate(
@@ -53,58 +82,20 @@ public static class ManagedSemanticDatPatcher
     {
         if (string.IsNullOrWhiteSpace(sourcePath) || !File.Exists(sourcePath))
             throw new FileNotFoundException("Semantic patch kaynak DAT bulunamadı.", sourcePath);
-        if (string.IsNullOrWhiteSpace(candidatePath)) throw new ArgumentException("candidatePath");
+        EnsureNewCandidatePath(candidatePath, sourcePath);
         SemanticPatchValidator.EnsureValid(patch);
         progress = progress ?? delegate { };
 
         FileInfo sourceInfo = new FileInfo(sourcePath);
         if (sourceInfo.Length != patch.source_dat_size
-            || !string.Equals(HashFile(sourcePath), patch.source_dat_sha256, StringComparison.OrdinalIgnoreCase))
+            || !string.Equals(HashFile(sourcePath, cancellationToken, progress), patch.source_dat_sha256, StringComparison.OrdinalIgnoreCase))
             throw new UpdaterFailure("SEMANTIC_PATCH_BASELINE_MISMATCH", "Kaynak DAT boyutu veya SHA-256 değeri semantic patch ile eşleşmiyor.");
 
         progress("Kaynak katalog doğrulanıyor...");
-        Dictionary<int, Unit> units = new Dictionary<int, Unit>();
-        List<CatalogRecord> records = new List<CatalogRecord>();
-        List<LocRow> rows = new List<LocRow>();
-        long position = 0;
-        using (TurbineDat dat = new TurbineDat())
-        {
-            dat.Open(sourcePath, false);
-            dat.ValidateLocalizationChains();
-            foreach (DatEntry entry in dat.ListLocalization())
-            {
-                cancellationToken.ThrowIfCancellationRequested();
-                byte[] raw = dat.ReadRaw(entry);
-                bool compressed = TurbineDat.LooksCompressed(raw);
-                byte[] payload = TurbineDat.MaybeDecompress(raw);
-                if (compressed && ReferenceEquals(raw, payload))
-                    throw new InvalidDataException("Sıkıştırılmış localization alt dosyası açılamadı: 0x" + entry.Id.ToString("X8"));
-                LocBin bin = LocBin.Parse(payload, entry.Id);
-                List<LocRow> unitRows = bin.GetRows(entry.Id);
-                if (unitRows.Count == 0)
-                {
-                    // The official DAT contains a small number of valid, empty
-                    // localization containers. The read-only catalog extractor
-                    // excludes these from the catalog as well, so preserve them
-                    // byte-for-byte and continue.
-                    continue;
-                }
-                List<CatalogRecord> unitRecords = bin.GetCatalogRecords(entry.Id, ref position);
-                if (unitRecords.Count != unitRows.Count)
-                    throw new InvalidDataException("Localization katalog/satır sayısı uyuşmuyor: 0x" + entry.Id.ToString("X8"));
-                units.Add(entry.Id, new Unit
-                {
-                    Entry = entry,
-                    Raw = raw,
-                    Payload = payload,
-                    WasCompressed = compressed,
-                    Bin = bin,
-                    Rows = unitRows
-                });
-                rows.AddRange(unitRows);
-                records.AddRange(unitRecords);
-            }
-        }
+        Dictionary<int, Unit> units;
+        List<CatalogRecord> records;
+        List<LocRow> rows;
+        LoadDat(sourcePath, cancellationToken, out units, out records, out rows, progress);
 
         string sourceCatalogHash = CatalogIdentity.ComputeCatalogHash(records);
         progress("Kaynak katalog: " + records.Count + " kayıt, SHA-256 " + sourceCatalogHash);
@@ -133,11 +124,11 @@ public static class ManagedSemanticDatPatcher
         if (touched.Count == 0 || patch.entries.Count == 0)
             throw new UpdaterFailure("SEMANTIC_PATCH_EMPTY", "Semantic patch uygulanabilir değişiklik içermiyor.");
 
-        TryDelete(candidatePath);
-        CopyFile(sourcePath, candidatePath, cancellationToken);
         try
         {
-            progress("Türkçe satırlar DAT adayına yazılıyor...");
+            CopyFile(sourcePath, candidatePath, cancellationToken, progress);
+            PhaseProgress writing = new PhaseProgress(progress, "Türkçe satırlar DAT adayına yazılıyor", touched.Count);
+            int written = 0;
             using (TurbineDat candidate = new TurbineDat())
             {
                 candidate.Open(candidatePath, true);
@@ -150,18 +141,20 @@ public static class ManagedSemanticDatPatcher
                         throw new InvalidDataException("Aday DAT girdisi bulunamadı: 0x" + unit.Entry.Id.ToString("X8"));
                     if (!candidate.WriteOrRelocateContiguous(unit.Entry.Id, blob))
                         throw new IOException("Aday DAT girdisi güvenli biçimde yazılamadı: 0x" + unit.Entry.Id.ToString("X8"));
+                    writing.Report(++written);
                 }
             }
 
             progress("Aday DAT baştan sona yeniden doğrulanıyor...");
-            ValidateCandidateStructure(sourcePath, candidatePath, cancellationToken);
-            List<CatalogRecord> candidateRecords = ExtractCatalog(candidatePath, cancellationToken);
+            ValidateCandidateStructure(sourcePath, candidatePath, cancellationToken, progress);
+            List<CatalogRecord> candidateRecords = ExtractCatalog(candidatePath, cancellationToken, progress);
             if (candidateRecords.Count != records.Count)
                 throw new InvalidDataException("Aday DAT satır sayısı değişti: " + candidateRecords.Count + "/" + records.Count);
             string candidateCatalogHash = CatalogIdentity.ComputeCatalogHash(candidateRecords);
             if (!string.IsNullOrWhiteSpace(expectedCandidateCatalogSha256)
                 && !string.Equals(candidateCatalogHash, expectedCandidateCatalogSha256, StringComparison.OrdinalIgnoreCase))
-                throw new UpdaterFailure("CANDIDATE_CATALOG_MISMATCH", "Aday DAT katalog SHA-256 değeri manifest ile eşleşmiyor.");
+                throw new UpdaterFailure("CANDIDATE_CATALOG_MISMATCH", "Paketin beklenen çeviri sonucu gerçek DAT ile eşleşmiyor. Oyun dosyanız değiştirilmedi; paket geliştirici tarafından yeniden doğrulanmalı. Beklenen: "
+                    + expectedCandidateCatalogSha256 + ", hesaplanan: " + candidateCatalogHash);
 
             Dictionary<string, CatalogRecord> candidateByKey = candidateRecords.ToDictionary(item => item.Key, StringComparer.Ordinal);
             foreach (SemanticPatchEntry entry in patch.entries)
@@ -178,9 +171,85 @@ public static class ManagedSemanticDatPatcher
                 TouchedDids = touched.Count,
                 RecordCount = candidateRecords.Count,
                 CatalogSha256 = candidateCatalogHash,
-                DatSha256 = HashFile(candidatePath),
+                DatSha256 = HashFile(candidatePath, cancellationToken, progress),
                 DatSize = resultInfo.Length
             };
+        }
+        catch
+        {
+            TryDelete(candidatePath);
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Applies an incremental correction layer directly to the previously
+    /// translated DAT. Unlike BuildCandidate, the input is intentionally not
+    /// required to be the clean English file: base_candidate_* proves the
+    /// exact predecessor output and each entry's source_digest proves the
+    /// string currently stored at that location.
+    /// </summary>
+    public static Result BuildIncrementalCandidate(
+        string sourcePath,
+        string candidatePath,
+        SemanticPatchDocument patch,
+        string expectedCandidateCatalogSha256,
+        CancellationToken cancellationToken,
+        Action<string> progress = null)
+    {
+        if (string.IsNullOrWhiteSpace(sourcePath) || !File.Exists(sourcePath))
+            throw new FileNotFoundException("Incremental semantic patch kaynak DAT bulunamadı.", sourcePath);
+        EnsureNewCandidatePath(candidatePath, sourcePath);
+        SemanticPatchValidator.EnsureValid(patch);
+        if (!string.Equals(patch.patch_mode, SemanticPatchBuilder.IncrementalPatchMode, StringComparison.Ordinal))
+            throw new UpdaterFailure("SEMANTIC_PATCH_INVALID", "Incremental semantic patch bekleniyordu.");
+        progress = progress ?? delegate { };
+
+        FileInfo sourceInfo = new FileInfo(sourcePath);
+        if (sourceInfo.Length != patch.base_candidate_dat_size
+            || !string.Equals(HashFile(sourcePath, cancellationToken, progress), patch.base_candidate_dat_sha256, StringComparison.OrdinalIgnoreCase))
+            throw new UpdaterFailure("SEMANTIC_PATCH_BASELINE_MISMATCH", "Mevcut Türkçe DAT predecessor kimliği semantic patch ile eşleşmiyor.");
+
+        progress("Önceki Türkçe katalog doğrulanıyor...");
+        Dictionary<int, Unit> units;
+        List<CatalogRecord> records;
+        List<LocRow> rows;
+        LoadDat(sourcePath, cancellationToken, out units, out records, out rows, progress);
+        string sourceCatalogHash = CatalogIdentity.ComputeCatalogHash(records);
+        if (!string.Equals(sourceCatalogHash, patch.base_candidate_catalog_sha256, StringComparison.OrdinalIgnoreCase))
+            throw new UpdaterFailure("SEMANTIC_PATCH_CATALOG_MISMATCH", "Önceki Türkçe katalog kimliği semantic patch ile eşleşmiyor.");
+
+        SemanticPatchApplyResult apply = SemanticPatchApplier.ApplyToRows(patch, records, rows, null);
+        if (apply.Applied != patch.entries.Count || apply.SourceChanged != 0
+            || apply.Ambiguous != 0 || apply.CriticalSkipped != 0 || apply.Rejected != 0 || apply.Missing != 0)
+        {
+            throw new UpdaterFailure(
+                "SEMANTIC_PATCH_APPLY_REJECTED",
+                "Incremental semantic patch eksiksiz uygulanamadı; DAT değiştirilmedi. "
+                + "applied=" + apply.Applied + "/" + patch.entries.Count
+                + ", changed=" + apply.SourceChanged + ", ambiguous=" + apply.Ambiguous
+                + ", critical=" + apply.CriticalSkipped + ", rejected=" + apply.Rejected
+                + ", missing=" + apply.Missing);
+        }
+        MarkChangedUnits(units, patch.entries.Select(entry => entry.dat_key));
+        if (patch.entries.Count == 0)
+            throw new UpdaterFailure("SEMANTIC_PATCH_EMPTY", "Incremental semantic patch uygulanabilir değişiklik içermiyor.");
+
+        try
+        {
+            Result result = WriteAndVerifyCandidate(
+                sourcePath,
+                candidatePath,
+                units,
+                records.Count,
+                expectedCandidateCatalogSha256,
+                cancellationToken,
+                patch.entries.Count,
+                patch.entries,
+                false,
+                progress);
+            progress("Incremental Türkçe düzeltme doğrulandı.");
+            return result;
         }
         catch
         {
@@ -210,6 +279,8 @@ public static class ManagedSemanticDatPatcher
             throw new FileNotFoundException("Güncellenmiş LOTRO DAT bulunamadı.", updatedPatchedPath);
         if (string.IsNullOrWhiteSpace(priorCleanPath) || !File.Exists(priorCleanPath))
             throw new FileNotFoundException("Önceki temiz LOTRO DAT yedeği bulunamadı.", priorCleanPath);
+        EnsureNewCandidatePath(cleanCandidatePath, updatedPatchedPath, priorCleanPath, translatedCandidatePath);
+        EnsureNewCandidatePath(translatedCandidatePath, updatedPatchedPath, priorCleanPath, cleanCandidatePath);
         SemanticPatchValidator.EnsureValid(patch);
         progress = progress ?? delegate { };
 
@@ -217,8 +288,8 @@ public static class ManagedSemanticDatPatcher
         Dictionary<int, Unit> units;
         List<CatalogRecord> currentRecords;
         List<LocRow> currentRows;
-        LoadDat(updatedPatchedPath, cancellationToken, out units, out currentRecords, out currentRows);
-        List<CatalogRecord> priorRecords = ExtractCatalog(priorCleanPath, cancellationToken);
+        LoadDat(updatedPatchedPath, cancellationToken, out units, out currentRecords, out currentRows, progress);
+        List<CatalogRecord> priorRecords = ExtractCatalog(priorCleanPath, cancellationToken, progress);
 
         Dictionary<string, CatalogRecord> currentByKey = UniqueByKey(currentRecords);
         Dictionary<string, List<CatalogRecord>> currentByIdentity = GroupByIdentity(currentRecords);
@@ -257,8 +328,6 @@ public static class ManagedSemanticDatPatcher
             resolvedRows.Add(entry.dat_key, row);
         }
 
-        TryDelete(cleanCandidatePath);
-        TryDelete(translatedCandidatePath);
         try
         {
             Result clean = WriteAndVerifyCandidate(
@@ -270,7 +339,8 @@ public static class ManagedSemanticDatPatcher
                 cancellationToken,
                 0,
                 null,
-                false);
+                false,
+                progress);
 
             foreach (SemanticPatchEntry entry in patch.entries)
                 resolvedRows[entry.dat_key].Translation = entry.target;
@@ -284,7 +354,8 @@ public static class ManagedSemanticDatPatcher
                 cancellationToken,
                 patch.entries.Count,
                 patch.entries,
-                true);
+                true,
+                progress);
             progress("Oyun güncellemesi güvenle birleştirildi ve Türkçe DAT doğrulandı.");
             return new RecoveryResult { CleanSource = clean, Translated = translated };
         }
@@ -301,7 +372,8 @@ public static class ManagedSemanticDatPatcher
         CancellationToken cancellationToken,
         out Dictionary<int, Unit> units,
         out List<CatalogRecord> records,
-        out List<LocRow> rows)
+        out List<LocRow> rows,
+        Action<string> progress)
     {
         units = new Dictionary<int, Unit>();
         records = new List<CatalogRecord>();
@@ -310,8 +382,12 @@ public static class ManagedSemanticDatPatcher
         using (TurbineDat dat = new TurbineDat())
         {
             dat.Open(path, false);
+            progress?.Invoke("Kaynak DAT blok zincirleri doğrulanıyor...");
             dat.ValidateLocalizationChains();
-            foreach (DatEntry entry in dat.ListLocalization())
+            List<DatEntry> entries = dat.ListLocalization();
+            PhaseProgress loading = new PhaseProgress(progress, "Kaynak metinler okunuyor", entries.Count);
+            int loaded = 0;
+            foreach (DatEntry entry in entries)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 byte[] raw = dat.ReadRaw(entry);
@@ -321,11 +397,16 @@ public static class ManagedSemanticDatPatcher
                     throw new InvalidDataException("Sıkıştırılmış localization alt dosyası açılamadı: 0x" + entry.Id.ToString("X8"));
                 LocBin bin = LocBin.Parse(payload, entry.Id);
                 List<LocRow> unitRows = bin.GetRows(entry.Id);
+                loading.Report(++loaded);
+                // Empty official localization containers do not contribute to
+                // the catalog and remain untouched in the candidate copy.
                 if (unitRows.Count == 0) continue;
                 List<CatalogRecord> unitRecords = bin.GetCatalogRecords(entry.Id, ref position);
                 if (unitRecords.Count != unitRows.Count)
                     throw new InvalidDataException("Localization katalog/satır sayısı uyuşmuyor: 0x" + entry.Id.ToString("X8"));
-                units.Add(entry.Id, new Unit { Entry = entry, Raw = raw, Payload = payload, WasCompressed = compressed, Bin = bin, Rows = unitRows });
+                // Retain the source length for the growth guard, not another
+                // byte array for every compressed localization entry.
+                units.Add(entry.Id, new Unit { Entry = entry, RawLength = raw.LongLength, Payload = payload, WasCompressed = compressed, Bin = bin, Rows = unitRows });
                 rows.AddRange(unitRows);
                 records.AddRange(unitRecords);
             }
@@ -341,14 +422,17 @@ public static class ManagedSemanticDatPatcher
         CancellationToken cancellationToken,
         int applied,
         IList<SemanticPatchEntry> expectedTargets,
-        bool applyKnownUiFixes)
+        bool applyKnownUiFixes,
+        Action<string> progress)
     {
         List<Unit> touched = units.Values
             .Where(unit => unit.ChangedKeys.Count != 0
                 || (applyKnownUiFixes && KnownUiFixes.HasAutomaticFix(unit.Entry.Id)))
             .OrderBy(unit => unchecked((uint)unit.Entry.Id))
             .ToList();
-        CopyFile(basePath, candidatePath, cancellationToken);
+        CopyFile(basePath, candidatePath, cancellationToken, progress);
+        PhaseProgress writing = new PhaseProgress(progress, "Türkçe satırlar DAT adayına yazılıyor", touched.Count);
+        int written = 0;
         using (TurbineDat candidate = new TurbineDat())
         {
             candidate.Open(candidatePath, true);
@@ -361,14 +445,16 @@ public static class ManagedSemanticDatPatcher
                     throw new InvalidDataException("Aday DAT girdisi bulunamadı: 0x" + unit.Entry.Id.ToString("X8"));
                 if (!candidate.WriteOrRelocateContiguous(unit.Entry.Id, blob))
                     throw new IOException("Aday DAT girdisi güvenli biçimde yazılamadı: 0x" + unit.Entry.Id.ToString("X8"));
+                writing.Report(++written);
             }
         }
-        ValidateCandidateStructure(basePath, candidatePath, cancellationToken);
-        List<CatalogRecord> candidateRecords = ExtractCatalog(candidatePath, cancellationToken);
+        ValidateCandidateStructure(basePath, candidatePath, cancellationToken, progress);
+        List<CatalogRecord> candidateRecords = ExtractCatalog(candidatePath, cancellationToken, progress);
         if (candidateRecords.Count != expectedRecordCount)
             throw new InvalidDataException("Aday DAT satır sayısı değişti: " + candidateRecords.Count + "/" + expectedRecordCount);
         string catalogHash = CatalogIdentity.ComputeCatalogHash(candidateRecords);
-        if (!string.Equals(catalogHash, expectedCatalogSha256, StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrWhiteSpace(expectedCatalogSha256)
+            && !string.Equals(catalogHash, expectedCatalogSha256, StringComparison.OrdinalIgnoreCase))
             throw new UpdaterFailure("CANDIDATE_CATALOG_MISMATCH", "Aday DAT katalog SHA-256 değeri beklenen kimlikle eşleşmiyor.");
         if (expectedTargets != null)
         {
@@ -388,7 +474,7 @@ public static class ManagedSemanticDatPatcher
             TouchedDids = touched.Count,
             RecordCount = candidateRecords.Count,
             CatalogSha256 = catalogHash,
-            DatSha256 = HashFile(candidatePath),
+            DatSha256 = HashFile(candidatePath, cancellationToken, progress),
             DatSize = info.Length
         };
     }
@@ -429,24 +515,23 @@ public static class ManagedSemanticDatPatcher
     private static byte[] BuildVerifiedBlob(Unit unit, bool applyKnownUiFixes)
     {
         string[] translations = unit.Rows.Select(row => row.Translation).ToArray();
-        foreach (LocRow row in unit.Rows) row.Translation = row.Original;
-        byte[] identity = unit.Bin.Rebuild(unit.Rows);
+        byte[] identity;
+        try
+        {
+            foreach (LocRow row in unit.Rows) row.Translation = row.Original;
+            identity = unit.Bin.Rebuild(unit.Rows);
+        }
+        finally
+        {
+            for (int i = 0; i < unit.Rows.Count; i++) unit.Rows[i].Translation = translations[i];
+        }
         if (!BytesEqual(identity, unit.Payload))
             throw new InvalidDataException("Localization identity rebuild başarısız: 0x" + unit.Entry.Id.ToString("X8"));
-        for (int i = 0; i < unit.Rows.Count; i++) unit.Rows[i].Translation = translations[i];
         byte[] translated = unit.Bin.Rebuild(unit.Rows);
-        if (applyKnownUiFixes)
-            translated = KnownUiFixes.ApplyTranslatedPayload(unit.Entry.Id, translated);
-        long growthLimit = Math.Max((long)unit.Raw.Length * 4L, (long)unit.Raw.Length + 16L * 1024 * 1024);
-        // The LOTRO client is stricter than the managed round-trip parser. Keep
-        // every localization subfile in its original storage representation;
-        // changing compressed data to raw (or raw to compressed) can produce a
-        // parseable DAT that the game still refuses to load.
-        byte[] blob = TurbineDat.PackBlob(translated, unit.WasCompressed, 0);
-        if (blob.LongLength > growthLimit)
-            throw new InvalidDataException("Localization alt dosyası güvenli büyüme sınırını aştı: 0x" + unit.Entry.Id.ToString("X8"));
-        byte[] verifyPayload = TurbineDat.MaybeDecompress(blob);
-        List<LocRow> verifyRows = LocBin.Parse(verifyPayload, unit.Entry.Id).GetRows(unit.Entry.Id);
+        // Validate semantic targets before the exact-key UI writer applies its
+        // own source/target checks. Automatic fixes intentionally change rows
+        // that are absent from the semantic patch, including within the same DID.
+        List<LocRow> verifyRows = LocBin.Parse(translated, unit.Entry.Id).GetRows(unit.Entry.Id);
         if (verifyRows.Count != unit.Rows.Count)
             throw new InvalidDataException("Localization rebuild satır kaybı: 0x" + unit.Entry.Id.ToString("X8"));
         for (int i = 0; i < unit.Rows.Count; i++)
@@ -455,32 +540,53 @@ public static class ManagedSemanticDatPatcher
                 || !string.Equals(verifyRows[i].Original, unit.Rows[i].Translation, StringComparison.Ordinal))
                 throw new InvalidDataException("Localization rebuild hedef uyuşmazlığı: 0x" + unit.Entry.Id.ToString("X8"));
         }
+        if (applyKnownUiFixes)
+            translated = KnownUiFixes.ApplyTranslatedPayload(unit.Entry.Id, translated);
+        long growthLimit = Math.Max(unit.RawLength * 4L, unit.RawLength + 16L * 1024 * 1024);
+        // The LOTRO client is stricter than the managed round-trip parser. Keep
+        // every localization subfile in its original storage representation;
+        // changing compressed data to raw (or raw to compressed) can produce a
+        // parseable DAT that the game still refuses to load.
+        byte[] blob = TurbineDat.PackBlob(translated, unit.WasCompressed, 0);
+        if (blob.LongLength > growthLimit)
+            throw new InvalidDataException("Localization alt dosyası güvenli büyüme sınırını aştı: 0x" + unit.Entry.Id.ToString("X8"));
+        byte[] verifyPayload = TurbineDat.MaybeDecompress(blob);
+        if (!BytesEqual(verifyPayload, translated))
+            throw new InvalidDataException("Localization alt dosyası yeniden doğrulanamadı: 0x" + unit.Entry.Id.ToString("X8"));
         return blob;
     }
 
-    private static void ValidateCandidateStructure(string sourcePath, string candidatePath, CancellationToken cancellationToken)
+    private static void ValidateCandidateStructure(string sourcePath, string candidatePath, CancellationToken cancellationToken, Action<string> progress)
     {
         Dictionary<int, DatEntry> sourceEntries = new Dictionary<int, DatEntry>();
         Dictionary<int, bool> sourceCompression = new Dictionary<int, bool>();
         using (TurbineDat source = new TurbineDat())
         {
             source.Open(sourcePath, false);
+            progress?.Invoke("Kaynak DAT blok zincirleri yeniden doğrulanıyor...");
             source.ValidateLocalizationChains();
-            foreach (DatEntry entry in source.ListLocalization())
+            List<DatEntry> entries = source.ListLocalization();
+            PhaseProgress checking = new PhaseProgress(progress, "Kaynak DAT yapısı doğrulanıyor", entries.Count);
+            int checkedCount = 0;
+            foreach (DatEntry entry in entries)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 sourceEntries.Add(entry.Id, entry);
                 sourceCompression.Add(entry.Id, TurbineDat.LooksCompressed(source.ReadRaw(entry)));
+                checking.Report(++checkedCount);
             }
         }
 
         using (TurbineDat candidate = new TurbineDat())
         {
             candidate.Open(candidatePath, false);
+            progress?.Invoke("Aday DAT blok zincirleri doğrulanıyor...");
             candidate.ValidateLocalizationChains();
             List<DatEntry> entries = candidate.ListLocalization();
             if (entries.Count != sourceEntries.Count)
                 throw new InvalidDataException("Candidate DAT localization entry count changed.");
+            PhaseProgress checking = new PhaseProgress(progress, "Aday DAT yapısı doğrulanıyor", entries.Count);
+            int checkedCount = 0;
             foreach (DatEntry entry in entries)
             {
                 cancellationToken.ThrowIfCancellationRequested();
@@ -500,6 +606,7 @@ public static class ManagedSemanticDatPatcher
                 byte[] payload = TurbineDat.MaybeDecompress(raw);
                 if (compressed && ReferenceEquals(raw, payload))
                     throw new InvalidDataException("Candidate DAT contains an unreadable compressed entry: 0x" + entry.Id.ToString("X8"));
+                checking.Report(++checkedCount);
             }
         }
     }
@@ -524,14 +631,17 @@ public static class ManagedSemanticDatPatcher
         }
     }
 
-    private static List<CatalogRecord> ExtractCatalog(string path, CancellationToken cancellationToken)
+    private static List<CatalogRecord> ExtractCatalog(string path, CancellationToken cancellationToken, Action<string> progress)
     {
         List<CatalogRecord> records = new List<CatalogRecord>();
         long position = 0;
         using (TurbineDat dat = new TurbineDat())
         {
             dat.Open(path, false);
-            foreach (DatEntry entry in dat.ListLocalization())
+            List<DatEntry> entries = dat.ListLocalization();
+            PhaseProgress reading = new PhaseProgress(progress, "DAT kataloğu doğrulanıyor", entries.Count);
+            int read = 0;
+            foreach (DatEntry entry in entries)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 byte[] raw = dat.ReadRaw(entry);
@@ -540,6 +650,7 @@ public static class ManagedSemanticDatPatcher
                     throw new InvalidDataException("Aday localization alt dosyası açılamadı: 0x" + entry.Id.ToString("X8"));
                 LocBin bin = LocBin.Parse(payload, entry.Id);
                 List<CatalogRecord> current = bin.GetCatalogRecords(entry.Id, ref position);
+                reading.Report(++read);
                 if (current.Count == 0)
                     continue;
                 records.AddRange(current);
@@ -548,29 +659,45 @@ public static class ManagedSemanticDatPatcher
         return records;
     }
 
-    private static void CopyFile(string source, string destination, CancellationToken cancellationToken)
+    private static void CopyFile(string source, string destination, CancellationToken cancellationToken, Action<string> progress)
     {
         using (FileStream input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read, 4 * 1024 * 1024, FileOptions.SequentialScan))
         using (FileStream output = new FileStream(destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 4 * 1024 * 1024, FileOptions.SequentialScan))
         {
             byte[] buffer = new byte[4 * 1024 * 1024];
+            PhaseProgress copying = new PhaseProgress(progress, "DAT aday dosyası kopyalanıyor", input.Length, true);
+            long copied = 0;
             int read;
             while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 output.Write(buffer, 0, read);
+                copied += read;
+                copying.Report(copied);
             }
             output.Flush(true);
         }
     }
 
-    private static string HashFile(string path)
+    private static string HashFile(string path, CancellationToken cancellationToken, Action<string> progress)
     {
         using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024 * 1024, FileOptions.SequentialScan))
         using (SHA256 sha = SHA256.Create())
         {
+            PhaseProgress hashing = new PhaseProgress(progress, "DAT dosya kimliği doğrulanıyor", stream.Length, true);
+            byte[] buffer = new byte[1024 * 1024];
+            long hashed = 0;
+            int read;
+            while ((read = stream.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                sha.TransformBlock(buffer, 0, read, buffer, 0);
+                hashed += read;
+                hashing.Report(hashed);
+            }
+            sha.TransformFinalBlock(new byte[0], 0, 0);
             StringBuilder value = new StringBuilder(64);
-            foreach (byte item in sha.ComputeHash(stream)) value.Append(item.ToString("x2"));
+            foreach (byte item in sha.Hash) value.Append(item.ToString("x2"));
             return value.ToString();
         }
     }
@@ -582,6 +709,20 @@ public static class ManagedSemanticDatPatcher
         int diff = 0;
         for (int i = 0; i < left.Length; i++) diff |= left[i] ^ right[i];
         return diff == 0;
+    }
+
+    private static void EnsureNewCandidatePath(string candidatePath, params string[] protectedPaths)
+    {
+        if (string.IsNullOrWhiteSpace(candidatePath)) throw new ArgumentException("candidatePath");
+        string fullCandidate = Path.GetFullPath(candidatePath);
+        foreach (string path in protectedPaths)
+            if (!string.IsNullOrWhiteSpace(path)
+                && string.Equals(fullCandidate, Path.GetFullPath(path), StringComparison.OrdinalIgnoreCase))
+                throw new IOException("DAT adayı kaynak dosyadan ve diğer adaylardan ayrı olmalıdır.");
+        // Never delete an input, existing output, or link supplied by a caller.
+        // The install layer owns and removes its explicitly named stale .part file.
+        if (File.Exists(fullCandidate) || Directory.Exists(fullCandidate))
+            throw new IOException("DAT adayı için yeni bir dosya yolu gerekiyor: " + fullCandidate);
     }
 
     private static void TryDelete(string path)

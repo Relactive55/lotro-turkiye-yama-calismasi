@@ -18,6 +18,10 @@
     <Compile Include="..\..\src\LotroTrGemini\LocBin.cs" Link="LocBin.cs" />
     <Compile Include="..\..\src\LotroTrGemini\DatEntry.cs" Link="DatEntry.cs" />
     <Compile Include="..\..\src\LotroTrGemini\TurbineDat.cs" Link="TurbineDat.cs" />
+    <Compile Include="..\..\src\LotroTrGemini\KnownUiFixes.cs" Link="KnownUiFixes.cs" />
+    <Compile Include="..\..\..\updater\ManagedSemanticDatPatcher.cs" Link="ManagedSemanticDatPatcher.cs" />
+    <Compile Include="..\..\..\updater\LotroReleaseUpdater.cs" Link="LotroReleaseUpdater.cs" />
+    <Reference Include="System.Net.Http" />
     <Reference Include="System.Web.Extensions" />
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3" PrivateAssets="All" />
   </ItemGroup>

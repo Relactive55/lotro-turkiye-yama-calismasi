@@ -8,6 +8,14 @@ $resolved = (Resolve-Path -LiteralPath $Path -ErrorAction Stop).Path
 $json = Get-Content -LiteralPath $resolved -Raw -Encoding UTF8 | ConvertFrom-Json
 if ($json.schema_version -ne 1 -or $json.patch_kind -ne 'semantic_delta_patch') { throw 'Semantic patch kimliği geçersiz.' }
 if ([string]$json.source_dat_sha256 -notmatch '^[A-Fa-f0-9]{64}$' -or [string]$json.source_catalog_sha256 -notmatch '^[A-Fa-f0-9]{64}$') { throw 'Semantic patch baseline hash geçersiz.' }
+$mode = if ([string]::IsNullOrWhiteSpace([string]$json.patch_mode)) { 'full' } else { [string]$json.patch_mode }
+if ($mode -ne 'full' -and $mode -ne 'incremental') { throw 'Semantic patch modu geçersiz.' }
+if ($mode -eq 'incremental') {
+    if ([string]::IsNullOrWhiteSpace([string]$json.base_patch_version) -or
+        [string]$json.base_candidate_dat_sha256 -notmatch '^[A-Fa-f0-9]{64}$' -or
+        [int64]$json.base_candidate_dat_size -lt 1 -or
+        [string]$json.base_candidate_catalog_sha256 -notmatch '^[A-Fa-f0-9]{64}$') { throw 'Incremental semantic predecessor kimliği geçersiz.' }
+}
 $entries = @($json.entries)
 if ([int]$json.counts.safe_translated_count -ne $entries.Count) { throw 'safe_translated_count ile entries sayısı farklı.' }
 $seenDatKeys = @{}

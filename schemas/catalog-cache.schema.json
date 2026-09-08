@@ -6,6 +6,8 @@
   "required": [
     "schema_version",
     "cache_kind",
+    "fast_schema_version",
+    "known_ui_fixes_sha256",
     "source_dat_sha256",
     "source_dat_size",
     "source_catalog_sha256",
@@ -14,23 +16,23 @@
     "cache_record_count",
     "records_asset_name",
     "records_asset_sha256",
-    "fast_records_asset_name",
-    "fast_records_asset_sha256",
     "exact_term_index"
   ],
   "properties": {
-    "schema_version": {"type": "integer", "const": 1},
+    "schema_version": {"type": "integer", "const": 2},
     "cache_kind": {"type": "string", "const": "catalog_record_cache"},
+    "fast_schema_version": {"type": "integer", "const": 1},
+    "known_ui_fixes_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
     "source_dat_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
     "source_dat_size": {"type": "integer", "minimum": 1},
     "source_catalog_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
     "cache_base_catalog_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
-    "source_record_count": {"type": "integer", "minimum": 0},
-    "cache_record_count": {"type": "integer", "minimum": 0},
-    "records_asset_name": {"type": "string", "minLength": 1},
+    "source_record_count": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+    "cache_record_count": {"type": "integer", "minimum": 1, "maximum": 2147483647},
+    "records_asset_name": {"type": "string", "pattern": "^(?!\\.{1,2}$)(?!\\s+$)[^/\\\\:\\u0000-\\u001f<>\"|?*]+$"},
     "records_asset_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
-    "fast_records_asset_name": {"type": "string", "minLength": 1},
-    "fast_records_asset_sha256": {"type": "string", "pattern": "^[A-Fa-f0-9]{64}$"},
+    "fast_records_asset_name": {"type": ["string", "null"], "pattern": "^(?:|(?!\\.{1,2}$)(?!\\s+$)[^/\\\\:\\u0000-\\u001f<>\"|?*]+)$"},
+    "fast_records_asset_sha256": {"type": ["string", "null"], "pattern": "^(?:[A-Fa-f0-9]{64})?$"},
     "exact_term_index": {
       "type": "object",
       "additionalProperties": {
@@ -39,5 +41,15 @@
         "uniqueItems": true
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": {"required": ["fast_records_asset_name"], "properties": {"fast_records_asset_name": {"type": "string", "minLength": 1}}},
+      "then": {"required": ["fast_records_asset_sha256"], "properties": {"fast_records_asset_sha256": {"type": "string", "minLength": 64}}}
+    },
+    {
+      "if": {"required": ["fast_records_asset_sha256"], "properties": {"fast_records_asset_sha256": {"type": "string", "minLength": 1}}},
+      "then": {"required": ["fast_records_asset_name"], "properties": {"fast_records_asset_name": {"type": "string", "minLength": 1}}}
+    }
+  ]
 }

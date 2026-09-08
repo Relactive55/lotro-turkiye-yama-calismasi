@@ -1,5 +1,11 @@
 # Mimari kararlar
 
+Semantic yayınlar kök + zincir katmanları olarak ilerler. Kök paket resmi temiz
+DAT temelini taşır; sonraki `patch_mode=incremental` paketler yalnız değişen
+kayıtları ve doğrulanmış predecessor kimliğini taşır. Updater, kurulu patch
+durumuna göre zincirin eksik ucunu indirir ve her katmanda DAT/katalog,
+token/format, aday ve rollback doğrulaması yapar.
+
 ## Roller
 
 `LOTRÇEVİRİ.exe` geliştirici/çeviri/build aracıdır. `LOTRO_Turkce_Yama_Setup.exe` ayrı bir son kullanıcı updater'ıdır; yalnız release kontrolü, indirme, doğrulama, backup, kurulum ve rollback yapar. Updater'a AI, TM, glossary, GPU veya model runtime eklenmez.

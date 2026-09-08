@@ -29,3 +29,19 @@ jobs:
           Get-ChildItem schemas,tests/fixtures -Filter *.json -Recurse | ForEach-Object {
             Get-Content -LiteralPath $_.FullName -Raw | ConvertFrom-Json | Out-Null
           }
+
+  behavior:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Build updater
+        shell: pwsh
+        run: ./scripts/build.ps1 -Project Updater
+      - name: Updater, DAT writer and cache regression tests
+        shell: pwsh
+        run: ./scripts/test-updater.ps1
+      - name: Semantic generator contracts
+        shell: pwsh
+        run: ./tests/run-semantic-generator-contracts.ps1

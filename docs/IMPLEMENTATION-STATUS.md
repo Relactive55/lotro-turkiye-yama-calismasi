@@ -10,6 +10,10 @@
 
 ## Nihai semantic paket
 
+Zincirli incremental semantic katmanı da hazırlandı: predecessor release/asset,
+DAT/katalog kimlikleri, 32 katman sınırı, eksik katman indirme ve önceki Türkçe
+DAT üzerine fail-closed uygulama sentetik testlerle doğrulandı.
+
 - güvenli Türkçe kayıt: `645,004`
 - dokunulan DID/blok: `231,463`
 - elle çevrilen kritik/genel düzeltme: `302`

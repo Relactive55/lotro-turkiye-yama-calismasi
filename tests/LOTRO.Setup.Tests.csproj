@@ -9,6 +9,7 @@
     <DefaultItemExcludes>$(DefaultItemExcludes);bin\**;obj\**;work\**</DefaultItemExcludes>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="RealDatVerification/**/*.cs" />
     <!-- Keep generated files out even when the contract script redirects obj/bin. -->
     <Compile Remove="bin\**" />
     <Compile Remove="obj\**" />
@@ -23,6 +24,7 @@
     <Compile Include="..\developer-tool\src\LotroTrGemini\SemanticPatch.cs" Link="SemanticPatch.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\SourceBundle.cs" Link="SourceBundle.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\CatalogSnapshot.cs" Link="CatalogSnapshot.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\CatalogCache.cs" Link="CatalogCache.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\CatalogIdentity.cs" Link="CatalogIdentity.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\CatalogDiff.cs" Link="CatalogDiff.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\LocRow.cs" Link="LocRow.cs" />
@@ -34,5 +36,6 @@
     <Compile Include="..\developer-tool\src\LotroTrGemini\KnownUiFixes.cs" Link="KnownUiFixes.cs" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.IO.Compression" />
   </ItemGroup>
 </Project>
