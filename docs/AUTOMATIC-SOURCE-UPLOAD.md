@@ -12,7 +12,7 @@ yazmaz. Hedef depo private değilse gönderimi fail-closed durdurur.
 
 ## İlk kullanım
 
-1. Private kaynak deposunda Actions secret olarak `PUBLIC_REPO_TOKEN` tanımlı
+1. Private kaynak deposunda Actions secret olarak `TRANSLATION_REPO_TOKEN` tanımlı
    olmalıdır. Token yalnız `Relactive55/lotro-turkiye-yama-calismasi` üzerinde
    Contents: Read and write ve Pull requests: Read and write yetkilerine sahip
    fine-grained token olmalıdır.
