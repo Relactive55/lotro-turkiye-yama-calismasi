@@ -178,6 +178,8 @@ internal static class GeneratorContractTests
         Expect<InvalidDataException>(() => Run("--incremental", predecessorPath, manifestPath, correctionPath, rejectedOutput, "correction-2"),
             "legacy missing predecessor DAT identity is rejected");
         predecessor.candidate_dat_sha256 = predecessorHash;
+        correction.translation_status = TranslationStatuses.HumanApproved;
+        File.WriteAllText(correctionPath, Json.Serialize(correction), new UTF8Encoding(false));
         predecessor.minimum_updater_version = "1.2.0.0";
         File.WriteAllText(manifestPath, Json.Serialize(predecessor), new UTF8Encoding(false));
         Expect<InvalidDataException>(() => Run("--incremental", predecessorPath, manifestPath, correctionPath, rejectedOutput, "correction-2"),
