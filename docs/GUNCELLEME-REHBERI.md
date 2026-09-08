@@ -5,6 +5,16 @@
 1. LOTRO'yu resmi launcher ile güncelleyin ve oyunu/launcher'ı kapatın.
 2. Temiz `client_local_English.dat` dosyasını proje kökündeki
    `GÜNCELLEME` klasörüne koyun. Önceki temiz dosya `ORJİNAL DAT` içinde kalsın.
+   Aynı dosya adı sorun değildir; klasör yolları farklıdır:
+
+   ```text
+   lotro-turkiye-yama-calismasi/
+   ├─ ORJİNAL DAT/client_local_English.dat   (eski temiz İngilizce temel)
+   └─ GÜNCELLEME/client_local_English.dat    (yeni temiz İngilizce güncelleme)
+   ```
+
+   İki dosya da Türkçe yama yapılmamış olmalıdır; aynı dosya adını farklı
+   klasörlerde kullanmak normaldir. Bu iki dosyayı aynı klasöre koymayın.
 3. `LOTRKaynakGonder.exe` programında yeni ve önceki temiz DAT'ı seçip
    **GitHub'a Gönder** düğmesine basın. Çevrilmiş DAT veya tam DAT yüklemeyin.
 4. GitHub Actions yeni/değişen satırları ücretsiz Argos ile çevirir, kontrol eder
@@ -19,4 +29,3 @@
   çıktıları Geri Dönüşüm Kutusu'na taşınır. Emin olunmayan dosya silinmez.
 - C çalışma klasöründen yalnız LOTRO projesi için gerekli dosyalar projeye alınır;
   diğerleri doğrulanmadan çöpe gönderilmez.
-
