@@ -4,8 +4,11 @@ Bu klasörde yalnızca resmi launcher'dan alınmış temiz İngilizce
 `client_local_English.dat` tutulur. Türkçe yama uygulanmış DAT kullanılmaz.
 
 Oyun güncellemesi geldiğinde yeni temiz DAT'ı proje kökündeki `GÜNCELLEME`
-klasörüne koyun; buradaki eski temiz DAT'ı silmeyin. `LOTRKaynakGonder.exe`
-ile iki temiz dosyayı seçip **GitHub'a Gönder** düğmesine basın.
+klasörüne koyun; buradaki ilk temiz temel DAT'ı silmeyin. İlk gönderimde
+`LOTRKaynakGonder.exe` ile iki temiz dosyayı seçip **GitHub'a Gönder** düğmesine
+basın. Program sonraki karşılaştırmalar için son gönderilen kataloğu yerel
+durum dosyasında saklar; sonraki güncellemelerde yalnızca GÜNCELLEME dosyasını
+yenisiyle değiştirmeniz yeterlidir.
 
 Dosya adları aynı olabilir; klasörler farklıdır:
 

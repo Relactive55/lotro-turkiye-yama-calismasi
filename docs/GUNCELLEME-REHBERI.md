@@ -21,6 +21,12 @@
    ve inceleme PR'ı açar. Onaydan sonra kaynaklar, DAT/semantic paket ve gerekiyorsa
    EXE güncellenir; testler geçince GitHub Release yayımlanır.
 
+İlk gönderimden sonra program son gönderilen kataloğu yerel
+`.lotro-source-state.jsonl.gz` dosyasında saklar. Bir sonraki oyun güncellemesinde
+yalnızca `GÜNCELLEME/client_local_English.dat` dosyasını yenisiyle değiştirin;
+`ORJİNAL DAT` içindeki dosya ve durum dosyası eski karşılaştırma noktası olarak
+kalır. Durum dosyası kaybolursa ilk gönderimdeki iki temiz DAT yeniden seçilir.
+
 ## Temizlik kuralı
 
 - `ORJİNAL DAT`, güncel `GÜNCELLEME`, kaynak kodu, `*.cs`, `*.csproj`, script,
