@@ -15,7 +15,7 @@ Yeni source bundle göndermek isteyen oyuncu için hedef akış:
    `NEW`/`MODIFIED` satırlardan küçük bundle üretip GitHub CLI oturumuyla özel
    kaynak deposuna gönderir.
 4. Private Actions bundle'ı doğrular, ücretsiz yerel Argos çevirisini üretir ve
-   İngilizce içermeyen adayları aynı özel çeviri deposunda inceleme PR'ı olarak açar.
+   İngilizce içermeyen adayları public release deposunda inceleme PR'ı olarak açar.
 5. Kaynak DAT, ham katalog ve token hiçbir aşamada herkese açık depoya veya
    release asset'ine gönderilmez.
 

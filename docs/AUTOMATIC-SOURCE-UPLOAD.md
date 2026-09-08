@@ -27,7 +27,8 @@ yazmaz. Hedef depo private değilse gönderimi fail-closed durdurur.
 
 Private Actions bundle'ı doğrular, çeviri deposundaki `translation_pipeline.py`
 scriptini ücretsiz ve yerel Argos modeliyle çalıştırır ve İngilizce kaynak içermeyen
-güvenli adayları yine private çeviri deposunda Pull Request olarak açar. Argos modeli
+güvenli adayları public release deposunda inceleme Pull Request'i olarak açar.
+PR yalnız güvenli hedef alanlarını taşır. Argos modeli
 yalnız geçici runner alanına indirilir, boyut/SHA-256 ile doğrulanır ve depoya konmaz.
 API anahtarı, Copilot hesabı veya son kullanıcı üyeliği gerekmez. Model çalışmazsa job
 fail-closed durur; boş veya İngilizce aday çeviri deposuna aktarılmaz. Kritik
