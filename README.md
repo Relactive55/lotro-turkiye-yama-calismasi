@@ -111,3 +111,4 @@ okunur tarar, yeni/değişen metinleri private kaynak deposuna gönderir; GitHub
 Actions otomatik çeviri adayı üretip çeviri deposunda incelemeli Pull Request açar.
 Ham DAT hiçbir depoda herkese açık yayımlanmaz. Kurulum ve ilk kullanım ayrıntıları için
 [otomatik kaynak gönderme rehberine](docs/AUTOMATIC-SOURCE-UPLOAD.md) bakın.
+Güncelleme geldiğinde izlenecek kısa sıra için [güncelleme rehberine](docs/GUNCELLEME-REHBERI.md) bakın.
