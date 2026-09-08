@@ -69,7 +69,11 @@ if ($release.Count -gt 1) { throw 'Ambiguous release.' }
 if ($release.Count -eq 0) {
     & $GhPath release create $tag --repo $repository --draft --target $CommitSha --title "LOTRO Türkçe Yama $($manifest.patch_version)" --notes-file $notes
     if ($LASTEXITCODE -ne 0) { throw 'Draft creation failed.' }
-    $release = Invoke-GhJson @('api',"repos/$repository/releases/tags/$tag")
+    # The tag endpoint returns 404 for unpublished drafts. Resolve the
+    # authenticated release list, then use the returned numeric ID.
+    $created = @(Invoke-GhJson @('api',"repos/$repository/releases?per_page=100") | Where-Object { $_.tag_name -ceq $tag })
+    if ($created.Count -ne 1) { throw 'Created draft could not be uniquely resolved.' }
+    $release = $created[0]
 } else { $release = $release[0] }
 if (!$release.draft -or $release.target_commitish -ine $CommitSha) { throw 'Only a matching draft may be resumed; public releases are never overwritten.' }
 
