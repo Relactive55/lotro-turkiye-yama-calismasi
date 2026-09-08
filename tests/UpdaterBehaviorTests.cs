@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
@@ -183,8 +184,13 @@ internal static class UpdaterBehaviorTests
             }
         };
         byte[] semanticBytes = Encoding.UTF8.GetBytes(SemanticPatchSerializer.Serialize(semanticDocument));
+        using (var compressed = new MemoryStream())
+        {
+            using (var gzip = new GZipStream(compressed, CompressionLevel.Optimal, true)) gzip.Write(semanticBytes, 0, semanticBytes.Length);
+            semanticBytes = compressed.ToArray();
+        }
         string semanticHash = Hash(semanticBytes);
-        string semanticName = "lotro-turkce-yama-semantic-test.json";
+        string semanticName = "lotro-turkce-yama-semantic-test.json.gz";
         ReleaseManifest semanticManifest = new ReleaseManifest
         {
             schema_version = 1,
@@ -427,6 +433,11 @@ internal static class UpdaterBehaviorTests
                         CancellationToken.None);
                     TryDelete(previewPath);
                     byte[] incrementalBytes = Encoding.UTF8.GetBytes(SemanticPatchSerializer.Serialize(incrementalDocument));
+                    using (var compressed = new MemoryStream())
+                    {
+                        using (var gzip = new GZipStream(compressed, CompressionLevel.Optimal, true)) gzip.Write(incrementalBytes, 0, incrementalBytes.Length);
+                        incrementalBytes = compressed.ToArray();
+                    }
                     // Different releases may reuse an asset name. Their cached
                     // contents must remain distinct when the full chain is needed.
                     string incrementalName = semanticName;

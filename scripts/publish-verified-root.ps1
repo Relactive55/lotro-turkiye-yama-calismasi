@@ -30,7 +30,8 @@ if ($manifest.release_id -ne 0 -or $manifest.asset_id -ne 0 -or $manifest.patch_
 }
 if ($manifest.release_tag -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$' -or
     $manifest.asset_name -cnotmatch '^lotro-turkce-yama-[A-Za-z0-9][A-Za-z0-9._-]{0,110}$' -or
-    !$manifest.asset_name.EndsWith('.semantic.json',[StringComparison]::Ordinal)) { throw 'Unsafe semantic asset name.' }
+    !($manifest.asset_name.EndsWith('.semantic.json',[StringComparison]::Ordinal) -or
+      $manifest.asset_name.EndsWith('.semantic.json.gz',[StringComparison]::Ordinal))) { throw 'Unsafe semantic asset name.' }
 $asset = Join-Path $directory $manifest.asset_name
 $candidate = Join-Path $directory 'private-candidate.dat'
 if ((Get-Item -LiteralPath $asset).Length -ne $manifest.asset_size -or

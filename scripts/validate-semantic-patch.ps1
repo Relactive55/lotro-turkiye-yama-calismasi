@@ -5,7 +5,14 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $resolved = (Resolve-Path -LiteralPath $Path -ErrorAction Stop).Path
-$json = Get-Content -LiteralPath $resolved -Raw -Encoding UTF8 | ConvertFrom-Json
+if ($resolved.EndsWith('.gz',[StringComparison]::OrdinalIgnoreCase)) {
+    $file = [IO.File]::OpenRead($resolved)
+    try {
+        $gzip = [IO.Compression.GZipStream]::new($file,[IO.Compression.CompressionMode]::Decompress)
+        $reader = [IO.StreamReader]::new($gzip,[Text.UTF8Encoding]::new($false,$true))
+        try { $json = $reader.ReadToEnd() | ConvertFrom-Json } finally { $reader.Dispose() }
+    } finally { $file.Dispose() }
+} else { $json = Get-Content -LiteralPath $resolved -Raw -Encoding UTF8 | ConvertFrom-Json }
 if ($json.schema_version -ne 1 -or $json.patch_kind -ne 'semantic_delta_patch') { throw 'Semantic patch kimliği geçersiz.' }
 if ([string]$json.source_dat_sha256 -notmatch '^[A-Fa-f0-9]{64}$' -or [string]$json.source_catalog_sha256 -notmatch '^[A-Fa-f0-9]{64}$') { throw 'Semantic patch baseline hash geçersiz.' }
 $mode = if ([string]::IsNullOrWhiteSpace([string]$json.patch_mode)) { 'full' } else { [string]$json.patch_mode }

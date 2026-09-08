@@ -132,7 +132,7 @@ internal static class GeneratorContractTests
             "delta command builds verified private candidate");
         ReleaseManifest template = Json.Deserialize<ReleaseManifest>(File.ReadAllText(Path.Combine(output, "manifest-template.json")));
         string patchPath = Path.Combine(output, template.asset_name);
-        SemanticPatchDocument patch = SemanticPatchSerializer.Deserialize(File.ReadAllText(patchPath));
+        SemanticPatchDocument patch = SemanticPatchSerializer.ReadFile(patchPath);
         Check(patch.entries.Count == 1 && patch.patch_mode == "incremental"
             && patch.entries[0].source_digest == record.SourceDigest, "delta binds predecessor stored text");
         Check(patch.source_dat_sha256 == predecessor.source_dat_sha256

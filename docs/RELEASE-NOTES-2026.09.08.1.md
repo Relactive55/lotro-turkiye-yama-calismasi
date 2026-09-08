@@ -11,13 +11,16 @@ Doğrulanmış yeni ana paket. Resmî kaynak sürümü: `3601.0066.7272.4024`.
 - Eksik kaynak kanıtı, yanlış koordinat veya aynı metne dayanarak başka satıra
   yönlendirme reddedilir.
 - Kuyutorman köken eki ve ırk açıklamasındaki iki bağlam hatası düzeltildi.
+- İlk ana indirme kayıpsız gzip ile 439.938.438 bayttan 67.511.943 bayta
+  indirildi (yaklaşık %85 küçülme). Açılan semantic verinin SHA-256'sı eski
+  doğrulanmış dosyayla aynıdır; DAT hedefi değişmedi. Eski düz JSON desteği sürer.
 
-Yeni kurulum aracı `1.1.0.0` gereklidir. Bu bir yeni kök olduğundan paketin
+Yeni kurulum aracı `1.2.0.0` gereklidir. Bu bir yeni kök olduğundan paketin
 tamamı bir defa indirilir; sonraki doğrulanmış küçük düzeltmeler incremental
 olarak dağıtılabilir. Sadece çeviri paketi, kurulum aracı ve manifest dağıtılır;
 orijinal oyun DAT'ı veya ham katalog dağıtılmaz.
 
-Doğrulama: 186 otomatik kontrol; gerçek kaynakta 643.828 hedef ve 825.136 kayıt
+Doğrulama: 191 otomatik kontrol; gerçek kaynakta 643.828 hedef ve 825.136 kayıt
 kontrol edildi. Orijinal DAT değiştirilmedi. Oyun içi test tamamlanmadı;
 bildirilen tüm `string table error` olaylarının çözüldüğü iddia edilmez.
 Her eski/yeni DAT sürümü için koşulsuz uyumluluk yoktur. Resmî sürüm algılama

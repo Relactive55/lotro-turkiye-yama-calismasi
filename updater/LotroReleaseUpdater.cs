@@ -302,7 +302,7 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
 
 public sealed class LotroReleaseUpdater
 {
-    public const string CurrentUpdaterVersion = "1.1.0.0";
+    public const string CurrentUpdaterVersion = "1.2.0.0";
     public const string Owner = "Relactive55";
     public const string Repository = "lotro-turkiye-yama-calismasi";
     public const string ManifestAssetName = "manifest.json";
@@ -786,7 +786,7 @@ public sealed class LotroReleaseUpdater
         VerifyFile(patchPath, manifest.asset_size, manifest.asset_sha256, cancellationToken);
 
         SemanticPatchDocument document;
-        try { document = SemanticPatchSerializer.Deserialize(File.ReadAllText(patchPath, Encoding.UTF8)); }
+        try { document = SemanticPatchSerializer.ReadFile(patchPath); }
         catch (Exception ex) { throw new UpdaterFailure("SEMANTIC_PATCH_INVALID", "Incremental semantic patch doğrulanamadı: " + ex.Message); }
         if (!string.Equals(document.patch_mode, SemanticPatchBuilder.IncrementalPatchMode, StringComparison.Ordinal)
             || !string.Equals(document.patch_version, manifest.patch_version, StringComparison.Ordinal)
@@ -924,7 +924,7 @@ public sealed class LotroReleaseUpdater
         SemanticPatchDocument document;
         try
         {
-            document = SemanticPatchSerializer.Deserialize(File.ReadAllText(patchPath, Encoding.UTF8));
+            document = SemanticPatchSerializer.ReadFile(patchPath);
         }
         catch (Exception ex)
         {

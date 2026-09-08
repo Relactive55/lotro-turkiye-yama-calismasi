@@ -52,9 +52,9 @@ internal static class IncrementalGeneration
         string candidatePath = Path.Combine(outputDirectory, "private-candidate.dat");
         ManagedSemanticDatPatcher.Result candidate = ManagedSemanticDatPatcher.BuildIncrementalCandidate(
             predecessorPath, candidatePath, patch, null, CancellationToken.None, Console.WriteLine);
-        string assetName = "lotro-turkce-yama-" + patchVersion + ".semantic.json";
+        string assetName = "lotro-turkce-yama-" + patchVersion + ".semantic.json.gz";
         string assetPath = Path.Combine(outputDirectory, assetName);
-        File.WriteAllText(assetPath, SemanticPatchSerializer.Serialize(patch), new UTF8Encoding(false));
+        SemanticPatchSerializer.WriteFile(assetPath, patch, true);
         ReleaseManifest template = BuildManifestTemplate(predecessor, patch, candidate, assetName,
             new FileInfo(assetPath).Length, Program.HashFile(assetPath), minimumUpdater.ToString());
         File.WriteAllText(Path.Combine(outputDirectory, "manifest-template.json"), json.Serialize(template), new UTF8Encoding(false));

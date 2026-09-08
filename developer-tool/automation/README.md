@@ -104,3 +104,13 @@ automatically merge an existing incremental chain; all subsequent corrections
 must be included in the full input/correction set when compacting a chain.
 Independent acquisition of current official source data remains a separate
 unfinished integration, not a capability of the version watcher.
+
+New roots and incremental outputs use `.semantic.json.gz`. Updater 1.2.0.0
+accepts both gzip and legacy JSON, checks the downloaded compressed hash/size
+before decompression, and limits the decoded text to 512 Mi characters. The
+semantic/source/target checks remain unchanged. An unpublished plain verified
+root can be converted with `scripts/compress-verified-root.ps1`: it checks the
+original asset anchor and identical decompressed SHA-256, validates the entire
+compressed document with the new reader, and backs up the previous manifest
+template. It does not rebuild or change the verified DAT. The publisher's
+`-ValidateOnly` performs local checks without GitHub calls.

@@ -33,7 +33,7 @@ internal static class Program
         if (new FileInfo(args[2]).Length != manifest.asset_size || !Equal(Hash(args[2]), manifest.asset_sha256))
             throw new InvalidDataException("Asset does not match manifest.");
         log("Verified input hashes; loading semantic document.");
-        var patch = SemanticPatchSerializer.Deserialize(File.ReadAllText(args[2], Encoding.UTF8));
+        var patch = SemanticPatchSerializer.ReadFile(args[2]);
         if (patch.patch_version != manifest.patch_version || patch.source_dat_size != manifest.source_dat_size
             || !Equal(patch.source_dat_sha256, manifest.source_dat_sha256)
             || !Equal(patch.source_catalog_sha256, manifest.source_catalog_sha256))

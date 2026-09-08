@@ -2,6 +2,12 @@
 
 ## Yayın indirmesini de küçültme
 
+İlk ana paket artık kayıpsız gzip ile dağıtılabilir. `1.2.0.0` kurulum aracı
+eski düz JSON ve `.semantic.json.gz` biçimlerini birlikte destekler. Gerçek
+2026.09.08.1 kökü 439,94 MB'tan 67,51 MB'a indi; açılan verinin SHA-256'sı
+doğrulanmış düz JSON ile aynı kaldı. Bu sıkıştırma DAT içeriğini değiştirmez.
+Sonraki incremental katmanlar da sıkıştırılır.
+
 Çalışma önbelleği terim aramayı hızlandırır; yayın asset'inin boyutunu tek başına
 küçültmez. Bunun için ilk semantic paket zincirin sabit kökü, sonraki paketler
 ise `patch_mode=incremental` katmanlarıdır. Her katman yalnız yeni/düzeltilen

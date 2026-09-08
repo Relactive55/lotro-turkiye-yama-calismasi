@@ -279,8 +279,33 @@ internal static class DeveloperSafetyTests
 			passed++;
 		}
 		passed += VerifyTranslationScope();
+		passed += VerifyCompressedPackage(semanticPatch);
 		Console.WriteLine("developer_tests_passed=" + passed);
 		return passed;
+	}
+
+	private static int VerifyCompressedPackage(SemanticPatchDocument patch)
+	{
+		string compressed = Path.Combine(Path.GetTempPath(), "lotro-semantic-" + Guid.NewGuid().ToString("N") + ".json.gz");
+		string plain = compressed + ".json";
+		string fake = compressed + ".fake.gz";
+		try
+		{
+			SemanticPatchSerializer.WriteFile(compressed, patch, true);
+			SemanticPatchSerializer.WriteFile(plain, patch, false);
+			SemanticPatchSerializer.WriteFile(fake, patch, false);
+			Check(SemanticPatchSerializer.Serialize(SemanticPatchSerializer.ReadFile(compressed)) == SemanticPatchSerializer.Serialize(patch),
+				"gzip semantic package round-trips without changing its contract");
+			Check(SemanticPatchSerializer.ReadFile(plain).entries.Count == patch.entries.Count, "legacy plain JSON package remains readable");
+			try { SemanticPatchSerializer.ReadFile(compressed, 8); throw new Exception("oversized gzip accepted"); }
+			catch (InvalidDataException) { Check(true, "gzip expansion is bounded"); }
+			try { SemanticPatchSerializer.ReadFile(fake); throw new Exception("false gzip accepted"); }
+			catch (InvalidDataException) { Check(true, "gzip extension cannot conceal plain JSON"); }
+			try { SemanticPatchSerializer.WriteFile(compressed, patch, true); throw new Exception("existing asset overwritten"); }
+			catch (IOException) { Check(true, "semantic writer never overwrites an existing asset"); }
+			return 5;
+		}
+		finally { File.Delete(compressed); File.Delete(plain); File.Delete(fake); }
 	}
 
 	private static int VerifyTranslationScope()

@@ -41,7 +41,7 @@ internal static class RootGeneration
         var clock = Stopwatch.StartNew();
         Action<string> log = message => Console.WriteLine("[" + clock.Elapsed.ToString(@"hh\:mm\:ss") + "] " + message);
         log("Loading anchored semantic asset...");
-        var patch = SemanticPatchSerializer.Deserialize(File.ReadAllText(asset, Encoding.UTF8));
+        var patch = SemanticPatchSerializer.ReadFile(asset);
         if ((!string.IsNullOrEmpty(patch.patch_mode) && patch.patch_mode != SemanticPatchBuilder.FullPatchMode)
             || patch.patch_version != oldManifest.patch_version || patch.source_dat_size != oldManifest.source_dat_size
             || !SourceDigest.Matches(patch.source_dat_sha256, oldManifest.source_dat_sha256)
@@ -71,9 +71,9 @@ internal static class RootGeneration
             var candidate = ManagedSemanticDatPatcher.BuildCandidate(source, candidatePath, patch, null, CancellationToken.None, log);
             if (!SourceDigest.Matches(Program.HashFile(source), patch.source_dat_sha256))
                 throw new InvalidDataException("Source changed during generation; no manifest issued.");
-            string assetName = "lotro-turkce-yama-" + version + ".semantic.json";
+            string assetName = "lotro-turkce-yama-" + version + ".semantic.json.gz";
             string assetPath = Path.Combine(output, assetName);
-            File.WriteAllText(assetPath, SemanticPatchSerializer.Serialize(patch), new UTF8Encoding(false));
+            SemanticPatchSerializer.WriteFile(assetPath, patch, true);
             var template = new ReleaseManifest
             {
                 schema_version = 1, patch_version = version, patch_mode = SemanticPatchBuilder.FullPatchMode,

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Web.Script.Serialization;
@@ -456,6 +457,40 @@ public static class SemanticPatchValidator
 
 public static class SemanticPatchSerializer
 {
+    public static SemanticPatchDocument ReadFile(string path, int maximumCharacters = 536870912)
+    {
+        if (maximumCharacters < 1) throw new ArgumentOutOfRangeException(nameof(maximumCharacters));
+        using (var file = File.OpenRead(path))
+        {
+            bool gzip = file.ReadByte() == 0x1f && file.ReadByte() == 0x8b;
+            file.Position = 0;
+            if (path.EndsWith(".gz", StringComparison.OrdinalIgnoreCase) && !gzip)
+                throw new InvalidDataException("Compressed semantic asset is not gzip.");
+            using (Stream input = gzip ? (Stream)new GZipStream(file, CompressionMode.Decompress, true) : file)
+            using (var reader = new StreamReader(input, new UTF8Encoding(false, true), true, 65536))
+            {
+                var value = new StringBuilder();
+                char[] buffer = new char[65536];
+                int count;
+                while ((count = reader.Read(buffer, 0, buffer.Length)) != 0)
+                {
+                    if (count > maximumCharacters - value.Length)
+                        throw new InvalidDataException("Decompressed semantic asset exceeds the text limit.");
+                    value.Append(buffer, 0, count);
+                }
+                return Deserialize(value.ToString());
+            }
+        }
+    }
+
+    public static void WriteFile(string path, SemanticPatchDocument patch, bool gzip)
+    {
+        string text = Serialize(patch);
+        using (var file = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+        using (Stream output = gzip ? (Stream)new GZipStream(file, CompressionLevel.Optimal, true) : file)
+        using (var writer = new StreamWriter(output, new UTF8Encoding(false), 65536)) writer.Write(text);
+    }
+
     public static string Serialize(SemanticPatchDocument document)
     {
         SemanticPatchValidator.EnsureValid(document);
