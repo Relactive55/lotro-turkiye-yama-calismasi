@@ -1,8 +1,9 @@
 # Ücretsiz çeviri pipeline'ı
 
-`developer-tool/automation/translation_pipeline.py` provider-swappable,
-ücretsiz ve provider-swappable bir aday üreticisidir. Ücretli API anahtarı,
-OpenAI/Codex/Gemini/DeepL/Google anahtarı veya VPS zorunluluğu yoktur.
+`developer-tool/automation/translation_pipeline.py` provider-swappable bir aday
+üreticisidir. Private Actions akışında GitHub Copilot planı veya açıkça
+tanımlanmış bir OpenAI-uyumlu API secret'ı gerekir; yerel `noop`, OPUS ve Argos
+sağlayıcıları anahtar olmadan da çalışabilir.
 
 ## Öncelik sırası
 

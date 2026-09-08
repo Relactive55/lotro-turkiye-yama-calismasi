@@ -8,7 +8,7 @@ salt okunur açar, önceki yerel katalog durumuyla karşılaştırır ve yalnız
 Ham DAT, kurulum EXE'si veya native DLL GitHub'a gönderilmez. İngilizce kaynak
 metni yalnız private `Relactive55/lotro-turkiye-yama-kaynak` deposunda tutulur.
 Program, GitHub CLI'nin mevcut oturumunu kullanır; parolayı veya token'ı dosyaya
-yazmaz. Hedef depo public ise gönderimi fail-closed durdurur.
+yazmaz. Hedef depo private değilse gönderimi fail-closed durdurur.
 
 ## İlk kullanım
 
@@ -22,12 +22,15 @@ yazmaz. Hedef depo public ise gönderimi fail-closed durdurur.
 4. Sonraki LOTRO güncellemelerinde yalnız yeni temiz DAT seçilip **GitHub'a
    Gönder** düğmesine basılır.
 
-Private Actions bundle'ı doğrular, public projedeki `translation_pipeline.py`
-scriptini GitHub Copilot CLI sağlayıcısıyla çalıştırır ve İngilizce kaynak
-içermeyen güvenli adayları public projede Pull Request olarak açar. GitHub
-Models inference API emekliye ayrıldığı için workflow artık Copilot CLI ve
-`copilot-requests: write` yetkisini kullanır. Hesabın etkin Copilot planı yoksa
-job fail-closed durur; boş veya İngilizce aday public depoya aktarılmaz. Kritik
+Private Actions bundle'ı doğrular, çeviri deposundaki `translation_pipeline.py`
+scriptini Copilot CLI veya tanımlı OpenAI-uyumlu sağlayıcıyla çalıştırır ve İngilizce kaynak
+içermeyen güvenli adayları yine private çeviri deposunda Pull Request olarak açar. GitHub
+Models inference API emekliye ayrıldığı için workflow artık Copilot CLI veya
+özel API secret'ı kullanır. Hesabın etkin Copilot planı yoksa ve API secret'ı da
+tanımlı değilse job fail-closed durur; boş veya İngilizce aday çeviri deposuna
+aktarılmaz. Kişisel depo politikası built-in token'ı reddederse
+`COPILOT_GITHUB_TOKEN` adlı Actions
+secret'ına yalnız Copilot Requests yetkili fine-grained token eklenmelidir. Kritik
 arayüz satırları ve kalite kontrolünden geçmeyen kayıtlar otomatik kabul edilmez.
 DAT yazımı, round-trip doğrulaması ve release yayınlama kapıları korunur.
 

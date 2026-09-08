@@ -42,8 +42,8 @@ sonra GitHub Actions içindeki GitHub Copilot CLI (veya özel olarak
 yapılandırılmış OpenAI-uyumlu uç nokta), son yedek olarak ücretsiz yerel OPUS
 sağlayıcısıyla hazırlanır. GitHub Models inference API emekliye ayrıldığı için
 kullanılmaz. Token ve biçim testini geçmeyen sonuç yayımlanmaz.
-Public depoda ham İngilizce katalog, DAT, RAR, native oyun DLL'i, model veya
-yerel çalışma çıktısı tutulmaz.
+GitHub depolarında ham İngilizce katalog, DAT, RAR, native oyun DLL'i, model
+veya yerel çalışma çıktısı herkese açık yayımlanmaz.
 
 ## Benzer LOTRO yaklaşımı
 
