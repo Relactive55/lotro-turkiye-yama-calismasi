@@ -2,6 +2,9 @@
 
 Kurulum aracı **1.4.0.0** gereklidir. Oyun ve launcher kapalıyken yeni aracı kullanın.
 
+Programın sağ altına siyah, kalın **Relactive** yazısı; sol altına program,
+kurulu yama ve son yayımlanan yama sürümleri eklendi.
+
 - Delici Atış (Penetrating Shot) adının 12 kaydı ve ilgili açıklamalar düzeltildi.
   Karanlığı Del ve Yakıp Geç sürümlerindeki yanlış anlamlar giderildi.
 - Taktiksel Hasar Azaltma, Odak Tüketen ve diğer ortak yetenek türleri;

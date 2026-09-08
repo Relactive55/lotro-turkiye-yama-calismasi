@@ -33,6 +33,8 @@ internal sealed class SetupForm : Form
     private readonly Label _status = new Label();
     private readonly Button _install = new Button();
     private readonly ProgressBar _progress = new ProgressBar();
+    private readonly Label _versions = new Label();
+    private readonly Label _credit = new Label();
     private CancellationTokenSource _cancel;
     private Tuple<StableRelease, ReleaseManifest> _available;
     private string _gameDirectory;
@@ -43,7 +45,7 @@ internal sealed class SetupForm : Form
     {
         Text = "LOTRO Türkçe Yama";
         Width = 560;
-        Height = 220;
+        Height = 260;
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
@@ -59,6 +61,18 @@ internal sealed class SetupForm : Form
         Controls.Add(_status);
         Controls.Add(_progress);
         Controls.Add(_install);
+        _versions.SetBounds(24, 172, 390, 36);
+        _versions.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
+        _versions.ForeColor = System.Drawing.Color.Black;
+        _versions.Text = "Program: " + LotroReleaseUpdater.CurrentUpdaterVersion + "\nYama: kontrol ediliyor...";
+        _credit.SetBounds(420, 184, 104, 22);
+        _credit.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
+        _credit.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+        _credit.ForeColor = System.Drawing.Color.Black;
+        _credit.Font = new System.Drawing.Font(Font, System.Drawing.FontStyle.Bold);
+        _credit.Text = "Relactive";
+        Controls.Add(_versions);
+        Controls.Add(_credit);
         Shown += async (sender, args) => await CheckAsync();
         FormClosing += (sender, args) =>
         {
@@ -93,6 +107,7 @@ internal sealed class SetupForm : Form
             if (IsDisposed) return;
             string statePath = _gameDirectory == null ? null : Path.Combine(_gameDirectory, "installed_patch.json");
             InstalledPatchState state = ReadState(statePath);
+            UpdateVersionInfo(state);
             bool current = LotroReleaseUpdater.IsStateAtManifest(state, _available.Item2)
                 && await Task.Run(() => LotroReleaseUpdater.IsInstalledFileValid(state, CancellationToken.None, _gameDirectory));
             if (IsDisposed) return;
@@ -231,6 +246,7 @@ internal sealed class SetupForm : Form
                 _progress.Style = ProgressBarStyle.Continuous;
                 _progress.Value = 100;
                 _status.Text = "Türkçe yama kuruldu.";
+                UpdateVersionInfo(ReadState(statePath));
                 MessageBox.Show(this, "Türkçe yama başarıyla kuruldu.", "LOTRO Türkçe Yama", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
@@ -258,6 +274,13 @@ internal sealed class SetupForm : Form
             _cancel = null;
             if (_closePending && !IsDisposed) Close();
         }
+    }
+
+    private void UpdateVersionInfo(InstalledPatchState state)
+    {
+        _versions.Text = "Program: " + LotroReleaseUpdater.CurrentUpdaterVersion
+            + "\nKurulu yama: " + (state?.patch_version ?? "yok")
+            + " | Son: " + (_available?.Item2.patch_version ?? "bilinmiyor");
     }
 
     private static string LocateGameDirectory()
