@@ -7,10 +7,21 @@ kurulu yama ve son yayımlanan yama sürümleri eklendi.
 
 - Delici Atış (Penetrating Shot) adının 12 kaydı ve ilgili açıklamalar düzeltildi.
   Karanlığı Del ve Yakıp Geç sürümlerindeki yanlış anlamlar giderildi.
-- Taktiksel Hasar Azaltma, Odak Tüketen ve diğer ortak yetenek türleri;
-  Parmak eşya yuvası ve Dayanıklılık etiketi dahil 70 kaynak-kanıtlı kayıt düzeltildi.
+- Taktiksel Hasar Azaltma, Alınan İyileştirme ve diğer ortak istatistik etiketleri;
+  Parmak eşya yuvası ve Dayanıklılık etiketi dahil kaynak-kanıtlı kayıtlar düzeltildi.
 - Eşya araç ipuçlarında dayanıklılık, gerekli seviye ve bağlanma etiketleri;
   Yükleniyor, Kabul Et ve üst/alt dereceli rakip öldürme etiketleri çevrildi.
+- Özellik/rütbe ekranındaki beceri adları, açıklamaları, seviye satırları ve
+  puan/ödül ifadeleri; Koleksiyonlar sekmelerindeki Evcil Hayvanlar, Binekler,
+  İfadeler, Kuşlar ve Süsler başlıkları Türkçeleştirildi.
+- Oyunun otomatik ürettiği **66 `of …` unvan eki** (Bree-land, Fallohides,
+  Gondor, Gondolin, Rohan, bölgeler ve sunucu adları dahil) Türkçeleştirildi.
+  Karakter adları, kardeşlik adları ve oyuncunun yazdığı serbest metinler
+  değiştirilmez. Gondolin için değişkenli native kayıt tam kimlik ve parametre
+  eşleşmesiyle, diğer ekler exact-key kanıtıyla uygulanır.
+- Donanım yuvaları (küpe, bileklik, kolye, yüzük ve cep), envanter sıralama/kilit/
+  düzenleme araç ipuçları, seviye deneyimi bildirimi ve savaş istatistiklerindeki
+  kalan İngilizce etiketler tamamlandı.
 - Önceki katalog taramasında atlanan, boş parçayla başlayan iki menzil ve üç
   hasar biçim kaydı düzeltildi. Sayılar, birimler, boş parçalar, kayıt kimlikleri
   ve parametre kimlikleri korunur. Tam kayıt eşleşmezse uygulama reddedilir.

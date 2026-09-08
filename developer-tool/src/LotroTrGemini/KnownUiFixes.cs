@@ -15,6 +15,7 @@ public static class KnownUiFixes
 	private const int CharacterSelectionDid = unchecked((int)0x250001BDu);
 	private const int FellowshipMenuDid = unchecked((int)0x250001AFu);
 	private const int FellowshipUiDid = unchecked((int)0x250001BBu);
+	private const int GondolinTitleDid = unchecked((int)0x2503B6C1u);
 	private static readonly string[] CharacterSelectionSource = { "", " of ", " Character Slots Used" };
 	private static readonly string[] CharacterSelectionTarget = { "", " / ", " KARAKTER YUVASI KULLANILIYOR" };
 
@@ -37,10 +38,55 @@ public static class KnownUiFixes
 	private static readonly FlatUiFix[] FlatFixes =
 	{
 		new FlatUiFix("250001AF:2:-1:0", "Durability ", "Dayanıklılık "),
+		new FlatUiFix("250001AF:14:-1:0", "Rank: ", "Rütbe: "),
 		new FlatUiFix("250001AF:56:-1:0", "Minimum Level: ", "Gerekli Seviye: "),
 		new FlatUiFix("250001AF:330:-1:0", "Minimum Level ", "Gerekli Seviye "),
+		new FlatUiFix("250001AF:51:-1:0", "Not earned", "Kazanılmadı"),
+		new FlatUiFix("250001AF:98:-1:0", "Rank: ", "Rütbe: "),
+		new FlatUiFix("250001AF:146:-1:0", "Pets", "Evcil Hayvanlar"),
+		new FlatUiFix("250001AF:208:-1:0", "\\nRank ", "\\nRütbe "),
+		new FlatUiFix("250001AF:233:-1:0", "Rank: ", "Rütbe: "),
+		new FlatUiFix("250001AF:287:-1:1", " #1:{Point[1]|Points} to Next Rank", " #1:{Point[1]|Points} Sonraki Rütbeye"),
+		new FlatUiFix("250001AF:293:-1:0", "Tactical", "Taktiksel"),
+		new FlatUiFix("250001AF:326:-1:0", "No", "Hayır"),
+		new FlatUiFix("250001AF:343:-1:0", "Rank: ", "Rütbe: "),
+		new FlatUiFix("250001AF:371:-1:0", "Rank: ", "Rütbe: "),
+		new FlatUiFix("250001AF:384:-1:0", "Next Rank:", "Sonraki Rütbe:"),
+		new FlatUiFix("250001AF:539:-1:0", "Next Rank", "Sonraki Rütbe"),
 		new FlatUiFix("250001AF:128:-1:0", "<rgb=#666666>Bound to ", "<rgb=#666666>Bağlı olduğu kişi: "),
 		new FlatUiFix("250001AF:527:-1:0", "<rgb=#666666>Bound to Account</rgb>", "<rgb=#666666>Hesaba Bağlı</rgb>"),
+		new FlatUiFix("250001BB:0:-1:0", "Pocket slot", "Cep Yuvası"),
+		new FlatUiFix("250001BB:29:-1:0", "Edit Mode", "Düzenleme Modu"),
+		new FlatUiFix("250001BB:52:-1:0", "Press to show the Tutorial Hint associated with this panel", "Bu panelle ilişkili öğretici ipucunu göstermek için basın"),
+		new FlatUiFix("250001BB:167:-1:0", "Click to sort all your items", "Tüm eşyalarınızı sıralamak için tıklayın"),
+		new FlatUiFix("250001BB:181:-1:0", "You need ", "Gereken deneyim: "),
+		new FlatUiFix("250001BB:181:-1:1", " XP for level ", " DP; hedef seviye: "),
+		new FlatUiFix("250001BB:298:-1:0", "examine", "İncele"),
+		new FlatUiFix("250001BB:517:-1:0", "Search", "Ara"),
+		new FlatUiFix("250001BB:520:-1:0", "Toggle Lock Mode", "Kilit Modunu Aç/Kapat"),
+		new FlatUiFix("250001BB:526:-1:0", "Block", "Engelle"),
+		new FlatUiFix("250001BB:535:-1:0", "No", "Hayır"),
+		new FlatUiFix("250001BB:544:-1:0", "Left bracelet slot", "Sol Bileklik Yuvası"),
+		new FlatUiFix("250001BB:545:-1:0", "Right bracelet slot", "Sağ Bileklik Yuvası"),
+		new FlatUiFix("250001BB:633:-1:0", "Left earring slot", "Sol Küpe Yuvası"),
+		new FlatUiFix("250001BB:634:-1:0", "Right earring slot", "Sağ Küpe Yuvası"),
+		new FlatUiFix("250001BB:690:-1:0", "Left ring slot", "Sol Yüzük Yuvası"),
+		new FlatUiFix("250001BB:692:-1:0", "Right ring slot", "Sağ Yüzük Yuvası"),
+		new FlatUiFix("250001BB:863:-1:0", "Necklace slot", "Kolye Yuvası"),
+		new FlatUiFix("250001BB:869:-1:0", "Do not show again", "Bir daha gösterme"),
+		new FlatUiFix("250001BB:448:-1:0", "You need ", "Gereken deneyim: "),
+		new FlatUiFix("250001BB:448:-1:1", " XP for level ", " DP; hedef seviye: "),
+		new FlatUiFix("250001BB:448:-1:2", "\\nRemaining VIP Bonus: ", "\\nKalan VIP Bonusu: "),
+		new FlatUiFix("250001BB:448:-1:3", " XP\\nRemaining Purchased Bonus: ", " DP\\nKalan Satın Alınan Bonusu: "),
+		new FlatUiFix("250001BB:448:-1:4", " XP", " DP"),
+		new FlatUiFix("250001BB:501:-1:0", "You need ", "Gereken deneyim: "),
+		new FlatUiFix("250001BB:501:-1:1", " XP for level ", " DP; hedef seviye: "),
+		new FlatUiFix("250001BB:501:-1:2", "\\nRemaining VIP Bonus: ", "\\nKalan VIP Bonusu: "),
+		new FlatUiFix("250001BB:501:-1:3", " XP\\n Remaining Purchased Bonus: ", " DP\\n Kalan Satın Alınan Bonusu: "),
+		new FlatUiFix("250001BB:501:-1:4", " XP\\nYour experience gains are currently suppressed.", " DP\\nDeneyim kazanımlarınız şu anda devre dışı."),
+		new FlatUiFix("250001BB:891:-1:0", "You need ", "Gereken deneyim: "),
+		new FlatUiFix("250001BB:891:-1:1", " XP for level ", " DP; hedef seviye: "),
+		new FlatUiFix("250001BB:891:-1:2", ".\\nYour experience gains are currently suppressed.", ".\\nDeneyim kazanımlarınız şu anda devre dışı."),
 		new FlatUiFix("250001BB:156:-1:0", "Accept", "Kabul Et"),
 		new FlatUiFix("250001BB:817:-1:0", "Accept", "Kabul Et"),
 		new FlatUiFix("250001BB:848:-1:0", "Accept", "Kabul Et"),
@@ -241,6 +287,8 @@ public static class KnownUiFixes
 				foreach (string value in CharacterSelectionTarget) writer.Write(value);
 				writer.Write(FellowshipMenuDid);
 				writer.Write(FellowshipUiDid);
+				writer.Write(GondolinTitleDid);
+				foreach (var fix in GondolinTitleFixes) { writer.Write(fix.Item1); writer.Write(fix.Item2); }
 				writer.Write(FlatFixes.Length);
 				foreach (FlatUiFix fix in FlatFixes.OrderBy(item => item.Key, StringComparer.Ordinal))
 				{
@@ -256,7 +304,7 @@ public static class KnownUiFixes
 
 	public static bool HasAutomaticFix(int did)
 	{
-		return did == CharacterSelectionDid || did == FellowshipMenuDid || did == FellowshipUiDid;
+		return did == CharacterSelectionDid || did == FellowshipMenuDid || did == FellowshipUiDid || did == GondolinTitleDid;
 	}
 
 	public static byte[] ApplyTranslatedPayload(int did, byte[] payload)
@@ -268,6 +316,7 @@ public static class KnownUiFixes
 			byte[] result = ApplyFlatUiFixes(did, payload);
 			return did == FellowshipMenuDid ? ApplyHiddenTooltipFixes(result) : result;
 		}
+		if (did == GondolinTitleDid) return ApplyGondolinTitleFixes(payload);
 		return payload;
 	}
 
@@ -354,6 +403,21 @@ public static class KnownUiFixes
 		Hidden(0x01894215, new[] { "", " - ", " ", " Damage" }, new[] { "", " - ", " ", " Hasar" }, 0x02864455, 0x048615B5, 0x05BE1855)
 	};
 
+	// The title suffix is stored in a conservative fallback table whose layout
+	// is not safe to rebuild through ordinary catalog rows. Match its complete
+	// native record so the player-created name before the suffix is untouched.
+	private static readonly Tuple<byte[], byte[]>[] GondolinTitleFixes =
+	{
+		Hidden(0x0A4B0FF5, new[] { "#1:", "#1:{ [E]}#2:", " #3:", " of Gondolin" },
+			new[] { "#1:", "#1:{ [E]}#2:", " #3:", " (Gondolinli)" },
+			0x0005662B, 0x00052615, 0x08A72645)
+	};
+
+	private static byte[] ApplyGondolinTitleFixes(byte[] payload)
+	{
+		return ApplyExactRecordFixes(payload, GondolinTitleFixes, "Gondolin unvan kaydı");
+	}
+
 	private static Tuple<byte[], byte[]> Hidden(uint id, string[] source, string[] target, params uint[] parameters)
 	{
 		return Tuple.Create(HiddenRecord(id, source, parameters), HiddenRecord(id, target, parameters));
@@ -371,12 +435,17 @@ public static class KnownUiFixes
 	}
 	internal static byte[] ApplyHiddenTooltipFixes(byte[] payload)
 	{
-		foreach (var fix in HiddenTooltipFixes)
+		return ApplyExactRecordFixes(payload, HiddenTooltipFixes, "Hidden tooltip record");
+	}
+
+	private static byte[] ApplyExactRecordFixes(byte[] payload, Tuple<byte[], byte[]>[] fixes, string label)
+	{
+		foreach (var fix in fixes)
 		{
 			int source = IndexOf(payload, fix.Item1), target = IndexOf(payload, fix.Item2);
 			if (source < 0 && target >= 0 && IndexOf(payload, fix.Item2, target + 1) < 0) continue;
 			if (source < 0 || target >= 0 || IndexOf(payload, fix.Item1, source + 1) >= 0)
-				throw new InvalidDataException("Hidden tooltip record is missing, changed or ambiguous.");
+				throw new InvalidDataException(label + " is missing, changed or ambiguous.");
 			byte[] result = new byte[payload.Length - fix.Item1.Length + fix.Item2.Length];
 			Buffer.BlockCopy(payload, 0, result, 0, source);
 			Buffer.BlockCopy(fix.Item2, 0, result, source, fix.Item2.Length);

@@ -18,8 +18,13 @@ internal static class HiddenTooltipTests
         Reject(parameter, "changed hidden parameter is rejected");
         Reject(source.Concat(source).ToArray(), "duplicate hidden records are rejected");
         Reject(source.Take(40).ToArray(), "missing hidden records are rejected");
-        Console.WriteLine("hidden_tooltip_tests_passed=6");
-        return 6;
+        byte[] gondolin = GondolinFixture(false), gondolinExpected = GondolinFixture(true);
+        Check(KnownUiFixes.ApplyTranslatedPayload(unchecked((int)0x2503B6C1u), gondolin).SequenceEqual(gondolinExpected),
+            "Gondolin title suffix translates through its complete native record");
+        Check(KnownUiFixes.ApplyTranslatedPayload(unchecked((int)0x2503B6C1u), gondolinExpected).SequenceEqual(gondolinExpected),
+            "Gondolin title suffix correction is idempotent");
+        Console.WriteLine("hidden_tooltip_tests_passed=8");
+        return 8;
     }
     private static byte[] Fixture(bool translated)
     {
@@ -42,6 +47,18 @@ internal static class HiddenTooltipTests
         writer.Write(parameters.Length);
         foreach (uint parameter in parameters) writer.Write(parameter);
         writer.Write((byte)0);
+    }
+    private static byte[] GondolinFixture(bool translated)
+    {
+        using (var stream = new MemoryStream())
+        using (var writer = new BinaryWriter(stream))
+        {
+            writer.Write((byte)0xcc);
+            Record(writer, 0x0A4B0FF5,
+                new[] { "#1:", "#1:{ [E]}#2:", " #3:", translated ? " (Gondolinli)" : " of Gondolin" },
+                0x0005662B, 0x00052615, 0x08A72645);
+            writer.Write((byte)0xdd); writer.Flush(); return stream.ToArray();
+        }
     }
     private static void Reject(byte[] input, string label)
     {

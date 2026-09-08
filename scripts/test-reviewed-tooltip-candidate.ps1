@@ -23,5 +23,10 @@ try{
   $verified=[LotroTrGemini.KnownUiFixes]::ApplyTranslatedPayload($did,$raw)
   if([Convert]::ToBase64String($raw) -cne [Convert]::ToBase64String($verified)){throw 'Shared tooltip targets are not fully applied'}
  }
+ $gondolin=[LotroTrGemini.DatEntry]::new()
+ if(!$dat.TryGetEntry(0x2503B6C1,[ref]$gondolin)){throw 'Missing title table'}
+ $gondolinRaw=$dat.ReadRaw($gondolin)
+ $gondolinFixed=[LotroTrGemini.KnownUiFixes]::ApplyTranslatedPayload(0x2503B6C1,$gondolinRaw)
+ if([Convert]::ToBase64String($gondolinRaw) -cne [Convert]::ToBase64String($gondolinFixed)){throw 'Title suffix target is not fully applied'}
 }finally{$dat.Dispose()}
-"TOOLTIP_CANDIDATE_PASS|reviewed=$($wanted.Count)|shared-tables=2|hidden-native-records=5|read-only=true"
+"TOOLTIP_CANDIDATE_PASS|reviewed=$($wanted.Count)|shared-tables=2|hidden-native-records=5|title-tables=1|read-only=true"
