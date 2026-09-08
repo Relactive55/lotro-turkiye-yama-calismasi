@@ -27,6 +27,8 @@ The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli
 
 > Kullanıcıya görünen ürün adı **LOTR TÜRKÇE YAMA**'dır. GitHub varlığının teknik dosya adı, mevcut kurulumları bozmamak için uyumluluk amacıyla sabit tutulur.
 
+> Bu GitHub deposu private olduğu için Releases ve kurulum aracının otomatik güncelleme kontrolü yalnızca depoya erişimi olan hesaplarda çalışır. Herkese açık dağıtım yeniden istenirse release deposu ayrıca public yapılmalıdır.
+
 ## Son kullanıcı akışı
 
 1. GitHub Releases sayfasından kurulum aracını indirin.
