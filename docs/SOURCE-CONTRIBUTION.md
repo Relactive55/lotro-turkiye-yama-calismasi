@@ -12,8 +12,8 @@ Yeni source bundle göndermek isteyen oyuncu için hedef akış:
    `client_local_English.dat` dosyalarını seç.
 3. Program read-only olarak yalnız `NEW`/`MODIFIED` satırlardan küçük bundle
    üretir ve GitHub CLI oturumuyla özel kaynak deposuna gönderir.
-4. Private Actions bundle'ı doğrular, Copilot çevirisini üretir ve İngilizce
-   içermeyen adayları aynı özel çeviri deposunda inceleme PR'ı olarak açar.
+4. Private Actions bundle'ı doğrular, ücretsiz yerel Argos çevirisini üretir ve
+   İngilizce içermeyen adayları aynı özel çeviri deposunda inceleme PR'ı olarak açar.
 5. Kaynak DAT, ham katalog ve token hiçbir aşamada herkese açık depoya veya
    release asset'ine gönderilmez.
 
