@@ -420,6 +420,9 @@ internal static class PatcherRegressionTests
                 }
                 writer.Write(0xFEFEFEFEu);
             }
+            var hidden = (Tuple<byte[], byte[]>[])typeof(KnownUiFixes)
+                .GetField("HiddenTooltipFixes", BindingFlags.Static | BindingFlags.NonPublic).GetValue(null);
+            foreach (var fix in hidden) writer.Write(fix.Item1);
             return stream.ToArray();
         }
     }
