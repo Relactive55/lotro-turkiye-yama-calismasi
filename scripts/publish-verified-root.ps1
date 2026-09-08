@@ -5,7 +5,8 @@ param(
     [Parameter(Mandatory)][string]$NotesFile,
     [Parameter(Mandatory)][ValidatePattern('^[a-fA-F0-9]{40}$')][string]$CommitSha,
     [string]$GhPath = 'gh',
-    [switch]$Publish
+    [switch]$Publish,
+    [switch]$ValidateOnly
 )
 
 # Only this allowlist is uploaded, never the directory or its private DAT.
@@ -16,7 +17,8 @@ $directory = (Get-Item -LiteralPath $PackageDirectory).FullName
 $exe = (Get-Item -LiteralPath $UpdaterExe).FullName
 $notes = (Get-Item -LiteralPath $NotesFile).FullName
 [void][Reflection.Assembly]::LoadFrom($exe)
-$json = [Web.Script.Serialization.JavaScriptSerializer]::new()
+Add-Type -AssemblyName System.Web.Extensions
+$json = [System.Web.Script.Serialization.JavaScriptSerializer]::new()
 $json.MaxJsonLength = [int]::MaxValue
 $manifest = $json.Deserialize([IO.File]::ReadAllText((Join-Path $directory 'manifest-template.json')), [LotroTurkceYama.Setup.ReleaseManifest])
 $proof = Get-Content -LiteralPath (Join-Path $directory 'verification.json') -Raw -Encoding UTF8 | ConvertFrom-Json
@@ -26,7 +28,8 @@ if ($manifest.release_id -ne 0 -or $manifest.asset_id -ne 0 -or $manifest.patch_
     $proof.candidate_catalog_sha256 -ine $manifest.candidate_catalog_sha256 -or $proof.candidate_size -ne $manifest.candidate_dat_size) {
     throw 'Verified root evidence does not agree with its unfinished template.'
 }
-if (![LotroTurkceYama.Setup.LotroReleaseUpdater]::IsSafeFileName($manifest.asset_name) -or
+if ($manifest.release_tag -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$' -or
+    $manifest.asset_name -cnotmatch '^lotro-turkce-yama-[A-Za-z0-9][A-Za-z0-9._-]{0,110}$' -or
     !$manifest.asset_name.EndsWith('.semantic.json',[StringComparison]::Ordinal)) { throw 'Unsafe semantic asset name.' }
 $asset = Join-Path $directory $manifest.asset_name
 $candidate = Join-Path $directory 'private-candidate.dat'
@@ -37,6 +40,18 @@ if ((Get-Item -LiteralPath $asset).Length -ne $manifest.asset_size -or
 if ([Version][Diagnostics.FileVersionInfo]::GetVersionInfo($exe).FileVersion -lt [Version]$manifest.minimum_updater_version) {
     throw 'Updater executable is older than the manifest requirement.'
 }
+# Validate all non-binding runtime fields before any remote write. These local
+# fixture IDs are never saved or used to publish; actual IDs are bound below.
+$contract = $json.Deserialize($json.Serialize($manifest),[LotroTurkceYama.Setup.ReleaseManifest])
+$contract.release_id = 1
+$contract.asset_id = 2
+$contractRelease = [LotroTurkceYama.Setup.StableRelease]::new()
+$contractRelease.id = 1
+$contractRelease.tag_name = $manifest.release_tag
+$contractAsset = [LotroTurkceYama.Setup.ReleaseAsset]::new()
+$contractAsset.id = 3
+[LotroTurkceYama.Setup.ManifestValidator]::Validate($contract,$contractRelease,$contractAsset)
+if ($ValidateOnly) { 'LOCAL_RELEASE_PREFLIGHT_PASS|network=false|published=false'; return }
 
 function Invoke-GhJson([string[]]$Arguments) {
     $response = & $GhPath @Arguments
