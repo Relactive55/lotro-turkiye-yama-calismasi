@@ -36,6 +36,17 @@ public static class KnownUiFixes
 	// refuses to write if the official source row is absent or has drifted.
 	private static readonly FlatUiFix[] FlatFixes =
 	{
+		new FlatUiFix("250001AF:2:-1:0", "Durability ", "Dayanıklılık "),
+		new FlatUiFix("250001AF:56:-1:0", "Minimum Level: ", "Gerekli Seviye: "),
+		new FlatUiFix("250001AF:330:-1:0", "Minimum Level ", "Gerekli Seviye "),
+		new FlatUiFix("250001AF:128:-1:0", "<rgb=#666666>Bound to ", "<rgb=#666666>Bağlı olduğu kişi: "),
+		new FlatUiFix("250001AF:527:-1:0", "<rgb=#666666>Bound to Account</rgb>", "<rgb=#666666>Hesaba Bağlı</rgb>"),
+		new FlatUiFix("250001BB:156:-1:0", "Accept", "Kabul Et"),
+		new FlatUiFix("250001BB:817:-1:0", "Accept", "Kabul Et"),
+		new FlatUiFix("250001BB:848:-1:0", "Accept", "Kabul Et"),
+		new FlatUiFix("250001BB:595:-1:0", "Loading...", "Yükleniyor..."),
+		new FlatUiFix("250001BB:725:-1:0", "Kills Above Rating: ", "Üst Dereceli Rakip Öldürme: "),
+		new FlatUiFix("250001BB:736:-1:0", "Kills Below Rating: ", "Alt Dereceli Rakip Öldürme: "),
 		new FlatUiFix("250001AF:272:-1:0", "Players", "Oyuncular"),
 
 		new FlatUiFix("250001BB:48:-1:0", "Rank ", "Rütbe "),
@@ -221,7 +232,8 @@ public static class KnownUiFixes
 			using (BinaryWriter writer = new BinaryWriter(stream, Encoding.UTF8, true))
 			using (System.Security.Cryptography.SHA256 sha = System.Security.Cryptography.SHA256.Create())
 			{
-				writer.Write("lotro-known-ui-fixes-v1");
+				writer.Write("lotro-known-ui-fixes-v2-hidden-tooltips");
+				foreach (var fix in HiddenTooltipFixes) { writer.Write(fix.Item1); writer.Write(fix.Item2); }
 				writer.Write(CharacterSelectionDid);
 				writer.Write(CharacterSelectionSource.Length);
 				foreach (string value in CharacterSelectionSource) writer.Write(value);
@@ -252,7 +264,10 @@ public static class KnownUiFixes
 		if (payload == null || payload.Length == 0) return payload;
 		if (did == CharacterSelectionDid) return ApplyCharacterSelectionFix(payload);
 		if (did == FellowshipMenuDid || did == FellowshipUiDid)
-			return ApplyFlatUiFixes(did, payload);
+		{
+			byte[] result = ApplyFlatUiFixes(did, payload);
+			return did == FellowshipMenuDid ? ApplyHiddenTooltipFixes(result) : result;
+		}
 		return payload;
 	}
 
@@ -325,6 +340,50 @@ public static class KnownUiFixes
 				throw new InvalidDataException("UI tablosunda beklenmeyen satır değişti: " + rows[i].Key);
 		}
 		return rebuilt;
+	}
+
+	// Empty-leading variants are deliberately absent from the heuristic catalog.
+	// Match the complete verified native record (ID, variants, parameter IDs and
+	// subgroup count), never a loose byte/text substring. Keep parameter bytes.
+	private static readonly Tuple<byte[], byte[]>[] HiddenTooltipFixes =
+	{
+		Hidden(0x0640A225, new[] { "", "m Range" }, new[] { "", "m Menzil" }, 0x005A6195),
+		Hidden(0x0ADE6325, new[] { "", "m Range" }, new[] { "", "m Menzil" }, 0x005A6195),
+		Hidden(0x028B5915, new[] { "", " ", " Damage" }, new[] { "", " ", " Hasar" }, 0x04624A34, 0x05BE1855),
+		Hidden(0x0F616255, new[] { "", " Damage" }, new[] { "", " Hasar" }, 0x0E0F7997),
+		Hidden(0x01894215, new[] { "", " - ", " ", " Damage" }, new[] { "", " - ", " ", " Hasar" }, 0x02864455, 0x048615B5, 0x05BE1855)
+	};
+
+	private static Tuple<byte[], byte[]> Hidden(uint id, string[] source, string[] target, params uint[] parameters)
+	{
+		return Tuple.Create(HiddenRecord(id, source, parameters), HiddenRecord(id, target, parameters));
+	}
+	private static byte[] HiddenRecord(uint id, string[] variants, uint[] parameters)
+	{
+		using (var stream = new MemoryStream())
+		using (var writer = new BinaryWriter(stream))
+		{
+			writer.Write((ulong)id); writer.Write(BuildRecord(variants));
+			writer.Write(parameters.Length);
+			foreach (uint parameter in parameters) writer.Write(parameter);
+			writer.Write((byte)0); writer.Flush(); return stream.ToArray();
+		}
+	}
+	internal static byte[] ApplyHiddenTooltipFixes(byte[] payload)
+	{
+		foreach (var fix in HiddenTooltipFixes)
+		{
+			int source = IndexOf(payload, fix.Item1), target = IndexOf(payload, fix.Item2);
+			if (source < 0 && target >= 0 && IndexOf(payload, fix.Item2, target + 1) < 0) continue;
+			if (source < 0 || target >= 0 || IndexOf(payload, fix.Item1, source + 1) >= 0)
+				throw new InvalidDataException("Hidden tooltip record is missing, changed or ambiguous.");
+			byte[] result = new byte[payload.Length - fix.Item1.Length + fix.Item2.Length];
+			Buffer.BlockCopy(payload, 0, result, 0, source);
+			Buffer.BlockCopy(fix.Item2, 0, result, source, fix.Item2.Length);
+			Buffer.BlockCopy(payload, source + fix.Item1.Length, result, source + fix.Item2.Length, payload.Length - source - fix.Item1.Length);
+			payload = result;
+		}
+		return payload;
 	}
 
 	private static byte[] BuildRecord(params string[] variants)

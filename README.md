@@ -6,6 +6,9 @@ bakın. İlk kök paket bir kez indirilir; güncellemeler yalnız eksik küçük
 
 ## Güncel programı indir
 
+Yeni araç ipucu ve yetenek/eşya düzeltmeleri: [2026.09.08.3 notları](docs/RELEASE-NOTES-2026.09.08.3.md).
+Bu paket için kurulum aracı `1.4.0.0` gerekir.
+
 [**LOTRO Türkçe Yama programını indir (Windows)**](https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/latest/download/LOTRO_Turkce_Yama_Setup.exe)
 
 Program temiz resmî DAT üzerinde özel bir aday kopya oluşturur. Adayın bütün
@@ -30,7 +33,7 @@ The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli
 
 Kod imzalama sertifikası eklenmediği sürece Windows SmartScreen uyarısı görülebilir.
 
-## Doğrulanmış temel ve çeviri paketi
+## 2026.09.08.2 temelinin doğrulama referansı
 
 - resmî İngilizce DAT boyutu: `1,894,213,416` bayt
 - kaynak DAT SHA-256: `48deba5c621bb72492afd2687acffc49a0289054255c2136b7cb469ec1bdd967`
