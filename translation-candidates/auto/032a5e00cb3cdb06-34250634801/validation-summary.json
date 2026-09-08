@@ -1,0 +1,10 @@
+{
+  "schema": "lotro-candidate-validation-v1",
+  "input": "work/candidates.jsonl",
+  "rows": 1,
+  "accepted": 1,
+  "rejected": 0,
+  "rejection_reasons": {},
+  "safe_output": "work/accepted.jsonl",
+  "dat_writes": 0
+}
