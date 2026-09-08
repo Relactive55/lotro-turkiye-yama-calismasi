@@ -42,3 +42,7 @@ Programın varsayılan private deposu ve branch'i ayarlar dosyasından değişti
 Program x86 olarak çalışmalıdır; aynı klasörde lisanslı `datexport.dll` bulunan
 mevcut geliştirici aracı çıktısı ile birlikte kullanılmalıdır. Girdi DAT'ı hiçbir
 zaman değiştirilmez.
+
+Gönderici büyük LOTRO DAT katalogları için Large Address Aware olarak derlenir.
+Aynı DAT yeniden seçilirse yalnızca dosya özeti kontrol edilir; farklı DAT'ta
+önceki katalog diskte sıkıştırılmış ve düşük bellekli bir dizin olarak doğrulanır.

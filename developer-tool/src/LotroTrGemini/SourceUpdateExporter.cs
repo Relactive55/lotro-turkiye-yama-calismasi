@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
@@ -27,6 +28,7 @@ public sealed class SourceUpdateExportResult
     public int ExcludedRecordCount { get; internal set; }
     public int AmbiguousRecordCount { get; internal set; }
     public bool BaselineInitialized { get; internal set; }
+    public bool StateUnchanged { get; internal set; }
     public string OutputDirectory { get; internal set; }
     public List<SourceUpdateBundleFile> Bundles { get; } = new List<SourceUpdateBundleFile>();
 }
@@ -57,16 +59,43 @@ public static class SourceUpdateExporter
         if (string.IsNullOrWhiteSpace(statePath)) throw new ArgumentException("statePath");
         if (string.IsNullOrWhiteSpace(outputDirectory)) throw new ArgumentException("outputDirectory");
 
+        // A repeated click with the same DAT is common after a slow scan. Read
+        // only the state header and hash the DAT before allocating the full
+        // native catalog; this keeps the no-op path safe in the x86 sender.
+        if (File.Exists(statePath) && string.IsNullOrWhiteSpace(baselineDatPath))
+        {
+            progress?.Invoke("Önceki DAT ile değişiklik kontrol ediliyor…");
+            CatalogSnapshot header = SourceCatalogStateStore.ReadHeader(statePath);
+            FileInfo currentFile = new FileInfo(updatedDatPath);
+            if (currentFile.Length == header.DatSize && SourceDigest.Matches(HashFile(updatedDatPath), header.DatSha256))
+            {
+                string sameUpdateId = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture)
+                    + "-" + header.DatSha256.Substring(0, 12);
+                return new SourceUpdateExportResult
+                {
+                    UpdateId = sameUpdateId,
+                    UpdatedDatPath = Path.GetFullPath(updatedDatPath),
+                    StatePath = Path.GetFullPath(statePath),
+                    Summary = new CatalogDiffSummary { Unchanged = checked((int)header.RecordCount) },
+                    StateUnchanged = true,
+                    OutputDirectory = string.Empty
+                };
+            }
+        }
+
         ReadOnlyCatalogExtractor extractor = new ReadOnlyCatalogExtractor();
         progress?.Invoke("Güncel temiz DAT salt okunur taranıyor…");
         CatalogSnapshot updated = extractor.Extract(updatedDatPath, cancellationToken);
         EnsureCleanEnglish(updated);
 
+        bool baselineInitialized = !File.Exists(statePath) && string.IsNullOrWhiteSpace(baselineDatPath);
         CatalogSnapshot baseline;
+        SourceCatalogIndex baselineIndex = null;
         if (File.Exists(statePath))
         {
             progress?.Invoke("Önceki katalog durumu doğrulanıyor…");
-            baseline = SourceCatalogStateStore.Load(statePath);
+            baselineIndex = SourceCatalogStateStore.LoadIndex(statePath);
+            baseline = baselineIndex.Metadata;
         }
         else if (!string.IsNullOrWhiteSpace(baselineDatPath))
         {
@@ -87,22 +116,41 @@ public static class SourceUpdateExporter
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        progress?.Invoke("Yeni ve değişen metinler karşılaştırılıyor…");
-        List<CatalogDiffRecord> diff = CatalogDiff.Compare(baseline.Records, updated.Records);
-        CatalogDiffSummary summary = CatalogDiff.Summarize(diff);
+        CatalogDiffSummary summary = new CatalogDiffSummary();
         List<CatalogDiffRecord> candidates = new List<CatalogDiffRecord>();
         int excluded = 0;
-        foreach (CatalogDiffRecord item in diff)
+        if (baselineInitialized)
         {
-            CatalogRecord record = item?.NewRecord;
-            if (item == null || record == null) continue;
-            if (item.Classification != DiffClassification.NEW && item.Classification != DiffClassification.MODIFIED) continue;
-            if (CatalogIdentity.IsExcludedFromTranslation(record.Did, record.RecordIndex, record.GroupIndex, record.IndexInGroup))
+            // The first clean DAT is only a local comparison point.  Comparing
+            // the same snapshot with itself would allocate a second set of
+            // indexes and diff records for no benefit, which is significant
+            // for the 32-bit native reader and a full LOTRO DAT.
+            progress?.Invoke("İlk temiz DAT kaydedilecek; karşılaştırma atlanıyor…");
+        }
+        else
+        {
+            progress?.Invoke("Yeni ve değişen metinler karşılaştırılıyor…");
+            if (baselineIndex != null)
             {
-                excluded++;
-                continue;
+                CompareByDatKey(updated, baselineIndex, candidates, ref summary, ref excluded);
             }
-            candidates.Add(item);
+            else
+            {
+                List<CatalogDiffRecord> diff = CatalogDiff.Compare(baseline.Records, updated.Records);
+                summary = CatalogDiff.Summarize(diff);
+                foreach (CatalogDiffRecord item in diff)
+                {
+                    CatalogRecord record = item?.NewRecord;
+                    if (item == null || record == null) continue;
+                    if (item.Classification != DiffClassification.NEW && item.Classification != DiffClassification.MODIFIED) continue;
+                    if (CatalogIdentity.IsExcludedFromTranslation(record.Did, record.RecordIndex, record.GroupIndex, record.IndexInGroup))
+                    {
+                        excluded++;
+                        continue;
+                    }
+                    candidates.Add(item);
+                }
+            }
         }
 
         string updateId = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss", System.Globalization.CultureInfo.InvariantCulture)
@@ -119,7 +167,7 @@ public static class SourceUpdateExporter
             CandidateRecordCount = candidates.Count,
             ExcludedRecordCount = excluded,
             AmbiguousRecordCount = summary.Ambiguous,
-            BaselineInitialized = !File.Exists(statePath) && string.IsNullOrWhiteSpace(baselineDatPath),
+            BaselineInitialized = baselineInitialized,
             OutputDirectory = runDirectory
         };
 
@@ -169,8 +217,88 @@ public static class SourceUpdateExporter
     public static void CommitState(SourceUpdateExportResult result)
     {
         if (result == null || result.UpdatedSnapshot == null || string.IsNullOrWhiteSpace(result.StatePath))
+        {
+            if (result != null && result.StateUnchanged) return;
             throw new ArgumentException("source update result is invalid", nameof(result));
+        }
+        if (result.StateUnchanged) return;
         SourceCatalogStateStore.Save(result.UpdatedSnapshot, result.StatePath);
+    }
+
+    private static void CompareByDatKey(
+        CatalogSnapshot updated,
+        SourceCatalogIndex baseline,
+        List<CatalogDiffRecord> candidates,
+        ref CatalogDiffSummary summary,
+        ref int excluded)
+    {
+        int matched = 0;
+        HashSet<string> updatedKeys = new HashSet<string>(StringComparer.Ordinal);
+        foreach (CatalogRecord current in updated.Records)
+        {
+            if (!updatedKeys.Add(current.Key))
+                throw new InvalidDataException("Güncel katalog tekrarlı DAT anahtarı içeriyor.");
+            if (baseline.TryGet(current.Key, out SourceCatalogIndex.Record old))
+            {
+                matched++;
+                bool sameSource = string.Equals(old.SourceFingerprint, current.SourceFingerprint, StringComparison.OrdinalIgnoreCase);
+                DiffClassification classification = sameSource
+                    ? (old.Position == current.Position ? DiffClassification.UNCHANGED : DiffClassification.MOVED)
+                    : DiffClassification.MODIFIED;
+                switch (classification)
+                {
+                    case DiffClassification.UNCHANGED: summary.Unchanged++; break;
+                    case DiffClassification.MOVED: summary.Moved++; break;
+                    case DiffClassification.MODIFIED: summary.Modified++; break;
+                }
+                if (current.CriticalUi || old.CriticalUi) summary.ReviewRequired++;
+                if (classification != DiffClassification.MODIFIED) continue;
+                if (CatalogIdentity.IsExcludedFromTranslation(current.Did, current.RecordIndex, current.GroupIndex, current.IndexInGroup))
+                {
+                    excluded++;
+                    continue;
+                }
+                candidates.Add(new CatalogDiffRecord
+                {
+                    Classification = DiffClassification.MODIFIED,
+                    Confidence = 1.0,
+                    ReviewRequired = current.CriticalUi || old.CriticalUi,
+                    NewRecord = current,
+                    Reason = "same DAT key; source fingerprint changed"
+                });
+                continue;
+            }
+
+            summary.New++;
+            if (current.CriticalUi) summary.ReviewRequired++;
+            if (CatalogIdentity.IsExcludedFromTranslation(current.Did, current.RecordIndex, current.GroupIndex, current.IndexInGroup))
+            {
+                excluded++;
+                continue;
+            }
+            candidates.Add(new CatalogDiffRecord
+            {
+                Classification = DiffClassification.NEW,
+                Confidence = 1.0,
+                ReviewRequired = current.CriticalUi,
+                NewRecord = current,
+                Reason = "DAT key is new"
+            });
+        }
+
+        summary.Removed = Math.Max(0, checked((int)baseline.Metadata.RecordCount) - matched);
+    }
+
+    private static string HashFile(string path)
+    {
+        using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024 * 1024, FileOptions.SequentialScan))
+        using (SHA256 sha = SHA256.Create())
+        {
+            byte[] hash = sha.ComputeHash(stream);
+            StringBuilder text = new StringBuilder(hash.Length * 2);
+            foreach (byte value in hash) text.Append(value.ToString("x2", CultureInfo.InvariantCulture));
+            return text.ToString();
+        }
     }
 
     private static void ValidateDatPath(string path, string label)

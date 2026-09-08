@@ -84,6 +84,7 @@ public sealed class ReadOnlyCatalogExtractor
 		if (after.Length != before.Length || after.LastWriteTimeUtc != before.LastWriteTimeUtc)
 			throw new IOException("DAT changed during read-only catalog extraction; discard the snapshot and retry.");
 		snapshot.DatSha256 = HashFile(datPath);
+		snapshot.RecordCount = snapshot.Records.Count;
 		snapshot.CatalogSha256 = CatalogIdentity.ComputeCatalogHash(snapshot.Records);
 		return snapshot;
 	}

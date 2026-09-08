@@ -4,10 +4,31 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Web.Script.Serialization;
 
 namespace LotroTrGemini;
+
+/// <summary>
+/// Compact baseline view used while comparing a full DAT. Keeping only the
+/// coordinate, position, source fingerprint and safety flag avoids loading a
+/// second full record graph into the 32-bit sender process.
+/// </summary>
+public sealed class SourceCatalogIndex
+{
+    internal sealed class Record
+    {
+        internal long Position;
+        internal string SourceFingerprint;
+        internal bool CriticalUi;
+    }
+
+    internal readonly Dictionary<string, Record> ByKey = new Dictionary<string, Record>(StringComparer.Ordinal);
+    public CatalogSnapshot Metadata { get; internal set; }
+
+    internal bool TryGet(string key, out Record record) => ByKey.TryGetValue(key, out record);
+}
 
 /// <summary>
 /// Private local catalog state used by the source-update sender.  It keeps a
@@ -58,6 +79,78 @@ public static class SourceCatalogStateStore
         public bool c { get; set; }
     }
 
+    public static CatalogSnapshot ReadHeader(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+            throw new FileNotFoundException("Kaynak katalog durumu bulunamadı.", path);
+
+        JavaScriptSerializer serializer = Serializer();
+        Header header;
+        using (FileStream input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024 * 1024, FileOptions.SequentialScan))
+        using (GZipStream gzip = new GZipStream(input, CompressionMode.Decompress, leaveOpen: false))
+        using (StreamReader reader = new StreamReader(gzip, new UTF8Encoding(false), false, 1024 * 1024))
+        {
+            string first = reader.ReadLine();
+            if (string.IsNullOrWhiteSpace(first)) throw new InvalidDataException("Kaynak katalog durumu başlığı eksik.");
+            try { header = serializer.Deserialize<Header>(first); }
+            catch (Exception ex) { throw new InvalidDataException("Kaynak katalog durumu başlığı geçersiz.", ex); }
+        }
+        ValidateHeader(header);
+        return SnapshotMetadata(header);
+    }
+
+    public static SourceCatalogIndex LoadIndex(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+            throw new FileNotFoundException("Kaynak katalog durumu bulunamadı.", path);
+
+        JavaScriptSerializer serializer = Serializer();
+        Header header;
+        SourceCatalogIndex index = new SourceCatalogIndex();
+        string actualHash;
+        using (FileStream input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024 * 1024, FileOptions.SequentialScan))
+        using (GZipStream gzip = new GZipStream(input, CompressionMode.Decompress, leaveOpen: false))
+        using (StreamReader reader = new StreamReader(gzip, new UTF8Encoding(false), false, 1024 * 1024))
+        using (CatalogHashAccumulator hash = new CatalogHashAccumulator())
+        {
+            string first = reader.ReadLine();
+            if (string.IsNullOrWhiteSpace(first)) throw new InvalidDataException("Kaynak katalog durumu başlığı eksik.");
+            try { header = serializer.Deserialize<Header>(first); }
+            catch (Exception ex) { throw new InvalidDataException("Kaynak katalog durumu başlığı geçersiz.", ex); }
+            ValidateHeader(header);
+            index.Metadata = SnapshotMetadata(header);
+
+            long position = 0;
+            string line;
+            while ((line = reader.ReadLine()) != null)
+            {
+                if (line.Length == 0) continue;
+                if (position >= MaxRecords) throw new InvalidDataException("Kaynak katalog durumu çok büyük.");
+                StateRecord state;
+                try { state = serializer.Deserialize<StateRecord>(line); }
+                catch (Exception ex) { throw new InvalidDataException("Kaynak katalog kaydı geçersiz.", ex); }
+                CatalogRecord record = Restore(state, position);
+                if (index.ByKey.ContainsKey(record.Key))
+                    throw new InvalidDataException("Kaynak katalog tekrarlı DAT anahtarı içeriyor.");
+                index.ByKey.Add(record.Key, new SourceCatalogIndex.Record
+                {
+                    Position = record.Position,
+                    SourceFingerprint = record.SourceFingerprint,
+                    CriticalUi = record.CriticalUi
+                });
+                hash.Add(record);
+                position++;
+            }
+            if (position != header.record_count)
+                throw new InvalidDataException("Kaynak katalog kaydı sayısı başlıkla eşleşmiyor.");
+            actualHash = hash.Result;
+        }
+
+        if (!SourceDigest.Matches(actualHash, index.Metadata.CatalogSha256))
+            throw new InvalidDataException("Kaynak katalog SHA-256 doğrulaması başarısız.");
+        return index;
+    }
+
     public static CatalogSnapshot Load(string path)
     {
         if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
@@ -89,11 +182,11 @@ public static class SourceCatalogStateStore
                 StructuredPayloadCount = header.structured_payload_count,
                 FallbackPayloadCount = header.fallback_payload_count,
                 EmptyPayloadCount = header.empty_payload_count,
-                ParseErrorCount = header.parse_error_count
+                ParseErrorCount = header.parse_error_count,
+                RecordCount = header.record_count
             };
 
             long position = 0;
-            HashSet<string> identities = new HashSet<string>(StringComparer.Ordinal);
             HashSet<string> keys = new HashSet<string>(StringComparer.Ordinal);
             string line;
             while ((line = reader.ReadLine()) != null)
@@ -104,8 +197,11 @@ public static class SourceCatalogStateStore
                 try { state = serializer.Deserialize<StateRecord>(line); }
                 catch (Exception ex) { throw new InvalidDataException("Kaynak katalog kaydı geçersiz.", ex); }
                 CatalogRecord record = Restore(state, position);
-                if (!identities.Add(record.EntryIdentity) || !keys.Add(record.Key))
-                    throw new InvalidDataException("Kaynak katalog tekrarlı kimlik içeriyor.");
+                // EntryIdentity is intentionally shared by identical text rows
+                // (for example two entries in one DAT record). The DAT key is
+                // the coordinate that must be unique in the persisted catalog.
+                if (!keys.Add(record.Key))
+                    throw new InvalidDataException("Kaynak katalog tekrarlı DAT anahtarı içeriyor.");
                 snapshot.Records.Add(record);
                 position++;
             }
@@ -221,6 +317,71 @@ public static class SourceCatalogStateStore
         if (!string.Equals(record.TokenSignature, ProtectedFormat.GetTokenSignature(record.Source), StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Kaynak katalog token imzası doğrulaması başarısız.");
         return record;
+    }
+
+    private static CatalogSnapshot SnapshotMetadata(Header header)
+    {
+        return new CatalogSnapshot
+        {
+            DatSize = header.source_dat_size,
+            DatSha256 = header.source_dat_sha256.ToLowerInvariant(),
+            BlockSize = header.block_size,
+            VnumDatFile = header.vnum_dat_file,
+            VnumGameData = header.vnum_game_data,
+            DatFileId = header.dat_file_id,
+            DatIdStamp = header.dat_stamp,
+            FirstIterationGuid = header.first_iteration_guid,
+            LocalizationDidCount = header.localization_did_count,
+            StructuredPayloadCount = header.structured_payload_count,
+            FallbackPayloadCount = header.fallback_payload_count,
+            EmptyPayloadCount = header.empty_payload_count,
+            ParseErrorCount = header.parse_error_count,
+            RecordCount = header.record_count,
+            CatalogSha256 = header.source_catalog_sha256.ToLowerInvariant()
+        };
+    }
+
+    private sealed class CatalogHashAccumulator : IDisposable
+    {
+        private readonly SHA256 _sha = SHA256.Create();
+        private bool _finished;
+
+        public string Result
+        {
+            get
+            {
+                if (!_finished)
+                {
+                    _sha.TransformFinalBlock(new byte[0], 0, 0);
+                    _finished = true;
+                }
+                StringBuilder text = new StringBuilder(_sha.Hash.Length * 2);
+                foreach (byte value in _sha.Hash) text.Append(value.ToString("x2", CultureInfo.InvariantCulture));
+                return text.ToString();
+            }
+        }
+
+        public void Add(CatalogRecord record)
+        {
+            if (_finished) throw new InvalidOperationException("Katalog hash tamamlandı.");
+            string line = record.Did.ToString("X8", CultureInfo.InvariantCulture) + "|"
+                + (record.RecordFingerprint ?? string.Empty) + "|"
+                + (record.StructuralFingerprint ?? string.Empty) + "|"
+                + (record.SourceFingerprint ?? string.Empty) + "|"
+                + (record.ContextFingerprint ?? string.Empty) + "\n";
+            byte[] bytes = Encoding.UTF8.GetBytes(line);
+            _sha.TransformBlock(bytes, 0, bytes.Length, null, 0);
+        }
+
+        public void Dispose()
+        {
+            if (!_finished)
+            {
+                _sha.TransformFinalBlock(new byte[0], 0, 0);
+                _finished = true;
+            }
+            _sha.Dispose();
+        }
     }
 
     private static void ValidateHeader(Header header)

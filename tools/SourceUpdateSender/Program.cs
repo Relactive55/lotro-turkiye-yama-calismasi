@@ -317,7 +317,12 @@ internal sealed class SenderForm : Form
         {
             SourceUpdateExportResult result = await Task.Run(() => SourceUpdateExporter.Create(updated, "", state, Path.Combine(_settingsDirectory, "out"), "", _cancellation.Token, Append), _cancellation.Token);
             Append(string.Format("Karşılaştırma: yeni={0:N0}, değişmiş={1:N0}, belirsiz={2:N0}, gönderilecek={3:N0}", result.Summary.New, result.Summary.Modified, result.Summary.Ambiguous, result.CandidateRecordCount));
-            if (result.Bundles.Count > 0)
+            if (result.StateUnchanged)
+            {
+                SourceUpdateExporter.CommitState(result);
+                Append("Seçilen DAT önceki katalogla aynı; GitHub'a gönderilecek yeni kaynak yok.");
+            }
+            else if (result.Bundles.Count > 0)
             {
                 GitHubSourceUploader uploader = new GitHubSourceUploader(repository, branch, Append);
                 await Task.Run(() => uploader.Upload(result), _cancellation.Token);

@@ -21,6 +21,7 @@ public sealed class CatalogSnapshot
 	public int FallbackPayloadCount { get; internal set; }
 	public int EmptyPayloadCount { get; internal set; }
 	public int ParseErrorCount { get; internal set; }
+	public long RecordCount { get; internal set; }
 	public string CatalogSha256 { get; internal set; }
 	public List<int> FailedDids { get; } = new List<int>();
 	public List<int> ReviewRequiredDids { get; } = new List<int>();
