@@ -469,7 +469,11 @@ class CopilotCliProvider(TranslationProvider):
         except (OSError, subprocess.TimeoutExpired) as exc:
             raise RuntimeError(f"Copilot CLI invocation failed: {type(exc).__name__}") from exc
         if result.returncode != 0:
-            raise RuntimeError(f"Copilot CLI returned exit code {result.returncode}")
+            detail = " ".join((result.stderr or "").split())
+            detail = re.sub(r"(?i)(?:bearer|token|authorization)[=: ]+\S+", "[redacted]", detail)
+            detail = detail[:240]
+            suffix = f": {detail}" if detail else ""
+            raise RuntimeError(f"Copilot CLI returned exit code {result.returncode}{suffix}")
         return OpenAICompatibleProvider._decode_content(self._extract_json(result.stdout), len(texts))
 
 
@@ -633,7 +637,8 @@ def main() -> int:
             chunk_outputs = provider.translate_many(chunk_texts)
         except Exception as exc:
             chunk_outputs = [None for _ in chunk_texts]
-            error_name = type(exc).__name__
+            error_name = str(exc).strip() or type(exc).__name__
+            error_name = re.sub(r"(?i)(?:bearer|token|authorization)[=: ]+\S+", "[redacted]", error_name)[:240]
             for _, indices in chunk:
                 for index in indices:
                     provider_errors_by_index[index] = error_name
