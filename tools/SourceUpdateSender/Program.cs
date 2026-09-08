@@ -365,22 +365,21 @@ internal sealed class SenderForm : Form
 
     private static string DefaultStatePath(string updated)
     {
-        string updateDirectory = ProjPaths.UpdateDatDir;
         try
         {
-            if (!Directory.Exists(updateDirectory) && !string.IsNullOrWhiteSpace(updated) && File.Exists(updated))
+            if (!string.IsNullOrWhiteSpace(updated) && File.Exists(updated))
             {
                 string selectedDirectory = Path.GetDirectoryName(Path.GetFullPath(updated));
                 string selectedName = Path.GetFileName(selectedDirectory ?? string.Empty);
                 if (string.Equals(selectedName, "GÜNCELLEME", StringComparison.OrdinalIgnoreCase)
                     || string.Equals(selectedName, "GUNCELLEME", StringComparison.OrdinalIgnoreCase))
                 {
-                    updateDirectory = selectedDirectory;
+                    return Path.Combine(selectedDirectory, "catalog.jsonl.gz");
                 }
             }
         }
         catch { }
-        return Path.Combine(updateDirectory, "catalog.jsonl.gz");
+        return Path.Combine(ProjPaths.UpdateDatDir, "catalog.jsonl.gz");
     }
 
     private static void MigrateState(string configuredPath, string destinationPath)
