@@ -178,6 +178,12 @@ internal static class GeneratorContractTests
         Expect<InvalidDataException>(() => Run("--incremental", predecessorPath, manifestPath, correctionPath, rejectedOutput, "correction-2"),
             "legacy missing predecessor DAT identity is rejected");
         predecessor.candidate_dat_sha256 = predecessorHash;
+        predecessor.minimum_updater_version = "1.2.0.0";
+        File.WriteAllText(manifestPath, Json.Serialize(predecessor), new UTF8Encoding(false));
+        Expect<InvalidDataException>(() => Run("--incremental", predecessorPath, manifestPath, correctionPath, rejectedOutput, "correction-2"),
+            "exact hashes cannot rehabilitate a predecessor made before the native framing fix");
+        Check(!Directory.Exists(rejectedOutput), "obsolete framing predecessor produces no incremental package");
+        predecessor.minimum_updater_version = LotroReleaseUpdater.CurrentUpdaterVersion;
         predecessor.patch_mode = "incremental";
         predecessor.chain_depth = 32;
         File.WriteAllText(manifestPath, Json.Serialize(predecessor), new UTF8Encoding(false));

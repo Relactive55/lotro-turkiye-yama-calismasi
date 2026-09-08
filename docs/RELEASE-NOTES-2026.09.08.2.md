@@ -21,10 +21,12 @@ Kaynak DAT değiştirilmedi. 231.578 kaydın fiziksel yazılması bu makinedeki
 ölçümde yaklaşık 10 saniye sürdü; kopyalama, katalog ve bütünlük kontrolleri
 bu süreye dahil değildir.
 
-Doğrulama: 214 otomatik kontrol; gerçek kaynakta tam oluşturma ve yeniden
+Doğrulama: 216 otomatik kontrol; gerçek kaynakta tam oluşturma ve yeniden
 okuma; NPC tablosunun başı/sonu için okuyucudan bağımsız fiziksel bayt testi.
 Aynı fiziksel test önceki `.1` adayını reddetti, yeni adayı kabul etti.
 Önceki `.1` taslağı bu nedenle kullanılmamalı ve yayımlanmamalıdır.
+Eski yazıcıyla üretilmiş bir aday, hash bilgileri olsa bile yeni incremental
+pakete temel yapılamaz; temiz kaynaktan yeni kök gereklidir.
 
 Oyun içi test henüz yapılmadı. Bütün ekran metinlerinin doğru çevrildiği veya
 tüm string-table hatalarının giderildiği iddia edilmez. Her eski/yeni DAT için

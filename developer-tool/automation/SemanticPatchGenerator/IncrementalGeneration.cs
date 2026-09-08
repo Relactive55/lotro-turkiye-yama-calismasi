@@ -84,6 +84,9 @@ internal static class IncrementalGeneration
             || predecessor.critical_review_required_count != 0)
             throw new InvalidDataException("A verified semantic predecessor manifest with exact candidate identities is required.");
         bool incremental = predecessor.patch_mode == SemanticPatchBuilder.IncrementalPatchMode;
+        if (!Version.TryParse(predecessor.minimum_updater_version, out Version framingVersion)
+            || framingVersion < new Version(1, 3, 0, 0))
+            throw new InvalidDataException("Predecessor predates the native DAT framing fix; build a new clean-source root instead.");
         if ((!incremental && !string.IsNullOrEmpty(predecessor.patch_mode) && predecessor.patch_mode != SemanticPatchBuilder.FullPatchMode)
             || (incremental && (predecessor.chain_depth < 1 || predecessor.chain_depth >= 32))
             || (!incremental && predecessor.chain_depth != 0))
