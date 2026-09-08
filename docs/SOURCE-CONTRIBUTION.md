@@ -10,7 +10,8 @@ Yeni source bundle göndermek isteyen oyuncu için hedef akış:
 1. Resmi LOTRO launcher ile güncelle.
 2. `LOTRKaynakGonder.exe` ile yalnız yeni temiz
    `client_local_English.dat` dosyasını seç.
-3. Program önceki katalogu yerel durum dosyasından alır; ilk çalıştırmada
+3. Program önceki katalogu proje kökündeki `GÜNCELLEME/catalog.jsonl.gz` yerel
+   durum dosyasından alır; ilk çalıştırmada
    yalnız temel durumu kaydeder, sonraki çalıştırmalarda read-only olarak sadece
    `NEW`/`MODIFIED` satırlardan küçük bundle üretip GitHub CLI oturumuyla özel
    kaynak deposuna gönderir.

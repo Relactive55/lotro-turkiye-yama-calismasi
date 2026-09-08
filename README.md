@@ -88,8 +88,9 @@ doğrulama sonuçlarıyla karıştırılmamalıdır. Ayrıntılar:
 Bakımcı, resmî launcher güncellemesine denk geldiğinde temiz
 `client_local_English.dat` dosyasını proje kökündeki `GÜNCELLEME` klasörüne
 koyar ve mevcut dosyanın yerine geçirir. Geliştirici aracı tek dosyayı yalnız
-kaynak olarak okur; önceki katalogu yerel durum kaydından alır. Dosya tam DAT
-olarak GitHub'a yüklenmez.
+kaynak olarak okur; önceki katalogu aynı klasördeki
+`GÜNCELLEME/catalog.jsonl.gz` yerel durum kaydından alır. Durum dosyası `.gitignore`
+ile yerel tutulur; tam DAT veya katalog GitHub'a yüklenmez.
 
 Bir kullanıcı oyun içinde sorun bildirdiğinde ilgili kayıt düzeltilerek yeni semantic paket yayımlanabilir. Kurulum aracının kodu değişmediyse kullanıcı yeni EXE indirmek zorunda kalmaz; mevcut araç yeni patch sürümünü görür.
 

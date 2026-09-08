@@ -37,8 +37,8 @@ Bakımcı girdi sözleşmesi sabittir:
 
 - klasör: proje kökündeki `GÜNCELLEME`
 - dosya: `client_local_English.dat` (tek temiz İngilizce DAT)
-- önceki katalog: `%LOCALAPPDATA%\Relactive\LotroSourceSender\state` altındaki
-  yerel durum dosyası;
+- önceki katalog: proje kökündeki `GÜNCELLEME/catalog.jsonl.gz` yerel durum
+  dosyası;
 - girdi salt okunur kaynak kabul edilir; doğrudan değiştirilmez ve GitHub'a
   yüklenmez.
 

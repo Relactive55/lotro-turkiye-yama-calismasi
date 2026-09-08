@@ -19,8 +19,8 @@ yazmaz. Hedef depo private değilse gönderimi fail-closed durdurur.
 2. Bilgisayarda GitHub CLI ile bir kez `gh auth login` yapılır.
 3. İlk çalıştırmada `GÜNCELLEME/client_local_English.dat` içindeki tek temiz DAT
    seçilir. Program önceki katalog yoksa bu DAT'ı temel olarak kaydeder ve patch
-   üretmez; durum dosyası `%LOCALAPPDATA%\Relactive\LotroSourceSender\state`
-   altında tutulur.
+   üretmez; durum dosyası proje kökündeki `GÜNCELLEME/catalog.jsonl.gz`
+   içinde tutulur. Bu dosya `.gitignore` ile yerel kalır ve GitHub'a gönderilmez.
 4. Sonraki LOTRO güncellemelerinde aynı dosyanın üzerine yeni temiz DAT'ı koyup
    yalnızca **GitHub'a Gönder** düğmesine basılır. Önceki katalog durum dosyasından
    otomatik alınır; ikinci DAT seçilmez.

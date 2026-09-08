@@ -224,13 +224,13 @@ internal sealed class SenderForm : Form
         table.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
         _updated = AddPathRow(table, 0, "Tek temiz DAT", "DAT seç", BrowseUpdated);
-        _state = AddTextRow(table, 1, "Durum (otomatik)", true);
+        _state = AddTextRow(table, 1, "Durum (GÜNCELLEME)", true);
         _repository = AddTextRow(table, 2, "Private GitHub", false);
         _branch = AddTextRow(table, 3, "Branch", false);
 
         Label note = new Label
         {
-            Text = "Tek temiz client_local_English.dat dosyasını her güncellemede yenisiyle değiştirin. Önceki katalog yerel durum dosyasından otomatik alınır; ham DAT gönderilmez.",
+            Text = "Tek temiz client_local_English.dat dosyasını her güncellemede yenisiyle değiştirin. Önceki katalog GÜNCELLEME\\catalog.jsonl.gz içinde otomatik korunur; ham DAT gönderilmez.",
             Dock = DockStyle.Fill,
             AutoSize = false,
             ForeColor = Color.FromArgb(70, 70, 70),
@@ -283,7 +283,9 @@ internal sealed class SenderForm : Form
     private void LoadValues()
     {
         _updated.Text = Existing(_settings.last_updated_dat);
-        _state.Text = string.IsNullOrWhiteSpace(_settings.state_path) ? DefaultStatePath(_updated.Text) : _settings.state_path;
+        string defaultState = DefaultStatePath(_updated.Text);
+        MigrateState(_settings.state_path, defaultState);
+        _state.Text = defaultState;
         _repository.Text = string.IsNullOrWhiteSpace(_settings.repository) ? "Relactive55/lotro-turkiye-yama-kaynak" : _settings.repository;
         _branch.Text = string.IsNullOrWhiteSpace(_settings.branch) ? "main" : _settings.branch;
     }
@@ -294,7 +296,7 @@ internal sealed class SenderForm : Form
         {
             if (dialog.ShowDialog(this) != DialogResult.OK) return;
             _updated.Text = dialog.FileName;
-            if (!File.Exists(_state.Text)) _state.Text = DefaultStatePath(dialog.FileName);
+            _state.Text = DefaultStatePath(dialog.FileName);
             Append("Güncel DAT seçildi: " + Path.GetFileName(dialog.FileName));
         }
     }
@@ -363,7 +365,37 @@ internal sealed class SenderForm : Form
 
     private static string DefaultStatePath(string updated)
     {
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Relactive", "LotroSourceSender", "state", "catalog.jsonl.gz");
+        string updateDirectory = ProjPaths.UpdateDatDir;
+        try
+        {
+            if (!Directory.Exists(updateDirectory) && !string.IsNullOrWhiteSpace(updated) && File.Exists(updated))
+            {
+                string selectedDirectory = Path.GetDirectoryName(Path.GetFullPath(updated));
+                string selectedName = Path.GetFileName(selectedDirectory ?? string.Empty);
+                if (string.Equals(selectedName, "GÜNCELLEME", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(selectedName, "GUNCELLEME", StringComparison.OrdinalIgnoreCase))
+                {
+                    updateDirectory = selectedDirectory;
+                }
+            }
+        }
+        catch { }
+        return Path.Combine(updateDirectory, "catalog.jsonl.gz");
+    }
+
+    private static void MigrateState(string configuredPath, string destinationPath)
+    {
+        if (string.IsNullOrWhiteSpace(configuredPath) || string.IsNullOrWhiteSpace(destinationPath)) return;
+        try
+        {
+            string source = Path.GetFullPath(configuredPath);
+            string destination = Path.GetFullPath(destinationPath);
+            if (string.Equals(source, destination, StringComparison.OrdinalIgnoreCase) || !File.Exists(source) || File.Exists(destination)) return;
+            string parent = Path.GetDirectoryName(destination);
+            if (!string.IsNullOrWhiteSpace(parent)) Directory.CreateDirectory(parent);
+            File.Move(source, destination);
+        }
+        catch { }
     }
 
     private SenderSettings LoadSettings()

@@ -8,7 +8,9 @@
 
    ```text
    lotro-turkiye-yama-calismasi/
-   └─ GÜNCELLEME/client_local_English.dat    (tek temiz İngilizce DAT)
+   └─ GÜNCELLEME/
+      ├─ client_local_English.dat            (tek temiz İngilizce DAT)
+      └─ catalog.jsonl.gz                    (otomatik yerel durum; GitHub'a gitmez)
    ```
 
    Dosya Türkçe yama yapılmamış olmalıdır.
@@ -18,8 +20,9 @@
    ve inceleme PR'ı açar. Onaydan sonra kaynaklar, DAT/semantic paket ve gerekiyorsa
    EXE güncellenir; testler geçince GitHub Release yayımlanır.
 
-İlk gönderimde program seçilen DAT'ı yerel
-`.lotro-source-state.jsonl.gz` dosyasında saklar. Bir sonraki oyun güncellemesinde
+İlk gönderimde program seçilen DAT'ın katalog özetini proje kökündeki
+`GÜNCELLEME/catalog.jsonl.gz` dosyasında saklar. Bu dosya `.gitignore` ile yerel
+kalır ve GitHub'a gönderilmez. Bir sonraki oyun güncellemesinde
 yalnızca `GÜNCELLEME/client_local_English.dat` dosyasını yenisiyle değiştirin;
 durum dosyası eski karşılaştırma noktası olarak kalır. İlk çalıştırma yalnızca
 temel durum oluşturur; sonraki güncelleme yeni/değişen satırlar için patch üretir.
