@@ -74,7 +74,7 @@ $releases = @(Invoke-GhJson @('api',"repos/$repository/releases?per_page=100"))
 $release = @($releases | Where-Object { $_.tag_name -ceq $tag })
 if ($release.Count -gt 1) { throw 'Ambiguous release.' }
 if ($release.Count -eq 0) {
-    & $GhPath release create $tag --repo $repository --draft --target $CommitSha --title "LOTRO Türkçe Yama $($manifest.patch_version)" --notes-file $notes
+    & $GhPath release create $tag --repo $repository --draft --target $CommitSha --title "LOTR TÜRKÇE YAMA $($manifest.patch_version)" --notes-file $notes
     if ($LASTEXITCODE -ne 0) { throw 'Draft creation failed.' }
     # The tag endpoint returns 404 for unpublished drafts. Resolve the
     # authenticated release list, then use the returned numeric ID.

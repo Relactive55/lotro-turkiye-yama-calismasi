@@ -1,4 +1,6 @@
-# LOTRO_Turkce_Yama_Setup
+# LOTR TÜRKÇE YAMA
+
+Bu programın kullanıcıya görünen adı **LOTR TÜRKÇE YAMA**'dır. Teknik yayın varlığı adı, mevcut kurulumlarla uyumluluğu korumak için sabit tutulur.
 
 Zincirli semantic yayınlarda ilk kök paket bir kez alınır. `patch_mode=incremental`
 manifestleri predecessor release ve DAT/katalog SHA-256 kimliklerini doğrular;

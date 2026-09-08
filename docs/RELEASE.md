@@ -18,7 +18,7 @@ SHA-256, katalog ve rollback doğrulamasından geçer.
 İki ayrı kanal planlanır:
 
 - Patch release: manifest ve doğrulanmış `semantic_delta_patch` asset'i.
-- Installer release: `LOTRO_Turkce_Yama_Setup.exe` güncellemesi.
+- Installer release: **LOTR TÜRKÇE YAMA** kurulum aracının güncellemesi.
 
 Patch release, installer'ın yeniden build edilmesini gerektirmemelidir. Her patch yeni immutable tag, release ID, asset ID, boyut ve SHA-256 alır. Draft/prerelease release'ler updater tarafından reddedilir.
 

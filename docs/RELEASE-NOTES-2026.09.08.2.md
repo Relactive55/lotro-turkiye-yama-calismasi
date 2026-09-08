@@ -1,4 +1,4 @@
-# LOTRO Türkçe Yama 2026.09.08.2
+# LOTR TÜRKÇE YAMA 2026.09.08.2
 
 DAT yazma düzeltmesi; kurulum aracı **1.3.0.0** gereklidir.
 

@@ -148,7 +148,7 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
         HttpClientHandler handler = new HttpClientHandler { AllowAutoRedirect = false };
         _client = new HttpClient(handler, true);
         _client.Timeout = TimeSpan.FromMinutes(30);
-        _client.DefaultRequestHeaders.UserAgent.ParseAdd("LOTRO-Turkce-Yama-Setup/1");
+        _client.DefaultRequestHeaders.UserAgent.ParseAdd("LOTR-Turkce-Yama/1");
         _client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
     }
 
@@ -1493,7 +1493,7 @@ public static class ManifestValidator
         if (!Version.TryParse(manifest.minimum_updater_version, out Version minimum))
             throw new UpdaterFailure("MANIFEST_INVALID", "Gerekli kurulum aracı sürümü geçersiz.");
         if (minimum > new Version(LotroReleaseUpdater.CurrentUpdaterVersion))
-            throw new UpdaterFailure("UPDATER_TOO_OLD", "Bu yama için daha yeni kurulum aracı gerekiyor. GitHub yayınındaki güncel LOTRO_Turkce_Yama_Setup.exe dosyasını indirin.");
+            throw new UpdaterFailure("UPDATER_TOO_OLD", "Bu yama için daha yeni kurulum aracı gerekiyor. GitHub yayınındaki güncel LOTR TÜRKÇE YAMA kurulum aracını indirin.");
     }
 
     public static void Validate(ReleaseManifest m, StableRelease release, ReleaseAsset manifestAsset)

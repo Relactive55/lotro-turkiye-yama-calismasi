@@ -1,4 +1,4 @@
-# LOTRO Türkçe Yama 2026.09.08.1
+# LOTR TÜRKÇE YAMA 2026.09.08.1
 
 **Geçersiz kılınmış taslak:** Sonraki inceleme, modern DAT başlığının yanlış
 okunduğunu ve kayıt sonundaki dört baytın kaybolduğunu buldu. Aşağıdaki eski

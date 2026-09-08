@@ -1,4 +1,4 @@
-# LOTRO Türkçe Yama 2026.09.08.3
+# LOTR TÜRKÇE YAMA 2026.09.08.3
 
 Kurulum aracı **1.4.0.0** gereklidir. Oyun ve launcher kapalıyken yeni aracı kullanın.
 

@@ -1,4 +1,6 @@
-# LOTRO Türkiye Yama Çalışması
+# LOTR TÜRKÇE YAMA
+
+LOTRO Türkiye Yama Çalışması'nın son kullanıcı uygulaması ve güvenli güncelleme akışı.
 
 Sonraki semantic düzeltmeler için [zincirli küçük paket akışına](docs/SEMANTIC-CHAIN.md)
 bakın. İlk kök paket bir kez indirilir; güncellemeler yalnız eksik küçük
@@ -9,9 +11,9 @@ bakın. İlk kök paket bir kez indirilir; güncellemeler yalnız eksik küçük
 Yeni araç ipucu ve yetenek/eşya düzeltmeleri: [2026.09.08.3 notları](docs/RELEASE-NOTES-2026.09.08.3.md).
 Bu paket için kurulum aracı `1.4.0.0` gerekir.
 
-[**LOTRO Türkçe Yama GitHub Releases sayfasını aç (Windows)**](https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/latest)
+[**LOTR TÜRKÇE YAMA GitHub Releases sayfasını aç (Windows)**](https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/latest)
 
-Açılan sayfadaki `LOTRO_Turkce_Yama_Setup.exe` varlığını indirin. Son kullanıcı
+Açılan sayfadaki **LOTR TÜRKÇE YAMA** kurulum varlığını indirin. Son kullanıcı
 dağıtımında proje dışında barındırılan ZIP, EXE veya başka bir çalıştırılabilir
 dosya kullanılmaz.
 
@@ -21,7 +23,9 @@ başlığına ilişkin son düzeltme, bağımsız fiziksel bayt testleriyle de s
 oyun içi test henüz tamamlanmadı. Hata durumunda canlı dosya değiştirilmez
 veya değiştirme başladıysa doğrulanmış yedekten geri dönme denenir.
 
-The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli güncelleme projesidir. Son kullanıcı tam oyun DAT'ı indirmez; GitHub Releases sayfasındaki `LOTRO_Turkce_Yama_Setup.exe` aracını indirir ve **Yama Yap** düğmesine basar. Araç Steam ve bağımsız LOTRO kurulumlarını bulabilir, güncel semantic paketi indirir ve kullanıcının kendi resmî DAT dosyasına uygular.
+The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli güncelleme projesidir. Son kullanıcı tam oyun DAT'ı indirmez; GitHub Releases sayfasındaki **LOTR TÜRKÇE YAMA** kurulum aracını indirir ve **Yama Yap** düğmesine basar. Araç Steam ve bağımsız LOTRO kurulumlarını bulabilir, güncel semantic paketi indirir ve kullanıcının kendi resmî DAT dosyasına uygular.
+
+> Kullanıcıya görünen ürün adı **LOTR TÜRKÇE YAMA**'dır. GitHub varlığının teknik dosya adı, mevcut kurulumları bozmamak için uyumluluk amacıyla sabit tutulur.
 
 ## Son kullanıcı akışı
 

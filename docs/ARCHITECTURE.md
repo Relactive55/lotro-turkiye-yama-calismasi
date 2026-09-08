@@ -8,7 +8,7 @@ token/format, aday ve rollback doğrulaması yapar.
 
 ## Roller
 
-`LOTRÇEVİRİ.exe` geliştirici/çeviri/build aracıdır. `LOTRO_Turkce_Yama_Setup.exe` ayrı bir son kullanıcı updater'ıdır; yalnız release kontrolü, indirme, doğrulama, backup, kurulum ve rollback yapar. Updater'a AI, TM, glossary, GPU veya model runtime eklenmez.
+`LOTRÇEVİRİ.exe` geliştirici/çeviri/build aracıdır. **LOTR TÜRKÇE YAMA** ayrı bir son kullanıcı updater'ıdır; yalnız release kontrolü, indirme, doğrulama, backup, kurulum ve rollback yapar. Updater'a AI, TM, glossary, GPU veya model runtime eklenmez.
 
 ## Geliştirici akışı
 
@@ -33,4 +33,4 @@ dosya değiştirilmez. Aynı sürümün yeniden çalıştırılması idempotent 
 
 ## Yayın ayrımı
 
-Patch release (`manifest.json` + yama asset'i) ile installer release (`LOTRO_Turkce_Yama_Setup.exe`) ayrı kanallardır. Patch değiştiğinde installer yeniden derlenmek zorunda değildir. Her patch immutable tag/release ID/asset ID/size/SHA-256 ile yayınlanır; otomatik merge/approve yoktur. Source acquisition cloud tarafı kanıtlanmadığı için varsayılan `CLIENT_ASSISTED` bundle akışıdır; yalnız güvenli normal içerik release'e girer, riskli satırlar İngilizce fallback olur.
+Patch release (`manifest.json` + yama asset'i) ile **LOTR TÜRKÇE YAMA** kurulum varlığı ayrı kanallardır. Patch değiştiğinde installer yeniden derlenmek zorunda değildir. Her patch immutable tag/release ID/asset ID/size/SHA-256 ile yayınlanır; otomatik merge/approve yoktur. Source acquisition cloud tarafı kanıtlanmadığı için varsayılan `CLIENT_ASSISTED` bundle akışıdır; yalnız güvenli normal içerik release'e girer, riskli satırlar İngilizce fallback olur.

@@ -9,6 +9,8 @@ namespace LotroTurkceYama.Setup;
 
 internal static class LotroSetupApp
 {
+    internal const string ProductName = "LOTR TÜRKÇE YAMA";
+
     [STAThread]
     private static void Main()
     {
@@ -16,7 +18,7 @@ internal static class LotroSetupApp
         {
             if (!firstInstance)
             {
-                MessageBox.Show("Kurulum aracı zaten açık. Açık pencereden devam edin.", "LOTRO Türkçe Yama");
+                MessageBox.Show("Kurulum aracı zaten açık. Açık pencereden devam edin.", ProductName);
                 return;
             }
             // GitHub requires TLS 1.2 on .NET Framework installations too.
@@ -43,7 +45,7 @@ internal sealed class SetupForm : Form
 
     public SetupForm()
     {
-        Text = "LOTRO Türkçe Yama";
+        Text = LotroSetupApp.ProductName;
         Width = 560;
         Height = 260;
         StartPosition = FormStartPosition.CenterScreen;
@@ -247,7 +249,7 @@ internal sealed class SetupForm : Form
                 _progress.Value = 100;
                 _status.Text = "Türkçe yama kuruldu.";
                 UpdateVersionInfo(ReadState(statePath));
-                MessageBox.Show(this, "Türkçe yama başarıyla kuruldu.", "LOTRO Türkçe Yama", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                MessageBox.Show(this, "Türkçe yama başarıyla kuruldu.", LotroSetupApp.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
         catch (OperationCanceledException) { acceptingProgress = false; _progress.Style = ProgressBarStyle.Continuous; _status.Text = "Kurulum iptal edildi."; }
