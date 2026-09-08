@@ -15,6 +15,8 @@
   bloke eder veya satırı English fallback'e düşürür.
 - Client-assisted source bundle opt-in'dir; kullanıcı dosyası kendiliğinden
   internete yüklenmez ve bundle tam DAT/raw catalog içermez.
-- Translation pipeline `noop`/OPUS/Argos provider sözleşmesine sahiptir; paid
-  API, model binary'si veya özel VPS zorunluluğu yoktur. Model revision/size/
-  SHA-256 doğrulanmadan otomatik release'e bağlanmaz.
+- Translation pipeline `noop`/OPUS/Argos/Copilot/OpenAI-uyumlu provider
+  sözleşmesine sahiptir. Copilot veya özel API kimlik bilgileri yalnız private
+  Actions secret/token alanında kullanılır; kaynak metni ve anahtar public
+  çıktıya yazılmaz. Model revision/size/SHA-256 doğrulanmadan otomatik
+  release'e bağlanmaz.

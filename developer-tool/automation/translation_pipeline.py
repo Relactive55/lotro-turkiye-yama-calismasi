@@ -14,6 +14,8 @@ import hashlib
 import json
 import os
 import re
+import shutil
+import subprocess
 import sys
 import time
 import urllib.error
@@ -254,26 +256,31 @@ class ArgosProvider(TranslationProvider):
         return self._translate(text, "en", "tr")
 
 
-class GitHubModelsProvider(TranslationProvider):
-    """Keyless-in-repository cloud translation using the workflow GITHUB_TOKEN.
+class OpenAICompatibleProvider(TranslationProvider):
+    """Translate through an explicitly configured OpenAI-compatible endpoint.
 
-    The token is supplied only by GitHub Actions and is never persisted in an
-    input, candidate, patch or log. Raw English is sent transiently to the
-    selected GitHub Models endpoint and is not written to public output.
+    The endpoint and key are supplied only by the private workflow.  The
+    provider deliberately accepts HTTPS endpoints only and never writes the
+    key or the English input to a repository file.
     """
 
-    name = "GITHUB_MODELS"
+    name = "OPENAI_COMPATIBLE"
 
-    def __init__(self, model: str, endpoint: str, token_env: str) -> None:
+    def __init__(self, model: str, endpoint: str, token_env: str, token_header: str = "Authorization", token_prefix: str = "Bearer") -> None:
         token = os.environ.get(token_env, "").strip()
         if not token:
-            raise RuntimeError(f"GitHub Models token is missing from {token_env}")
+            raise RuntimeError(f"translation API key is missing from {token_env}")
         parsed = urllib.parse.urlparse(endpoint)
-        if parsed.scheme != "https" or parsed.hostname != "models.github.ai":
-            raise RuntimeError("GitHub Models endpoint must use https://models.github.ai")
+        if parsed.scheme != "https" or not parsed.hostname:
+            raise RuntimeError("translation API endpoint must use HTTPS")
+        header = token_header.strip()
+        if not header or any(char.isspace() for char in header):
+            raise RuntimeError("translation API key header is invalid")
         self._token = token
         self._endpoint = endpoint
         self._model = model
+        self._token_header = header
+        self._token_prefix = token_prefix.strip()
         self.version = model
 
     @staticmethod
@@ -285,17 +292,17 @@ class GitHubModelsProvider(TranslationProvider):
         decoded = json.loads(value)
         items = decoded.get("translations") if isinstance(decoded, dict) else None
         if not isinstance(items, list):
-            raise RuntimeError("GitHub Models response has no translations array")
+            raise RuntimeError("translation response has no translations array")
         result: list[str | None] = [None] * expected
         for item in items:
             if not isinstance(item, dict) or not isinstance(item.get("id"), int) or not isinstance(item.get("text"), str):
-                raise RuntimeError("GitHub Models response item is malformed")
+                raise RuntimeError("translation response item is malformed")
             index = item["id"]
             if index < 0 or index >= expected or result[index] is not None:
-                raise RuntimeError("GitHub Models response ids are invalid or duplicated")
+                raise RuntimeError("translation response ids are invalid or duplicated")
             result[index] = item["text"].strip()
         if any(item is None for item in result):
-            raise RuntimeError("GitHub Models response is incomplete")
+            raise RuntimeError("translation response is incomplete")
         return [str(item) for item in result]
 
     def translate(self, text: str) -> str:
@@ -342,10 +349,9 @@ class GitHubModelsProvider(TranslationProvider):
                 data=request_bytes,
                 method="POST",
                 headers={
-                    "Accept": "application/vnd.github+json",
-                    "Authorization": f"Bearer {self._token}",
+                    "Accept": "application/json",
+                    self._token_header: (self._token_prefix + " " + self._token).strip(),
                     "Content-Type": "application/json; charset=utf-8",
-                    "X-GitHub-Api-Version": "2026-03-10",
                     "User-Agent": "lotro-turkiye-yama-translation-pipeline",
                 },
             )
@@ -366,7 +372,105 @@ class GitHubModelsProvider(TranslationProvider):
                 if attempt == 3:
                     break
                 time.sleep(2 ** attempt)
-        raise RuntimeError(f"GitHub Models translation failed: {type(last_error).__name__}") from last_error
+        raise RuntimeError(f"OpenAI-compatible translation failed: {type(last_error).__name__}") from last_error
+
+
+class GitHubModelsProvider(OpenAICompatibleProvider):
+    """Compatibility shim that fails clearly after GitHub Models retirement."""
+
+    name = "GITHUB_MODELS"
+
+    def __init__(self, model: str, endpoint: str, token_env: str) -> None:
+        raise RuntimeError(
+            "GitHub Models inference API is retired; use copilot-cli or openai-compatible instead"
+        )
+
+
+class CopilotCliProvider(TranslationProvider):
+    """GitHub-native translation through Copilot CLI in Actions.
+
+    Copilot CLI is invoked in prompt mode with no repository instructions or
+    built-in MCP servers.  It receives only the transient batch and must
+    return the same protected-marker JSON contract as the HTTP provider.
+    """
+
+    name = "GITHUB_COPILOT"
+
+    def __init__(self, command: str, model: str, token_env: str, timeout: int) -> None:
+        token = os.environ.get(token_env, "").strip()
+        if not token:
+            raise RuntimeError(f"Copilot token is missing from {token_env}")
+        executable = shutil.which(command)
+        if not executable:
+            raise RuntimeError("GitHub Copilot CLI is not installed on the runner")
+        self._command = executable
+        self._model = model or "auto"
+        self._token_env = token_env
+        self._timeout = max(30, int(timeout))
+        self.version = f"copilot-cli/{self._model}"
+
+    @staticmethod
+    def _extract_json(response: str) -> str:
+        value = (response or "").strip()
+        start = value.find("{")
+        end = value.rfind("}")
+        if start < 0 or end < start:
+            raise RuntimeError("Copilot CLI response has no JSON object")
+        return value[start:end + 1]
+
+    def translate(self, text: str) -> str:
+        return self.translate_many([text])[0]
+
+    def translate_many(self, texts: list[str]) -> list[str]:
+        if not texts:
+            return []
+        request = {
+            "source_language": "English",
+            "target_language": "Turkish",
+            "items": [{"id": index, "text": text} for index, text in enumerate(texts)],
+        }
+        prompt = (
+            "Act only as an English-to-Turkish MMORPG localization service. "
+            "Do not use tools, do not read files, do not explain anything. "
+            "Keep every ZXQddddQXZ marker byte-for-byte and in the same order. "
+            "Do not translate Tolkien or proper game names. Return ONLY one JSON object "
+            "with exactly one translation for every item: "
+            '{"translations":[{"id":0,"text":"..."}]}. Input: '
+            + json.dumps(request, ensure_ascii=False, separators=(",", ":"))
+        )
+        environment = os.environ.copy()
+        environment["COPILOT_MODEL"] = self._model
+        command = [
+            self._command,
+            "--prompt=" + prompt,
+            "--silent",
+            "--model=" + self._model,
+            "--no-auto-update",
+            "--no-ask-user",
+            "--no-custom-instructions",
+            "--disable-builtin-mcps",
+            "--no-remote",
+            "--no-remote-export",
+            "--no-experimental",
+        ]
+        try:
+            result = subprocess.run(
+                command,
+                cwd=os.getcwd(),
+                env=environment,
+                stdin=subprocess.DEVNULL,
+                capture_output=True,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+                timeout=self._timeout,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exc:
+            raise RuntimeError(f"Copilot CLI invocation failed: {type(exc).__name__}") from exc
+        if result.returncode != 0:
+            raise RuntimeError(f"Copilot CLI returned exit code {result.returncode}")
+        return OpenAICompatibleProvider._decode_content(self._extract_json(result.stdout), len(texts))
 
 
 def build_provider(name: str, args: argparse.Namespace) -> TranslationProvider:
@@ -378,6 +482,16 @@ def build_provider(name: str, args: argparse.Namespace) -> TranslationProvider:
         return ArgosProvider()
     if name == "github-models":
         return GitHubModelsProvider(args.github_model, args.github_endpoint, args.github_token_env)
+    if name == "openai-compatible":
+        return OpenAICompatibleProvider(
+            args.openai_model,
+            args.openai_endpoint,
+            args.openai_token_env,
+            args.openai_token_header,
+            args.openai_token_prefix,
+        )
+    if name == "copilot-cli":
+        return CopilotCliProvider(args.copilot_command, args.copilot_model, args.copilot_token_env, args.copilot_timeout)
     raise ValueError(f"unknown provider: {name}")
 
 
@@ -392,7 +506,7 @@ def load_context(path: str | None) -> tuple[dict[str, str], dict[str, str], dict
     return approved, tm, glossary, names
 
 
-def process(row: dict, provider: TranslationProvider, approved: dict[str, str], tm: dict[str, str], glossary: dict[str, str], protected_names: list[str], generated: str | None = None) -> dict:
+def process(row: dict, provider: TranslationProvider, approved: dict[str, str], tm: dict[str, str], glossary: dict[str, str], protected_names: list[str], generated: str | None = None, provider_error: str | None = None) -> dict:
     source = str(row.get("english", ""))
     exact_glossary = glossary.get(source)
     target = approved.get(source) or tm.get(source) or exact_glossary
@@ -405,6 +519,11 @@ def process(row: dict, provider: TranslationProvider, approved: dict[str, str], 
         engine = "NONE"
         version = "none"
         problem = "critical UI requires human approval"
+    elif provider_error:
+        status = "UNTRANSLATED"
+        engine = provider.name
+        version = provider.version
+        problem = f"TRANSLATION_PROVIDER_UNAVAILABLE: {provider_error}"
     elif target is None:
         masked, replacements = mask_tokens(source, protected_names)
         try:
@@ -447,7 +566,11 @@ def main() -> int:
     parser.add_argument("--input", required=True, help="private/transient source JSONL")
     parser.add_argument("--output", required=True, help="candidate JSONL without English source")
     parser.add_argument("--context", help="private JSON with approved/tm/glossary/protected_names")
-    parser.add_argument("--provider", choices=("noop", "opus", "argos", "github-models"), default="noop")
+    parser.add_argument(
+        "--provider",
+        choices=("noop", "opus", "argos", "github-models", "openai-compatible", "copilot-cli"),
+        default="noop",
+    )
     parser.add_argument("--model", default="Helsinki-NLP/opus-mt-tc-big-en-tr")
     parser.add_argument("--revision")
     parser.add_argument("--cache")
@@ -461,6 +584,15 @@ def main() -> int:
     parser.add_argument("--github-model", default="openai/gpt-4.1")
     parser.add_argument("--github-endpoint", default="https://models.github.ai/inference/chat/completions")
     parser.add_argument("--github-token-env", default="GITHUB_TOKEN")
+    parser.add_argument("--openai-model", default="")
+    parser.add_argument("--openai-endpoint", default="")
+    parser.add_argument("--openai-token-env", default="TRANSLATION_API_KEY")
+    parser.add_argument("--openai-token-header", default="Authorization")
+    parser.add_argument("--openai-token-prefix", default="Bearer")
+    parser.add_argument("--copilot-command", default="copilot")
+    parser.add_argument("--copilot-model", default="auto")
+    parser.add_argument("--copilot-token-env", default="GITHUB_TOKEN")
+    parser.add_argument("--copilot-timeout", type=int, default=180)
     args = parser.parse_args()
     approved, tm, glossary, protected_names = load_context(args.context)
     provider = build_provider(args.provider, args)
@@ -472,6 +604,7 @@ def main() -> int:
         rows = [json.loads(line) for line in input_text.splitlines() if line.strip()]
     batch_size = max(1, args.batch_size)
     generated_by_index: dict[int, str | None] = {}
+    provider_errors_by_index: dict[int, str] = {}
     pending_indices: list[int] = []
     pending_texts: list[str] = []
     for index, row in enumerate(rows):
@@ -498,8 +631,12 @@ def main() -> int:
         chunk_texts = [item[0] for item in chunk]
         try:
             chunk_outputs = provider.translate_many(chunk_texts)
-        except Exception:
+        except Exception as exc:
             chunk_outputs = [None for _ in chunk_texts]
+            error_name = type(exc).__name__
+            for _, indices in chunk:
+                for index in indices:
+                    provider_errors_by_index[index] = error_name
         for (_, indices), output in zip(chunk, chunk_outputs):
             for index in indices:
                 generated_by_index[index] = output
@@ -507,13 +644,33 @@ def main() -> int:
     results = []
     for index, row in enumerate(rows):
         generated = generated_by_index.get(index)
-        results.append(process(row, provider, approved, tm, glossary, protected_names, generated=generated))
+        results.append(
+            process(
+                row,
+                provider,
+                approved,
+                tm,
+                glossary,
+                protected_names,
+                generated=generated,
+                provider_error=provider_errors_by_index.get(index),
+            )
+        )
     Path(args.output).parent.mkdir(parents=True, exist_ok=True)
     Path(args.output).write_text("".join(json.dumps(result, ensure_ascii=False, sort_keys=True) + "\n" for result in results), encoding="utf-8")
     counts: dict[str, int] = {}
     for result in results:
         counts[result["translation_status"]] = counts.get(result["translation_status"], 0) + 1
     print("TRANSLATION_PIPELINE|provider=" + provider.name + "|counts=" + json.dumps(counts, sort_keys=True), file=sys.stderr)
+    if provider_errors_by_index:
+        print(
+            "TRANSLATION_PROVIDER_ERRORS|count="
+            + str(len(provider_errors_by_index))
+            + "|types="
+            + json.dumps(sorted(set(provider_errors_by_index.values())))
+            ,
+            file=sys.stderr,
+        )
     return 0
 
 

@@ -38,8 +38,10 @@ Kaynak DAT resmi patch hizmetinden geçici runner alanına yalnız işleme amac�
 alınabiliyorsa GitHub-hosted Windows runner kullanılabilir; bu güvenilir ve
 sürdürülebilir biçimde kanıtlanamazsa kaynak çıkarma işi etiketlenmiş bir
 self-hosted Windows runner'da yapılır. Çeviri önce mevcut onaylı havuz/TM/sözlük,
-sonra ücretsiz GitHub Models kotası, son yedek olarak ücretsiz yerel OPUS
-sağlayıcısıyla hazırlanır. Token ve biçim testini geçmeyen sonuç yayımlanmaz.
+sonra GitHub Actions içindeki GitHub Copilot CLI (veya özel olarak
+yapılandırılmış OpenAI-uyumlu uç nokta), son yedek olarak ücretsiz yerel OPUS
+sağlayıcısıyla hazırlanır. GitHub Models inference API emekliye ayrıldığı için
+kullanılmaz. Token ve biçim testini geçmeyen sonuç yayımlanmaz.
 Public depoda ham İngilizce katalog, DAT, RAR, native oyun DLL'i, model veya
 yerel çalışma çıktısı tutulmaz.
 

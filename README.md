@@ -106,6 +106,6 @@ Oyun resmi launcher ile güncellendiğinde sürüm izleyicisi GitHub'da sinyal
 oluşturur. Güncel temiz `client_local_English.dat` dosyasını seçmek için
 `LOTRKaynakGonder.exe` yardımcı programı kullanılabilir. Program DAT'ı salt
 okunur tarar, yeni/değişen metinleri private kaynak deposuna gönderir; GitHub
-Actions otomatik çeviri adayı üretip public depoda incelemeli Pull Request açar.
-Ham DAT public depoya yüklenmez. Kurulum ve ilk kullanım ayrıntıları için
+Actions otomatik çeviri adayı üretip çeviri deposunda incelemeli Pull Request açar.
+Ham DAT hiçbir depoda herkese açık yayımlanmaz. Kurulum ve ilk kullanım ayrıntıları için
 [otomatik kaynak gönderme rehberine](docs/AUTOMATIC-SOURCE-UPLOAD.md) bakın.

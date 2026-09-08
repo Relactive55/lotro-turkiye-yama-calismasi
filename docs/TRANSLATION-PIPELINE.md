@@ -23,8 +23,10 @@ semantic patch'e alınmaz.
 Script şu provider'ları destekler:
 
 - `noop`: bağımlılıksız güvenli fallback ve CI sözleşme testi,
-- `github-models`: public GitHub Actions içinde kısa ömürlü `GITHUB_TOKEN` ve
-  `models: read` izniyle ücretsiz kota üzerinden kaliteli bulut çevirisi,
+- `copilot-cli`: private GitHub Actions içinde `GITHUB_TOKEN` ve
+  `copilot-requests: write` izniyle GitHub Copilot CLI üzerinden bulut çevirisi,
+- `openai-compatible`: private workflow secret'ı ile açıkça yapılandırılmış
+  HTTPS OpenAI-uyumlu uç nokta,
 - `opus`: `Helsinki-NLP/opus-mt-tc-big-en-tr` için lazy local Transformers
   sağlayıcısı,
 - `argos`: yerel Argos Translate sağlayıcısı.
@@ -36,8 +38,10 @@ korunur; geri yükleme başarısızsa kayıt reddedilir. Inline köşeli işaret
 semantic patch'e alınmaz.
 Maskelenmiş kaynak metinleri aynıysa model yalnızca bir kez çalıştırılır ve
 sonuç ilgili tüm catalog kimliklerine güvenli biçimde dağıtılır.
-GitHub Models token'ı hiçbir dosyaya veya loga yazılmaz; İngilizce kaynak yalnız
-istek sırasında geçici olarak gönderilir ve public candidate çıktısından atılır.
+Copilot veya OpenAI-uyumlu servis kimlik bilgisi hiçbir dosyaya veya loga
+yazılmaz; İngilizce kaynak yalnız private iş akışında istek sırasında geçici
+olarak gönderilir ve aday çıktısından atılır. GitHub Models inference API
+emekliye ayrıldığı için `github-models` seçeneği bilinçli olarak hata verir.
 Kota veya servis hatasında iyi mevcut kayıtlar korunur, yeni kayıtlar güvenli
 biçimde `UNTRANSLATED` kalır; release zorlanmaz.
 

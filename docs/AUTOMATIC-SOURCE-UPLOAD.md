@@ -23,10 +23,13 @@ yazmaz. Hedef depo public ise gönderimi fail-closed durdurur.
    Gönder** düğmesine basılır.
 
 Private Actions bundle'ı doğrular, public projedeki `translation_pipeline.py`
-scriptini `github-models` sağlayıcısıyla çalıştırır ve İngilizce kaynak içermeyen
-güvenli adayları public projede Pull Request olarak açar. Kritik arayüz satırları
-ve kalite kontrolünden geçmeyen kayıtlar otomatik kabul edilmez. DAT yazımı,
-round-trip doğrulaması ve release yayınlama kapıları korunur.
+scriptini GitHub Copilot CLI sağlayıcısıyla çalıştırır ve İngilizce kaynak
+içermeyen güvenli adayları public projede Pull Request olarak açar. GitHub
+Models inference API emekliye ayrıldığı için workflow artık Copilot CLI ve
+`copilot-requests: write` yetkisini kullanır. Hesabın etkin Copilot planı yoksa
+job fail-closed durur; boş veya İngilizce aday public depoya aktarılmaz. Kritik
+arayüz satırları ve kalite kontrolünden geçmeyen kayıtlar otomatik kabul edilmez.
+DAT yazımı, round-trip doğrulaması ve release yayınlama kapıları korunur.
 
 Programın varsayılan private deposu ve branch'i ayarlar dosyasından değiştirilebilir:
 
