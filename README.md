@@ -100,3 +100,12 @@ Bir kullanıcı oyun içinde sorun bildirdiğinde ilgili kayıt düzeltilerek ye
 - `docs/`: mimari, otomasyon, güvenlik ve release belgeleri
 
 Yerel build için `scripts/build.ps1 -Project All -DotnetPath <dotnet.exe>`, test için `scripts/test-updater.ps1 -DotnetPath <dotnet.exe>` kullanılabilir.
+## Oyun güncellemesi sonrası otomatik çeviri
+
+Oyun resmi launcher ile güncellendiğinde sürüm izleyicisi GitHub'da sinyal
+oluşturur. Güncel temiz `client_local_English.dat` dosyasını seçmek için
+`LOTRKaynakGonder.exe` yardımcı programı kullanılabilir. Program DAT'ı salt
+okunur tarar, yeni/değişen metinleri private kaynak deposuna gönderir; GitHub
+Actions otomatik çeviri adayı üretip public depoda incelemeli Pull Request açar.
+Ham DAT public depoya yüklenmez. Kurulum ve ilk kullanım ayrıntıları için
+[otomatik kaynak gönderme rehberine](docs/AUTOMATIC-SOURCE-UPLOAD.md) bakın.

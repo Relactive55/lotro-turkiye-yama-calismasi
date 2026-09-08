@@ -54,6 +54,13 @@ YAZIM_RAPOR.txt
 test-output/
 installed_patch.json
 
+# Safe machine-translation candidates contain targets only; the private
+# source/English input never enters this public path.
+!translation-candidates/
+!translation-candidates/auto/
+!translation-candidates/auto/**/*.jsonl
+!translation-candidates/auto/**/*.json
+
 # Local configuration / paths / secrets
 settings.ini
 *.user
