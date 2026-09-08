@@ -38,7 +38,7 @@ jobs:
           Get-Content -LiteralPath ./schemas/semantic-translation-patch.schema.json -Raw | ConvertFrom-Json | Out-Null
           Get-Content -LiteralPath ./schemas/source-bundle.schema.json -Raw | ConvertFrom-Json | Out-Null
 
-  # This public workflow validates the provider-independent contract without
+  # This validation workflow validates the provider-independent contract without
   # proprietary game data. Real source refresh and release generation run only
   # on the trusted Windows source machine after the official version watcher
   # reports a change.

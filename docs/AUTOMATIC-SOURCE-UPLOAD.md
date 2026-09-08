@@ -23,14 +23,11 @@ yazmaz. Hedef depo private değilse gönderimi fail-closed durdurur.
    Gönder** düğmesine basılır.
 
 Private Actions bundle'ı doğrular, çeviri deposundaki `translation_pipeline.py`
-scriptini Copilot CLI veya tanımlı OpenAI-uyumlu sağlayıcıyla çalıştırır ve İngilizce kaynak
-içermeyen güvenli adayları yine private çeviri deposunda Pull Request olarak açar. GitHub
-Models inference API emekliye ayrıldığı için workflow artık Copilot CLI veya
-özel API secret'ı kullanır. Hesabın etkin Copilot planı yoksa ve API secret'ı da
-tanımlı değilse job fail-closed durur; boş veya İngilizce aday çeviri deposuna
-aktarılmaz. Kişisel depo politikası built-in token'ı reddederse
-`COPILOT_GITHUB_TOKEN` adlı Actions
-secret'ına yalnız Copilot Requests yetkili fine-grained token eklenmelidir. Kritik
+scriptini ücretsiz ve yerel Argos modeliyle çalıştırır ve İngilizce kaynak içermeyen
+güvenli adayları yine private çeviri deposunda Pull Request olarak açar. Argos modeli
+yalnız geçici runner alanına indirilir, boyut/SHA-256 ile doğrulanır ve depoya konmaz.
+API anahtarı, Copilot hesabı veya son kullanıcı üyeliği gerekmez. Model çalışmazsa job
+fail-closed durur; boş veya İngilizce aday çeviri deposuna aktarılmaz. Kritik
 arayüz satırları ve kalite kontrolünden geçmeyen kayıtlar otomatik kabul edilmez.
 DAT yazımı, round-trip doğrulaması ve release yayınlama kapıları korunur.
 

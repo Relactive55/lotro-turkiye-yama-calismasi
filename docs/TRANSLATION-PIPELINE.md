@@ -1,9 +1,10 @@
 # Ücretsiz çeviri pipeline'ı
 
 `developer-tool/automation/translation_pipeline.py` provider-swappable bir aday
-üreticisidir. Private Actions akışında GitHub Copilot planı veya açıkça
-tanımlanmış bir OpenAI-uyumlu API secret'ı gerekir; yerel `noop`, OPUS ve Argos
-sağlayıcıları anahtar olmadan da çalışabilir.
+üreticisidir. Private Actions akışı varsayılan olarak ücretsiz Argos modelini geçici
+runner alanında çalıştırır; kullanıcı veya API anahtarı gerekmez. Copilot/OpenAI-uyumlu
+sağlayıcılar yalnızca ayrıca yapılandırılırsa kullanılabilir; yerel `noop`, OPUS ve Argos
+sağlayıcıları anahtar olmadan çalışabilir.
 
 ## Öncelik sırası
 

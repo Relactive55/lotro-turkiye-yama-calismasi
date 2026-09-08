@@ -2,8 +2,8 @@
 
 Bu programın kullanıcıya görünen adı **LOTR TÜRKÇE YAMA**'dır. Teknik yayın varlığı adı, mevcut kurulumlarla uyumluluğu korumak için sabit tutulur.
 
-Yayın deposu private olduğundan otomatik sürüm kontrolü ve indirme işlemleri yalnızca
-depoya erişimi olan GitHub hesaplarında çalışır.
+Yayın deposu son kullanıcıların giriş yapmadan güncelleme alabilmesi için public'tir;
+ham kaynak ve çeviri çalışma deposu ayrı tutulur ve private kalır.
 
 Zincirli semantic yayınlarda ilk kök paket bir kez alınır. `patch_mode=incremental`
 manifestleri predecessor release ve DAT/katalog SHA-256 kimliklerini doğrular;

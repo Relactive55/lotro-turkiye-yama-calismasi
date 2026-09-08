@@ -3,7 +3,7 @@ translation pipeline.
 
 The output contains the English source and must stay on the private runner.
 The translation pipeline deliberately removes that field from its candidate
-output before anything is copied to the public repository.
+output before anything is copied to the translation repository.
 """
 
 from __future__ import annotations
