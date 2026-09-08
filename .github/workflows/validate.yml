@@ -20,6 +20,9 @@ jobs:
       - name: Repository hygiene audit
         shell: pwsh
         run: ./scripts/audit-repo.ps1
+      - name: Public download link audit
+        shell: pwsh
+        run: ./scripts/audit-public-download-links.ps1 -Owner '${{ github.repository_owner }}' -Repository '${{ github.event.repository.name }}'
       - name: Official LOTRO version detector contract
         shell: pwsh
         run: ./tests/run-official-version-detector.ps1

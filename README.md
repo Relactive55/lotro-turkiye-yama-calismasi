@@ -9,7 +9,10 @@ bakın. İlk kök paket bir kez indirilir; güncellemeler yalnız eksik küçük
 Yeni araç ipucu ve yetenek/eşya düzeltmeleri: [2026.09.08.3 notları](docs/RELEASE-NOTES-2026.09.08.3.md).
 Bu paket için kurulum aracı `1.4.0.0` gerekir.
 
-[**LOTRO Türkçe Yama programını indir (Windows)**](https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/latest/download/LOTRO_Turkce_Yama_Setup.exe)
+[**LOTRO Türkçe Yama GitHub Releases sayfasını aç (Windows)**](https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/latest)
+
+Açılan sayfadaki `LOTRO_Turkce_Yama_Setup.exe` varlığını indirin. Proje dışında
+barındırılan ZIP, EXE veya başka bir çalıştırılabilir dosya kullanılmaz.
 
 Program temiz resmî DAT üzerinde özel bir aday kopya oluşturur. Adayın bütün
 yerelleştirme kayıtları ve çeviri hedefleri yeniden doğrulanır. Modern DAT
