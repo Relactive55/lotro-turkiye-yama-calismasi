@@ -29,7 +29,9 @@ function Is-GitHubReleaseUrl([Uri]$Uri) {
     return $Uri.AbsolutePath -match '^/[^/]+/[^/]+/releases(?:/|$)'
 }
 
-$tracked = @(& $gitCommand -C $RepoRoot ls-files)
+# Disable Git's octal path quoting so folders such as `ORJİNAL DAT` are
+# passed to PowerShell as their real Unicode paths.
+$tracked = @(& $gitCommand -c core.quotePath=false -C $RepoRoot ls-files)
 foreach ($relative in $tracked) {
     if ([string]::IsNullOrWhiteSpace($relative)) { continue }
     $path = Join-Path $RepoRoot $relative
