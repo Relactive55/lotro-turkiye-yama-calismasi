@@ -94,11 +94,11 @@ public static class TurTextFix
 		{
 			return null;
 		}
-		if (!ExactEn.TryGetValue(en, out var value))
+		if (ExactEn.TryGetValue(en, out var value))
 		{
-			return null;
+			return value;
 		}
-		return value;
+		return ManualUiText.ExactForEnglish(en);
 	}
 
 	public static string Fix(string tur, string en)
@@ -151,6 +151,14 @@ public static class TurTextFix
 		tur = Regex.Replace(tur, "\\.\\.+", ".");
 		tur = Regex.Replace(tur, "\\s+\\.", ".");
 		tur = Regex.Replace(tur, "\\s+,", ",");
+		// LOTRO uses m/s suffixes for minutes/seconds in skill and item
+		// tooltips.  Translate only an already-translated value so source
+		// English remains untouched and the ms (milliseconds) token is safe.
+		if (!string.IsNullOrEmpty(en) && !string.Equals(tur, en, StringComparison.Ordinal))
+		{
+			tur = Regex.Replace(tur, @"(?<![\\p{L}\\d])(\\d+(?:[.,]\\d+)?)\\s*m(?![\\p{L}])", "$1 dk", RegexOptions.IgnoreCase);
+			tur = Regex.Replace(tur, @"(?<![\\p{L}\\d])(\\d+(?:[.,]\\d+)?)\\s*s(?![\\p{L}])", "$1 sn", RegexOptions.IgnoreCase);
+		}
 		tur = tur.Trim();
 		tur = Regex.Replace(tur, "(>)isimlendirme", "$1İsimlendirme");
 		if (tur == "Zor" && en != null && (en == "Tough" || en.EndsWith("Tough")))

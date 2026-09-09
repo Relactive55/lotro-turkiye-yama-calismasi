@@ -1631,7 +1631,7 @@ public sealed class MainForm : Form
 				changed++;
 			}
 		}
-		return changed;
+		return changed + ManualUiText.Apply(rows);
 	}
 
 	private static bool IsAllowedCriticalTranslation(LocRow row)
