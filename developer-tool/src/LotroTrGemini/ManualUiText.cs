@@ -47,6 +47,20 @@ public static class ManualUiText
 		// Character-selection and launcher labels. These short strings occur in
 		// the protected client-wide table, so they cannot safely rely on a
 		// source-text-only translation-memory lookup.
+		{ "Man", "İnsan" }, { "Men", "İnsanlar" }, { "Dwarf", "Cüce" }, { "Dwarves", "Cüceler" },
+		{ "High Elf", "Yüksek Elf" }, { "Elf", "Elf" }, { "Elves", "Elfler" },
+		{ "River Hobbit", "Nehir Hobbiti" }, { "Hobbit", "Hobbit" }, { "Hobbits", "Hobbitler" },
+		{ "Stout-axe", "Sağlam-Balta" }, { "Race of Man (Female)", "İnsan Irkı (Kadın)" },
+		{ "Race of Man (Male)", "İnsan Irkı (Erkek)" }, { "Elf (Female)", "Elf (Kadın)" },
+		{ "Elf (Male)", "Elf (Erkek)" }, { "Dwarf (Female)", "Cüce (Kadın)" },
+		{ "Dwarf (Male)", "Cüce (Erkek)" }, { "Hobbit (Female)", "Hobbit (Kadın)" },
+		{ "Hobbit (Male)", "Hobbit (Erkek)" }, { "River Hobbit (Female)", "Nehir Hobbiti (Kadın)" },
+		{ "River Hobbit (Male)", "Nehir Hobbiti (Erkek)" }, { "High Elf (Female)", "Yüksek Elf (Kadın)" },
+		{ "High Elf (Male)", "Yüksek Elf (Erkek)" }, { "Stout-axe (Female)", "Sağlam-Balta (Kadın)" },
+		{ "Stout-axe (Male)", "Sağlam-Balta (Erkek)" }, { "Assassin", "Suikastçı" },
+		{ "Ranger", "Korucu" }, { "Basic", "Temel" }, { "Moderate", "Orta" },
+		{ "Advanced", "Gelişmiş" }, { "Healer", "İyileştirme" }, { "Support", "Destek" },
+		{ "Defence", "Savunma" }, { "Offence", "Saldırı" },
 		{ "Loading...", "Yükleniyor..." }, { "Loading... Please Wait", "Yükleniyor... Lütfen bekleyin" },
 		{ "Delete Character", "Karakteri Sil" }, { "Change Race", "Irkı Değiştir" },
 		{ "Characters", "Karakterler" }, { "Free Account", "Ücretsiz Hesap" },
@@ -55,7 +69,7 @@ public static class ManualUiText
 		{ "Get Points &", "Puanlar ve" }, { "Account Upgrades", "Hesap Yükseltmeleri" },
 		{ "Monster Play", "Canavar Oyunu" }, { "Manage Plugins", "Eklentileri Yönet" },
 		{ "Credits", "Emeği Geçenler" }, { "Movie Library", "Film Kütüphanesi" },
-		{ "Quit", "Çıkış" }, { "Enter Middle-earth", "Orta Dünya'ya Gir" },
+		{ "Quit", "Çıkış" }, { "Enter", "Gir" }, { "Enter Middle-earth", "Orta Dünya'ya Gir" },
 		{ "Entering Middle-earth", "Orta Dünya'ya Giriliyor" }, { "System", "Sistem" },
 		{ "Inventory", "Envanter" }, { "Crafting", "Zanaatkârlık" }, { "Social", "Sosyal" },
 		{ "Deed Log", "Başarım Günlüğü" }, { "Map", "Harita" }, { "Traits", "Özellikler" },
@@ -141,7 +155,7 @@ public static class ManualUiText
 		{ "Hunter", "Avcı" }, { "Rune-keeper", "Rün Alimi" }, { "Warden", "Gözcü" },
 		{ "Beorning", "Deri Değiştiren" }, { "Brawler", "Dövüşçü" }, { "Mariner", "Denizci" },
 		{ "Elves of Rivendell", "Ayrıkvadi Elfleri" }, { "Thorin's Hall", "Thorin Salonu" },
-		{ "Men", "İnsanlar" }, { "men", "insanlar" }, { "Bree", "Bree" },
+		{ "men", "insanlar" }, { "Bree", "Bree" },
 		{ "Large", "Büyük" }, { "Small", "Küçük" }, { "Misc", "Çeşitli" }, { "Misc.", "Çeşitli" },
 		{ "Filter Panel", "Filtre Paneli" }, { "Loot", "Ganimet" }, { "Advancement", "İlerleme" },
 		{ "Outside Depot", "Dış depo" }, { "Trade", "Takas" }, { "Trade (German)", "Takas (Almanca)" },
@@ -165,6 +179,18 @@ public static class ManualUiText
 		{ "Required", "Gerekli" }, { "Required:", "Gerekli:" }, { "Required Level:", "Gerekli seviye:" },
 		{ "Class Difficulty:", "Sınıf zorluğu:" }, { "Role:", "Rolü:" },
 		{ "Gameplay:", "Oyun:" }, { "Lore:", "Bilgi:" },
+		{ "Fervour", "Coşku" }, { "Mettle", "Metanet" }, { "Attunement", "Uyum" },
+		{ "Gambit", "Gambit" }, { "Gambits", "Gambitler" }, { "Herald", "Sancaktar" },
+		{ "Not as long-lived as Elves, sturdy as Dwarves, or resilient as Hobbits, Men are renowned for their courage and resourcefulness.",
+			"Elfler kadar uzun ömürlü, Cüceler kadar sağlam veya Hobbitler kadar dayanıklı olmasalar da İnsanlar cesaretleri ve beceriklilikleriyle tanınır." },
+		{ "Happiest when enjoying a simple life with six square meals a day, Hobbits are solid and dependable when called to action.",
+			"Günde altı doyurucu öğünle sade bir hayat sürerken en mutlu olan Hobbitler, harekete çağrıldıklarında sağlam ve güvenilirdir." },
+		{ "Dwellers of stone and miners of metal, the Dwarves are a doughty folk, resistant to the corruption of the Enemy -- but not to greed.",
+			"Taşın sakinleri ve metal madencileri olan Cüceler cesur bir halktır; Düşman'ın yozlaşmasına dirençlidirler, ancak açgözlülüğe karşı değil." },
+		{ "Race of Man", "İnsan Irkı" }, { "Race of Dwarf", "Cüce Irkı" },
+		{ "Race of Elf", "Elf Irkı" }, { "Race of Hobbit", "Hobbit Irkı" },
+		{ "Race of River Hobbit", "Nehir Hobbiti Irkı" }, { "Race of High Elf", "Yüksek Elf Irkı" },
+		{ "Race of Stout-axe", "Sağlam-Balta Irkı" }, { "Race of Beorning", "Deri Değiştiren Irkı" },
 		{ "Gondolin", "Gondolin" }, { "Imladris", "İmladris" },
 		{ "Forest Elk", "Orman Geyiği" }, { "Grey Horse", "Gri At" }, { "Happy Pig", "Mutlu Domuz" },
 
@@ -378,10 +404,120 @@ public static class ManualUiText
 			"\\n<li><rgb=#FFFF00>Sınıf Zorluğu:</rgb> Gelişmiş</li>\\n\\n<li><rgb=#FFFF00>Rolü:</rgb> Saldırı / Destek</li>\\n\\n<li><rgb=#FFFF00>Oyun:</rgb> Denizciler kılıçlarını ustaca kullanan kendinden emin yakın dövüşçülerdir. Savaşın akışını sezerek tarzlarını değiştirir, hareket birleşimleriyle güçlü yetenek zincirleri kurarlar. Kardeşlikte denizci şarkılarıyla müttefiklerini koordine eder ve düşmanları şaşırtan karışımlar hazırlarlar.</li>\\n\\n<li><rgb=#FFFF00>Bilgi:</rgb> Denizciler çevrelerini ve tuhaf araçları kullanarak savaşta avantaj sağlayan becerikli dövüşçülerdir. Bu sınıf, Valar’dan yardım istemek için Uzak Batı’ya tek başına yelken açan Eärendil’den esinlenmiştir.</li>")
 	};
 
+	// The class panel stores a small set of stat sentences beside the long
+	// description.  They are generated with the class name inserted into an
+	// otherwise common English pattern, so a source-text-only lookup used to
+	// miss them (or reuse a bad translation from another class).  Translate the
+	// complete sentence here, retaining the official meaning and punctuation.
+	private static readonly Dictionary<string, string> ClassInfoNames = new Dictionary<string, string>(StringComparer.Ordinal)
+	{
+		{ "Champion", "Şampiyon" }, { "Captain", "Kumandan" }, { "Minstrel", "Ozan" },
+		{ "Lore-master", "İrfan Ustası" }, { "Guardian", "Muhafız" }, { "Burglar", "Hırsız" },
+		{ "Hunter", "Avcı" }, { "Rune-keeper", "Rün Alimi" }, { "Warden", "Gözcü" },
+		{ "Beorning", "Deri Değiştiren" }, { "Brawler", "Dövüşçü" }, { "Mariner", "Denizci" }
+	};
+
+	private static readonly Dictionary<string, string> ClassInfoGenitives = new Dictionary<string, string>(StringComparer.Ordinal)
+	{
+		{ "Champion", "Şampiyonun" }, { "Captain", "Kumandanın" }, { "Minstrel", "Ozanın" },
+		{ "Lore-master", "İrfan Ustasının" }, { "Guardian", "Muhafızın" }, { "Burglar", "Hırsızın" },
+		{ "Hunter", "Avcının" }, { "Rune-keeper", "Rün Aliminin" }, { "Warden", "Gözcünün" },
+		{ "Beorning", "Deri Değiştirenin" }, { "Brawler", "Dövüşçünün" }, { "Mariner", "Denizcinin" }
+	};
+
+	private static readonly string[][] ClassStatTerms =
+	{
+		new[] { "Physical and Tactical Mastery", "Fiziksel ve Taktiksel Ustalığınızı" },
+		new[] { "Physical and Tactical Mitigation", "Fiziksel ve Taktiksel Hafifletmenizi" },
+		new[] { "Out of Combat Power Regen", "Savaş Dışı Güç Yenilenmenizi" },
+		new[] { "Maximum Morale", "Maksimum Moralınızı" },
+		new[] { "Morale Regen", "Moral Yenilenmenizi" },
+		new[] { "Max Power", "Maksimum Gücünüzü" },
+		new[] { "Physical Mastery", "Fiziksel Ustalığınızı" },
+		new[] { "Tactical Mastery", "Taktiksel Ustalığınızı" },
+		new[] { "Outgoing Healing", "Giden İyileştirmenizi" },
+		new[] { "Critical Rating", "Kritik Vuruş Oranınızı" },
+		new[] { "Block Rating", "Bloklama Oranınızı" },
+		new[] { "Physical Mitigation", "Fiziksel Hafifletmenizi" },
+		new[] { "Tactical Mitigation", "Taktiksel Hafifletmenizi" },
+		new[] { "Parry Rating", "Savuşturma Oranınızı" },
+		new[] { "Evade Rating", "Kaçınma Oranınızı" },
+		new[] { "Finesse", "İnceliğinizi" },
+		new[] { "Resistance Rating", "Direnç Derecenizi" },
+		new[] { "Resistance", "Direncinizi" },
+		new[] { "Evade", "Kaçınmanızı" },
+		new[] { "Block", "Bloklamanızı" },
+		new[] { "Parry", "Savuşturmanızı" }
+	};
+
+	private static string TranslateClassInfo(string source)
+	{
+		if (string.IsNullOrEmpty(source)) return null;
+		if (ClassInfoNames.TryGetValue(source, out string className)) return className;
+		if (string.Equals(source, "Assassin", StringComparison.Ordinal)) return "Suikastçı";
+		if (string.Equals(source, "Ranger", StringComparison.Ordinal)) return "Korucu";
+		if (string.Equals(source, "Tactical Rank", StringComparison.Ordinal)) return "Taktik Rütbesi";
+
+		foreach (KeyValuePair<string, string> pair in ClassInfoNames)
+		{
+			string statPrefix = "As a " + pair.Key + ", ";
+			if (source.StartsWith(statPrefix, StringComparison.Ordinal))
+			{
+				string body = TranslateClassStatBody(source.Substring(statPrefix.Length));
+				if (!string.IsNullOrEmpty(body)) return pair.Value + " olarak " + body;
+			}
+		}
+
+		string[] mountPrefixes = { "The Agility of the ", "Agility of the ", "Agilty of the ", "The Strength of the ", "Strength of the " };
+		foreach (string prefix in mountPrefixes)
+		{
+			if (!source.StartsWith(prefix, StringComparison.Ordinal)) continue;
+			string suffix = source.Substring(prefix.Length);
+			const string mountSuffix = "'s Mount.";
+			if (!suffix.EndsWith(mountSuffix, StringComparison.Ordinal)) continue;
+			string owner = suffix.Substring(0, suffix.Length - mountSuffix.Length);
+			if (!ClassInfoGenitives.TryGetValue(owner, out string genitive)) continue;
+			bool agility = prefix.IndexOf("Agility", StringComparison.Ordinal) >= 0
+				|| prefix.IndexOf("Agilty", StringComparison.Ordinal) >= 0;
+			return genitive + " bineğinin " + (agility ? "çevikliği." : "gücü.");
+		}
+		return null;
+	}
+
+	private static string TranslateClassStatBody(string source)
+	{
+		const string marker = " increases your ";
+		int markerIndex = source.IndexOf(marker, StringComparison.Ordinal);
+		if (markerIndex <= 0) return null;
+		string attribute = TranslateClassAttribute(source.Substring(0, markerIndex));
+		if (string.IsNullOrEmpty(attribute)) return null;
+		string list = source.Substring(markerIndex + marker.Length);
+		foreach (string[] term in ClassStatTerms)
+			list = list.Replace(term[0], term[1]);
+		list = list.Replace(", and ", " ve ").Replace(" and ", " ve ");
+		if (list.EndsWith(".", StringComparison.Ordinal))
+			list = list.Substring(0, list.Length - 1).TrimEnd() + " artırır.";
+		else
+			list += " artırır.";
+		return attribute + ", " + list;
+	}
+
+	private static string TranslateClassAttribute(string source)
+	{
+		if (string.Equals(source, "Might", StringComparison.Ordinal)) return "Kudret";
+		if (string.Equals(source, "Agility", StringComparison.Ordinal)) return "Çeviklik";
+		if (string.Equals(source, "Vitality", StringComparison.Ordinal)) return "Zindelik";
+		if (string.Equals(source, "Will", StringComparison.Ordinal)) return "İrade";
+		if (string.Equals(source, "Fate", StringComparison.Ordinal)) return "Kader";
+		return null;
+	}
+
 	public static string ExactForEnglish(string source)
 	{
 		if (source == null) return null;
 		if (Exact.TryGetValue(source, out string target)) return target;
+		string classInfo = TranslateClassInfo(source);
+		if (!string.IsNullOrEmpty(classInfo)) return classInfo;
 		return ManualCollectionText.ExactForEnglish(source);
 	}
 
