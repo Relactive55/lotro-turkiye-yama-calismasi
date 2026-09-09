@@ -8,7 +8,7 @@ bakın. İlk kök paket bir kez indirilir; güncellemeler yalnız eksik küçük
 
 ## Güncel programı indir
 
-Yeni araç ipucu, yetenek/eşya ve evcil hayvan koleksiyonu düzeltmeleri: [2026.09.08.4 notları](docs/RELEASE-NOTES-2026.09.08.4.md).
+Tam katalog taramasıyla arayüz, yetenek/eşya ve istatistik düzeltmeleri: [2026.09.09.4 notları](docs/RELEASE-NOTES-2026.09.09.4.md).
 Bu paket için kurulum aracı `1.4.0.0` gerekir.
 
 [**LOTR TÜRKÇE YAMA GitHub Releases sayfasını aç (Windows)**](https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/latest)
