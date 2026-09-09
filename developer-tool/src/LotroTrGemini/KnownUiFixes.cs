@@ -46,8 +46,11 @@ public static class KnownUiFixes
 		new FlatUiFix("250001AF:146:-1:0", "Pets", "Evcil Hayvanlar"),
 		new FlatUiFix("250001AF:208:-1:0", "\\nRank ", "\\nRütbe "),
 		new FlatUiFix("250001AF:233:-1:0", "Rank: ", "Rütbe: "),
-		new FlatUiFix("250001AF:287:-1:1", " #1:{Point[1]|Points} to Next Rank", " #1:{Point[1]|Points} Sonraki Rütbeye"),
+		new FlatUiFix("250001AF:287:-1:1", " #1:{Point[1]|Points} to Next Rank", " #1:{Puan[1]|Puan} Sonraki Rütbeye"),
 		new FlatUiFix("250001AF:293:-1:0", "Tactical", "Taktiksel"),
+		new FlatUiFix("250001AF:295:-1:0", "Equipped", "Kuşanıldı"),
+		new FlatUiFix("250001AF:381:-1:0", "Bind On Acquire", "Alındığında Bağlanır"),
+		new FlatUiFix("250001AF:622:-1:0", "Equipped", "Kuşanıldı"),
 		new FlatUiFix("250001AF:326:-1:0", "No", "Hayır"),
 		new FlatUiFix("250001AF:343:-1:0", "Rank: ", "Rütbe: "),
 		new FlatUiFix("250001AF:371:-1:0", "Rank: ", "Rütbe: "),
@@ -158,6 +161,21 @@ public static class KnownUiFixes
 		new FlatUiFix("250001BB:179:-1:0", "Active Quests:", "Aktif Görevler:"),
 		new FlatUiFix("250001BB:314:-1:0", "Quest Tracker", "Görev İzleyici"),
 		new FlatUiFix("250001BB:380:-1:0", "Quest History", "Görev Geçmişi"),
+		new FlatUiFix("250001BB:391:-1:0", "Delete currently selected character.", "Seçili karakteri sil."),
+		new FlatUiFix("250001BB:919:-1:0", "Open the plugin manager to manage the loading of your player-made Lua plugins. ", "Eklenti yöneticisini açarak oyuncular tarafından oluşturulan Lua eklentilerinizin yüklenmesini yönetin. "),
+		// The server-shutdown countdown is another protected fallback table.  The
+		// countdown values are named variants, so translate their display words
+		// while retaining the parameter markers used by the client.
+		new FlatUiFix("250001FE:6:-1:0", "This world will be shutting down in #2:", "Bu dünya kapanacak #2:"),
+		new FlatUiFix("250001FE:6:-1:1", " #2:{second[1]|seconds}! Please log out!\\n", " #2:{saniye[1]|saniye}! Oturumu kapatın!\\n"),
+		new FlatUiFix("250001FE:13:-1:0", "This world is shutting down NOW! Log out!\\n", "Bu dünya ŞİMDİ kapanıyor! Oturumu kapatın!\\n"),
+		new FlatUiFix("250001FE:40:-1:0", "This world will be shutting down in #1:", "Bu dünya kapanacak #1:"),
+		new FlatUiFix("250001FE:40:-1:1", " #1:{minute[1]|minutes}. Please log out.\\n", " #1:{dakika[1]|dakika} içinde. Lütfen oturumu kapatın.\\n"),
+		new FlatUiFix("250001FE:48:-1:0", "This world will be shutting down in #1:", "Bu dünya kapanacak #1:"),
+		new FlatUiFix("250001FE:48:-1:1", " #1:{hour[1]|hours}.\\n", " #1:{saat[1]|saat}.\\n"),
+		new FlatUiFix("250001FE:49:-1:0", "This world will be shutting down in #1:", "Bu dünya kapanacak #1:"),
+		new FlatUiFix("250001FE:49:-1:1", " #1:{minute[1]|minutes} and #2:", " #1:{dakika[1]|dakika} ve #2:"),
+		new FlatUiFix("250001FE:49:-1:2", " #2:{second[1]|seconds}. Please log out.\\n", " #2:{saniye[1]|saniye} sonra kapanacak. Lütfen oturumu kapatın.\\n"),
 		new FlatUiFix("250001BB:481:-1:0", "Melee", "Yakın Dövüş"),
 		new FlatUiFix("250001BB:513:-1:0", "Crafting: ", "Zanaatkârlık: "),
 		new FlatUiFix("250001BB:624:-1:0", "Skills", "Yetenekler"),
@@ -278,7 +296,7 @@ public static class KnownUiFixes
 			using (BinaryWriter writer = new BinaryWriter(stream, Encoding.UTF8, true))
 			using (System.Security.Cryptography.SHA256 sha = System.Security.Cryptography.SHA256.Create())
 			{
-				writer.Write("lotro-known-ui-fixes-v2-hidden-tooltips");
+				writer.Write("lotro-known-ui-fixes-v5-hidden-tooltips-exact-vocabulary-slots");
 				foreach (var fix in HiddenTooltipFixes) { writer.Write(fix.Item1); writer.Write(fix.Item2); }
 				writer.Write(CharacterSelectionDid);
 				writer.Write(CharacterSelectionSource.Length);
@@ -304,14 +322,15 @@ public static class KnownUiFixes
 
 	public static bool HasAutomaticFix(int did)
 	{
-		return did == CharacterSelectionDid || did == FellowshipMenuDid || did == FellowshipUiDid || did == GondolinTitleDid;
+		return did == CharacterSelectionDid || did == FellowshipMenuDid || did == FellowshipUiDid
+			|| did == GondolinTitleDid || did == unchecked((int)0x250001FEu);
 	}
 
 	public static byte[] ApplyTranslatedPayload(int did, byte[] payload)
 	{
 		if (payload == null || payload.Length == 0) return payload;
 		if (did == CharacterSelectionDid) return ApplyCharacterSelectionFix(payload);
-		if (did == FellowshipMenuDid || did == FellowshipUiDid)
+		if (did == FellowshipMenuDid || did == FellowshipUiDid || did == unchecked((int)0x250001FEu))
 		{
 			byte[] result = ApplyFlatUiFixes(did, payload);
 			return did == FellowshipMenuDid ? ApplyHiddenTooltipFixes(result) : result;
@@ -356,6 +375,22 @@ public static class KnownUiFixes
 		}
 
 		List<FlatUiFix> fixes = FlatFixes.Where(item => item.Key.StartsWith(did.ToString("X8") + ":", StringComparison.Ordinal)).ToList();
+		// Structural fallback tables are intentionally kept out of the semantic
+		// catalog, but their exact labels are still safe to translate.  Reuse the
+		// reviewed vocabulary here so labels such as Enter Middle-earth, Quit,
+		// skill names and equipment slots do not remain English merely because
+		// they live in a protected flat table.  Complete-row matching and token
+		// validation keep this fail-closed.
+		HashSet<string> knownFixKeys = new HashSet<string>(fixes.Select(item => item.Key), StringComparer.Ordinal);
+		foreach (LocRow row in rows)
+		{
+			if (knownFixKeys.Contains(row.Key)) continue;
+			string target = ManualUiText.ExactForEnglish(row.Original);
+			if (string.IsNullOrEmpty(target) || string.Equals(target, row.Original, StringComparison.Ordinal)) continue;
+			if (!ProtectedFormat.HasSameProtectedTokens(row.Original, target)) continue;
+			fixes.Add(new FlatUiFix(row.Key, row.Original, target));
+			knownFixKeys.Add(row.Key);
+		}
 		if (fixes.Count == 0) return payload;
 		HashSet<string> changedKeys = new HashSet<string>(StringComparer.Ordinal);
 		foreach (FlatUiFix fix in fixes)

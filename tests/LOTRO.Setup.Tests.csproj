@@ -34,6 +34,8 @@
     <Compile Include="..\developer-tool\src\LotroTrGemini\DatEntry.cs" Link="DatEntry.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\TurbineDat.cs" Link="TurbineDat.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\KnownUiFixes.cs" Link="KnownUiFixes.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\ManualUiText.cs" Link="ManualUiText.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\ManualCollectionText.cs" Link="ManualCollectionText.cs" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.IO.Compression" />

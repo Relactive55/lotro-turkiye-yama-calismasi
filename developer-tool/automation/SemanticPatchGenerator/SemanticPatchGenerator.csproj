@@ -19,6 +19,8 @@
     <Compile Include="..\..\src\LotroTrGemini\DatEntry.cs" Link="DatEntry.cs" />
     <Compile Include="..\..\src\LotroTrGemini\TurbineDat.cs" Link="TurbineDat.cs" />
     <Compile Include="..\..\src\LotroTrGemini\KnownUiFixes.cs" Link="KnownUiFixes.cs" />
+    <Compile Include="..\..\src\LotroTrGemini\ManualUiText.cs" Link="ManualUiText.cs" />
+    <Compile Include="..\..\src\LotroTrGemini\ManualCollectionText.cs" Link="ManualCollectionText.cs" />
     <Compile Include="..\..\..\updater\ManagedSemanticDatPatcher.cs" Link="ManagedSemanticDatPatcher.cs" />
     <Compile Include="..\..\..\updater\LotroReleaseUpdater.cs" Link="LotroReleaseUpdater.cs" />
     <Reference Include="System.Net.Http" />
