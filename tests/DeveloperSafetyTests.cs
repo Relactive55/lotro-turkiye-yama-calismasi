@@ -72,6 +72,23 @@ internal static class DeveloperSafetyTests
 		Check(object.ReferenceEquals(hiddenUiFixture, KnownUiFixes.ApplyTranslatedPayload(unchecked((int)0x250001BEu), hiddenUiFixture)),
 			"known UI fix stays scoped to its verified DID");
 		passed++;
+		byte[] raceUiFixture = BuildFlatFixture(new[]
+		{
+			"\\nHappiest when enjoying a simple life with six square meals a day, hobbits are solid and dependable when called to action.\\n\\n",
+			"Hobbit (Female)", "Happiest when enjoying a simple life with six square meals a day, Hobbits are solid and dependable when called to action.",
+			"a hobbit[n]", "Those crazy male hobbits. Blah blah blah.", "Hobbit", "Naming Guidelines TBD",
+			"Those crazy female hobbits. Blah blah blah.", "Hobbit", "Hobbit (Male)"
+		});
+		byte[] fixedRaceFixture = KnownUiFixes.ApplyTranslatedPayload(unchecked((int)0x25004744u), raceUiFixture);
+		List<LocRow> raceRows = LocBin.Parse(fixedRaceFixture, unchecked((int)0x25004744u)).GetRows(unchecked((int)0x25004744u));
+		Check(raceRows.Count == 10
+			&& raceRows[0].Original.IndexOf("Günde altı doyurucu öğün", StringComparison.Ordinal) >= 0
+			&& raceRows[1].Original == "Hobbit (Kadın)"
+			&& raceRows[4].Original == "Erkek hobbitler."
+			&& raceRows[6].Original == "Adlandırma Kuralları"
+			&& raceRows[9].Original == "Hobbit (Erkek)",
+			"character-creation race fallback rows are translated end-to-end");
+		passed++;
 
 		List<CatalogRecord> oldRecords = new List<CatalogRecord>
 		{
@@ -437,6 +454,29 @@ internal static class DeveloperSafetyTests
 			WriteVarString(writer, " of ");
 			WriteVarString(writer, " Character Slots Used");
 			writer.Write(new byte[] { 4, 5 });
+			return stream.ToArray();
+		}
+	}
+
+	private static byte[] BuildFlatFixture(string[] values)
+	{
+		using (MemoryStream stream = new MemoryStream())
+		using (BinaryWriter writer = new BinaryWriter(stream, Encoding.Unicode, true))
+		{
+			// Keep one main string per record so the reviewed race rows at record
+			// indexes 0, 2, 4 and 7 are exercised with their real identities.
+			writer.Write(0);
+			writer.Write(unchecked((int)0x25004744u));
+			writer.Write(1);
+			writer.Write(values.Length);
+			for (int i = 0; i < values.Length; i++)
+			{
+				writer.Write((long)(0x1122334400000000L + i));
+				writer.Write(1);
+				WriteVarString(writer, values[i]);
+				writer.Write(0);
+				writer.Write((byte)0);
+			}
 			return stream.ToArray();
 		}
 	}

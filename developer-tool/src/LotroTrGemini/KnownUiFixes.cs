@@ -16,6 +16,28 @@ public static class KnownUiFixes
 	private const int FellowshipMenuDid = unchecked((int)0x250001AFu);
 	private const int FellowshipUiDid = unchecked((int)0x250001BBu);
 	private const int GondolinTitleDid = unchecked((int)0x2503B6C1u);
+	private static readonly int[] CharacterCreationDids =
+	{
+		CharacterSelectionDid,
+		unchecked((int)0x25004744u), // Hobbit
+		unchecked((int)0x25004765u), // Man
+		unchecked((int)0x25004780u), // Man racial trait: morale
+		unchecked((int)0x25004781u), // Man racial trait: strength
+		unchecked((int)0x25004782u), // Elf
+		unchecked((int)0x2500479Du), // Dwarf
+		unchecked((int)0x25002D96u), // Champion
+		unchecked((int)0x25002DC1u), // Captain
+		unchecked((int)0x25002DD6u), // Minstrel
+		unchecked((int)0x25002DEDu), // Lore-master
+		unchecked((int)0x25002DFEu), // Guardian
+		unchecked((int)0x25002E13u), // Burglar
+		unchecked((int)0x25002E21u), // Hunter
+		unchecked((int)0x2500B1A7u), // Rune-keeper
+		unchecked((int)0x2500B69Fu), // Warden
+		unchecked((int)0x2502EBC1u), // Beorning
+		unchecked((int)0x25043FB8u), // Brawler
+		unchecked((int)0x2504CEECu)  // Mariner
+	};
 	private static readonly string[] CharacterSelectionSource = { "", " of ", " Character Slots Used" };
 	private static readonly string[] CharacterSelectionTarget = { "", " / ", " KARAKTER YUVASI KULLANILIYOR" };
 
@@ -37,6 +59,39 @@ public static class KnownUiFixes
 	// refuses to write if the official source row is absent or has drifted.
 	private static readonly FlatUiFix[] FlatFixes =
 	{
+		// Character-creation race records are protected fallback tables.  Some
+		// rows were already present in the old semantic baseline with a bad
+		// Turkish target, so each such current value is listed as a source variant
+		// and is replaced by the reviewed text below.  Untouched English rows are
+		// covered by ManualUiText.ExactForEnglish in ApplyFlatUiFixes.
+		new FlatUiFix("25004744:0:-1:0", "\\nGünde altı kare yemekle basit bir hayatın tadını çıkarırken en mutlu olan, hobbitler harekete çağrıldıklarında sağlam ve güvenilirdir.\\n\\n", "\\nGünde altı doyurucu öğünle sade bir hayat sürerken en mutlu olan Hobbitler, harekete çağrıldıklarında sağlam ve güvenilirdir.\\n\\n"),
+		new FlatUiFix("25004744:2:-1:0", "Gün içinde altı öğün basit bir yaşamın tadını çıkarmaktan en çok keyif alan Hobbitler, harekete geçirilmek gerektiğinde sağlam ve güvenilirdir.", "Günde altı doyurucu öğünle sade bir hayat sürerken en mutlu olan Hobbitler, harekete çağrıldıklarında sağlam ve güvenilirdir."),
+		new FlatUiFix("25004744:4:-1:0", "O deli erkek hobbitler. Bla bla bla.", "Erkek hobbitler."),
+		new FlatUiFix("25004744:7:-1:0", "O deli dişi Hobbitler. Bla bla bla.", "Kadın hobbitler."),
+
+		new FlatUiFix("25004765:0:-1:0", "\\nElfler kadar uzun ömürlü, cüceler kadar sağlam veya hobbitler kadar dayanıklı olmayan erkekler, cesaretleri ve beceriklilikleri ile ünlüdür.\\n\\n", "\\nElfler kadar uzun ömürlü, Cüceler kadar sağlam veya Hobbitler kadar dayanıklı olmasalar da İnsanlar cesaretleri ve beceriklilikleriyle tanınır.\\n\\n"),
+		new FlatUiFix("25004765:1:-1:0", "İnsanın Irkı (Kadın)", "İnsan Irkı (Kadın)"),
+		new FlatUiFix("25004765:2:-1:0", "Elfler kadar uzun ömürlü olmasalar da, cüceler gibi sağlam veya hobbitler kadar dirençli olmayan İnsanlar, cesaretleri ve zekalarıyla tanınırlar. Güçlü bir kavimdir onlar, kaderleri Orta Dünya'nın baskın halkı olmak olsa da, iradeleri daha zayıf ve Düşman'ın baştan çıkarıcılarına ve hilelerine karşı daha yatkındır.", "Elfler kadar uzun ömürlü, Cüceler kadar sağlam veya Hobbitler kadar dayanıklı olmasalar da İnsanlar cesaretleri ve beceriklilikleriyle tanınır. Güçlü bir halktır; Orta Dünya'nın baskın halkı olmaya yazgılıdırlar, ancak iradeleri daha zayıftır ve Düşman'ın ayartılarına ve hilelerine daha açıktırlar."),
+		new FlatUiFix("25004765:4:-1:0", "Erkek insanlar. Bla bla bla.", "Erkek insanlar."),
+		new FlatUiFix("25004765:7:-1:0", "Kadın insanlar mı? Hıh? Bla bla bla.", "Kadın insanlar."),
+		new FlatUiFix("25004765:9:-1:0", "İnsanın Irkı (Erkek)", "İnsan Irkı (Erkek)"),
+
+		new FlatUiFix("25004780:0:-1:0", "Artan Moral Restorasyonu - İnsanlar diğer ırklara göre daha hızlı harekete geçebilir. (İyileştiriciler, insanlar üzerinde daha fazla iyileşme sağlar)", "Artan Moral Yenilenmesi - İnsanlar diğer ırklara göre daha çabuk toparlanır. (İyileştirme etkileri İnsanlar üzerinde daha güçlüdür.)"),
+		new FlatUiFix("25004780:2:-1:0", "Artan Moral Restorasyonu - İnsanlar diğer ırklardan daha hızlı cesaretlenirler.", "Artan Moral Yenilenmesi - İnsanlar diğer ırklara göre daha çabuk cesaretlenir."),
+		new FlatUiFix("25004781:0:-1:0", "Geliştirilmiş Güç - Boromir gibi insanların başarabileceği güç gösterileri şarkılara değerdir.", "Geliştirilmiş Kuvvet - Boromir gibi insanların sergileyebildiği güç gösterileri şarkılara değerdir."),
+		new FlatUiFix("25004781:2:-1:0", "Geliştirilmiş Güç - Boromir gibi insanların başarabileceği güç gösterileri şarkılara değerdir.", "Geliştirilmiş Kuvvet - Boromir gibi insanların sergileyebildiği güç gösterileri şarkılara değerdir."),
+		new FlatUiFix("25004780:3:-1:0", "+5% Incoming Healing", "+5% Gelen İyileştirme"),
+
+		new FlatUiFix("25004782:0:-1:0", "\\nUzun zaman önce, Elfler genç ırkları karşıladılar. Middle-earth İhtiyacı büyük olduğunda onlarla müttefik oldular, ama yüzyıllarca süren savaş, ihanet ve zorluklar onları inzivalarına karşı şiddetle korudu.\\n\\n", "\\nUzun zaman önce Elfler, Orta Dünya'nın genç ırklarını kabul edip ihtiyaç büyük olduğunda onlarla ittifak kurdu; ancak yüzyıllar süren savaş, ihanet ve zorluklar onları inzivalarını korumakta kararlı hâle getirdi.\\n\\n"),
+		new FlatUiFix("25004782:2:-1:0", "Bu seçenek henüz tamamlanmadı.", "Bu seçenek henüz uygulanmadı."),
+		new FlatUiFix("25004782:7:-1:0", "Kadın Elfler. Bla bla bla.", "Kadın elfler."),
+
+		new FlatUiFix("2500479D:0:-1:0", "\\nTaştan ve madenden yapılmış kuyumcular, cüceler, düşmanın yolsuzluğuna karşı dirençli, ama açgözlülüğe karşı değil, donuk bir halktır.\\n\\n", "\\nTaşın sakinleri ve metal madencileri olan Cüceler cesur bir halktır; Düşman'ın yozlaşmasına dirençlidirler, ancak açgözlülüğe karşı değil.\\n\\n"),
+		new FlatUiFix("2500479D:1:-1:0", "KULLANILMAMALIDIR", "KULLANILMAMALI"),
+		new FlatUiFix("2500479D:2:-1:0", "bir Cüce[n]", "bir cüce[n]"),
+		new FlatUiFix("2500479D:3:-1:0", "Aradaki farkı söylemekte iyi şanslar.", "Aradaki farkı anlamakta bol şans."),
+		new FlatUiFix("2500479D:5:-1:0", "KULLANILMAMALIDIR", "KULLANILMAMALI"),
+
 		new FlatUiFix("250001AF:2:-1:0", "Durability ", "Dayanıklılık "),
 		new FlatUiFix("250001AF:14:-1:0", "Rank: ", "Rütbe: "),
 		new FlatUiFix("250001AF:56:-1:0", "Minimum Level: ", "Gerekli Seviye: "),
@@ -296,7 +351,7 @@ public static class KnownUiFixes
 			using (BinaryWriter writer = new BinaryWriter(stream, Encoding.UTF8, true))
 			using (System.Security.Cryptography.SHA256 sha = System.Security.Cryptography.SHA256.Create())
 			{
-				writer.Write("lotro-known-ui-fixes-v5-hidden-tooltips-exact-vocabulary-slots");
+				writer.Write("lotro-known-ui-fixes-v6-character-creation-race-class-exact-vocabulary");
 				foreach (var fix in HiddenTooltipFixes) { writer.Write(fix.Item1); writer.Write(fix.Item2); }
 				writer.Write(CharacterSelectionDid);
 				writer.Write(CharacterSelectionSource.Length);
@@ -322,19 +377,26 @@ public static class KnownUiFixes
 
 	public static bool HasAutomaticFix(int did)
 	{
-		return did == CharacterSelectionDid || did == FellowshipMenuDid || did == FellowshipUiDid
+		return CharacterCreationDids.Contains(did) || did == FellowshipMenuDid || did == FellowshipUiDid
 			|| did == GondolinTitleDid || did == unchecked((int)0x250001FEu);
 	}
 
 	public static byte[] ApplyTranslatedPayload(int did, byte[] payload)
 	{
 		if (payload == null || payload.Length == 0) return payload;
-		if (did == CharacterSelectionDid) return ApplyCharacterSelectionFix(payload);
+		if (did == CharacterSelectionDid)
+		{
+			// The slot-count record and the remaining character-creation labels live
+			// in the same protected fallback table.  Apply both passes so an old
+			// semantic baseline cannot leave race/class text in English.
+			return ApplyFlatUiFixes(did, ApplyCharacterSelectionFix(payload));
+		}
 		if (did == FellowshipMenuDid || did == FellowshipUiDid || did == unchecked((int)0x250001FEu))
 		{
 			byte[] result = ApplyFlatUiFixes(did, payload);
 			return did == FellowshipMenuDid ? ApplyHiddenTooltipFixes(result) : result;
 		}
+		if (CharacterCreationDids.Contains(did)) return ApplyFlatUiFixes(did, payload);
 		if (did == GondolinTitleDid) return ApplyGondolinTitleFixes(payload);
 		return payload;
 	}
@@ -376,19 +438,17 @@ public static class KnownUiFixes
 
 		List<FlatUiFix> fixes = FlatFixes.Where(item => item.Key.StartsWith(did.ToString("X8") + ":", StringComparison.Ordinal)).ToList();
 		// Structural fallback tables are intentionally kept out of the semantic
-		// catalog, but their exact labels are still safe to translate.  Reuse the
-		// reviewed vocabulary here so labels such as Enter Middle-earth, Quit,
-		// skill names and equipment slots do not remain English merely because
-		// they live in a protected flat table.  Complete-row matching and token
-		// validation keep this fail-closed.
+		// catalog, but their reviewed labels and row-key class descriptions are
+		// still safe to translate.  Run the same exact/key-aware manual table used
+		// by the editor, then turn only changed rows into fail-closed fixes.
 		HashSet<string> knownFixKeys = new HashSet<string>(fixes.Select(item => item.Key), StringComparer.Ordinal);
+		ManualUiText.Apply(rows);
 		foreach (LocRow row in rows)
 		{
 			if (knownFixKeys.Contains(row.Key)) continue;
-			string target = ManualUiText.ExactForEnglish(row.Original);
-			if (string.IsNullOrEmpty(target) || string.Equals(target, row.Original, StringComparison.Ordinal)) continue;
-			if (!ProtectedFormat.HasSameProtectedTokens(row.Original, target)) continue;
-			fixes.Add(new FlatUiFix(row.Key, row.Original, target));
+			if (string.IsNullOrEmpty(row.Translation) || string.Equals(row.Original, row.Translation, StringComparison.Ordinal)) continue;
+			if (!ProtectedFormat.HasSameProtectedTokens(row.Original, row.Translation)) continue;
+			fixes.Add(new FlatUiFix(row.Key, row.Original, row.Translation));
 			knownFixKeys.Add(row.Key);
 		}
 		if (fixes.Count == 0) return payload;
@@ -397,9 +457,20 @@ public static class KnownUiFixes
 		{
 			if (!byKey.TryGetValue(fix.Key, out LocRow row))
 				throw new InvalidDataException("Doğrulanmış UI satırı bulunamadı: " + fix.Key);
-			if (!string.Equals(row.Original, fix.Source, StringComparison.Ordinal)
-				&& !string.Equals(row.Original, fix.Target, StringComparison.Ordinal))
-				throw new InvalidDataException("UI satırı beklenmeyen kaynakla eşleşti: " + fix.Key);
+			bool sourceMatches = string.Equals(row.Original, fix.Source, StringComparison.Ordinal)
+				|| string.Equals(row.Original, fix.Target, StringComparison.Ordinal);
+			if (!sourceMatches)
+			{
+				// A root build applies the automatic pass after semantic targets, but
+				// the same helper is also used directly on a clean DAT for cache and
+				// recovery checks.  Accept the clean English form only when the
+				// reviewed exact vocabulary independently resolves to this exact target;
+				// otherwise a source drift remains fail-closed.
+				string cleanTarget = ManualUiText.ExactForEnglish(row.Original);
+				if (!string.Equals(cleanTarget, fix.Target, StringComparison.Ordinal)
+					|| !ProtectedFormat.HasSameProtectedTokens(row.Original, cleanTarget))
+					throw new InvalidDataException("UI satırı beklenmeyen kaynakla eşleşti: " + fix.Key);
+			}
 			if (string.Equals(row.Original, fix.Source, StringComparison.Ordinal)) changedKeys.Add(fix.Key);
 			row.Translation = fix.Target;
 		}
