@@ -104,8 +104,24 @@ function Ensure-Asset([string]$Path, [string]$Name, [string]$ExpectedSha, [long]
     $current = Invoke-GhJson @('api',"repos/$repository/releases/$($release.id)")
     $matches = @($current.assets | Where-Object { $_.name -ceq $Name })
     if (!$matches.Count) {
-        & $GhPath release upload $tag "$Path#$Name" --repo $repository
-        if ($LASTEXITCODE -ne 0) { throw 'Asset upload failed; draft retained for safe retry.' }
+        # gh's FILE#LABEL syntax is not honored consistently by the Windows
+        # client for a path containing non-ASCII directory names. Stage a
+        # same-volume hard link whose basename is the public asset name; this
+        # avoids a second 1.9 GB copy while making the uploaded name explicit.
+        $uploadPath = $Path
+        $stagedPath = $null
+        if ([IO.Path]::GetFileName($Path) -cne $Name) {
+            $stagedPath = Join-Path ([IO.Path]::GetDirectoryName($Path)) $Name
+            if (Test-Path -LiteralPath $stagedPath) { throw "Upload staging path already exists: $stagedPath" }
+            New-Item -ItemType HardLink -Path $stagedPath -Target $Path | Out-Null
+            $uploadPath = $stagedPath
+        }
+        try {
+            & $GhPath release upload $tag $uploadPath --repo $repository
+            if ($LASTEXITCODE -ne 0) { throw 'Asset upload failed; draft retained for safe retry.' }
+        } finally {
+            if ($stagedPath) { Remove-Item -LiteralPath $stagedPath -Force -ErrorAction SilentlyContinue }
+        }
         $current = Invoke-GhJson @('api',"repos/$repository/releases/$($release.id)")
         $matches = @($current.assets | Where-Object { $_.name -ceq $Name })
     }
