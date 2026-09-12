@@ -65,7 +65,8 @@ public static class ProtectedFormat
 			result.Reason = "ordered protected token stream differs";
 			return result;
 		}
-		if (!SequenceEqual(expected.Numbers, actual.Numbers))
+		if (!SequenceEqual(expected.Numbers, actual.Numbers)
+			&& !EquivalentNumbersAfterDurationNormalization(source, translation, expected, actual))
 		{
 			result.Reason = "numeric/game value stream differs";
 			return result;
@@ -238,6 +239,48 @@ public static class ProtectedFormat
 			if (!string.Equals(left[i], right[i], StringComparison.Ordinal)) return false;
 		}
 		return true;
+	}
+
+	private static bool EquivalentNumbersAfterDurationNormalization(
+		string source, string translation, Parsed expected, Parsed actual)
+	{
+		// Compact values such as 1m/12s are emitted by LOTRO as part of the
+		// display text.  Their digits are adjacent to a letter and therefore do
+		// not enter the legacy numeric stream, while the Turkish form (1 dk/12
+		// saniye) has a separating space.  Compare a normalized view only for
+		// this compatibility case; GetTokenSignature remains byte-compatible.
+		string normalizedSource = DurationUnitFix.Normalize(source);
+		string normalizedTranslation = DurationUnitFix.NormalizeTranslated(source, translation);
+		if (string.Equals(normalizedSource, source, StringComparison.Ordinal)
+			&& string.Equals(normalizedTranslation, translation, StringComparison.Ordinal))
+			return false;
+		Parsed normalizedExpected = Parse(normalizedSource);
+		Parsed normalizedActual = Parse(normalizedTranslation);
+		if (SequenceEqual(normalizedExpected.Numbers, normalizedActual.Numbers)) return true;
+		// Existing reviewed translations sometimes move a duration phrase while
+		// translating the sentence (for example, “20% ... for 5s” becomes
+		// “5 saniye ... %20”).  Before normalization the suffix kept that 5 out
+		// of the numeric stream, so preserve that established behavior while
+		// still requiring every numeric value and multiplicity to match.
+		return SameNumberMultiset(normalizedExpected.Numbers, normalizedActual.Numbers);
+	}
+
+	private static bool SameNumberMultiset(IList<string> left, IList<string> right)
+	{
+		if (left.Count != right.Count) return false;
+		Dictionary<string, int> counts = new Dictionary<string, int>(StringComparer.Ordinal);
+		foreach (string value in left)
+		{
+			if (!counts.TryGetValue(value, out int count)) count = 0;
+			counts[value] = count + 1;
+		}
+		foreach (string value in right)
+		{
+			if (!counts.TryGetValue(value, out int count) || count == 0) return false;
+			if (count == 1) counts.Remove(value);
+			else counts[value] = count - 1;
+		}
+		return counts.Count == 0;
 	}
 
 	private static string NormalizeNumber(string value)

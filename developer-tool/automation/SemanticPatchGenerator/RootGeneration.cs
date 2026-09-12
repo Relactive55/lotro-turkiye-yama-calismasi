@@ -49,6 +49,10 @@ internal static class RootGeneration
             || patch.counts.critical_review_required_count != 0 || patch.counts.ambiguous_count != 0)
             throw new InvalidDataException("Full semantic baseline or quality gate mismatch.");
 
+        int normalizedUnits = NormalizeTargets(patch);
+        if (normalizedUnits != 0)
+            Console.WriteLine("Süre birimleri normalize edildi: " + normalizedUnits);
+
         // Keep an OS read lock for the entire build, including correction reads.
         // Another process cannot change the source between hash and copy.
         using (var sourceLock = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read))
@@ -175,19 +179,33 @@ internal static class RootGeneration
                 throw new InvalidDataException("Correction missing or structurally excluded: " + pair.Key);
             var decision = pair.Value;
             if (decision.action == "preserve") { entries.Remove(pair.Key); continue; }
+            string target = DurationUnitFix.NormalizeTranslated(record.Source, decision.target);
             if (!SourceDigest.Matches(decision.source_digest, record.SourceDigest)
                 || !SourceDigest.Matches(decision.token_signature, record.TokenSignature)
-                || !ProtectedFormat.HasSameProtectedTokens(record.Source, decision.target))
+                || !ProtectedFormat.HasSameProtectedTokens(record.Source, target))
                 throw new InvalidDataException("Correction source or protected format mismatch: " + pair.Key);
             entries[pair.Key] = new SemanticPatchEntry
             {
                 dat_key = record.Key, entry_identity = record.EntryIdentity, did = record.Did,
                 record_index = record.RecordIndex, group_index = record.GroupIndex, index_in_group = record.IndexInGroup,
-                source_digest = record.SourceDigest, token_signature = record.TokenSignature, target = decision.target,
+                source_digest = record.SourceDigest, token_signature = record.TokenSignature, target = target,
                 critical_ui = record.CriticalUi, classification = "NEW", translation_status = TranslationStatuses.HumanApproved,
                 translation_engine = "human", translation_engine_version = "reviewed-" + version
             };
         }
         patch.entries = entries.Values.ToList();
+    }
+
+    private static int NormalizeTargets(SemanticPatchDocument patch)
+    {
+        int changed = 0;
+        foreach (SemanticPatchEntry entry in patch.entries)
+        {
+            string normalized = DurationUnitFix.Normalize(entry.target);
+            if (string.Equals(entry.target, normalized, StringComparison.Ordinal)) continue;
+            entry.target = normalized;
+            changed++;
+        }
+        return changed;
     }
 }

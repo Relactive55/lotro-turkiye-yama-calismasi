@@ -31,6 +31,20 @@ internal static class DeveloperSafetyTests
 			"</rgb> Gölge <rgb=#00FF00>"),
 			"split tag boundaries stay protected");
 		passed++;
+		Check(DurationUnitFix.Normalize("Süre: 1m; 12s; 1.5h; 50ms; Menzil: 20m")
+			== "Süre: 1 dk; 12 saniye; 1.5 saat; 50ms; Menzil: 20m"
+			&& DurationUnitFix.NormalizeTranslated("1m", "1m") == "1m",
+			"duration units use Turkish labels without touching milliseconds or source English");
+		passed++;
+		Check(ProtectedFormat.HasSameProtectedTokens(
+			"Lightning-storm: 20% Chance to Daze each target for 5s",
+			"Yıldırım fırtınası: Her hedefi 5 saniye için daze etme şansı% 20"),
+			"duration normalization permits reviewed phrase reordering while preserving numeric values");
+		passed++;
+		Check(DurationUnitFix.NormalizeTranslated("Dazed for up to 35s, with a 5s grace period.", "Sersemletildi up için 35s, ile a 5Grace dönemi.")
+			.Contains("35 saniye") && DurationUnitFix.NormalizeTranslated("-5min Escape cooldown", "5min Kaçış")
+			.Contains("-5 dk"), "duration normalization repairs imported cooldown and grace text");
+		passed++;
 		byte[] structuredFixture = BuildStructuredFixture();
 		LocBin fixtureBin = LocBin.Parse(structuredFixture, 0x25000001);
 		Check(!fixtureBin.UsedFlatFallback && fixtureBin.GetRows(0x25000001).Count == 2, "structured fixture parsed");

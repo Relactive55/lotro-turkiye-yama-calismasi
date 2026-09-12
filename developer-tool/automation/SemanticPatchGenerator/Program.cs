@@ -110,6 +110,7 @@ internal static class Program
             if (referenceTargets.TryGetValue(record.Key, out string referenceTarget)
                 && !string.Equals(referenceTarget, record.Source, StringComparison.Ordinal))
             {
+                referenceTarget = DurationUnitFix.NormalizeTranslated(record.Source, referenceTarget);
                 referenceSources.TryGetValue(record.Key, out CatalogRecord referenceSource);
                 if (!CanReuseReference(record, referenceSource))
                 {
@@ -148,7 +149,7 @@ internal static class Program
                     dat_key = record.Key,
                     source_digest = record.SourceDigest,
                     token_signature = record.TokenSignature,
-                    target = decision.target,
+                    target = DurationUnitFix.NormalizeTranslated(record.Source, decision.target),
                     translation_status = TranslationStatuses.HumanApproved,
                     translation_engine = "manual-critical-review",
                     translation_engine_version = patchVersion,
@@ -164,6 +165,7 @@ internal static class Program
                 }
                 continue;
             }
+            candidate.target = DurationUnitFix.NormalizeTranslated(record.Source, candidate.target);
             string rejection = Validate(record, candidate);
             if (rejection != null)
             {

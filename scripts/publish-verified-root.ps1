@@ -9,7 +9,8 @@ param(
     [switch]$ValidateOnly
 )
 
-# Only this allowlist is uploaded, never the directory or its private DAT.
+# Only the complete DAT, updater and manifest are uploaded.  The semantic
+# review artifact remains local evidence and is never shipped to players.
 # A failed transfer leaves a draft. Re-running resumes only matching drafts.
 $ErrorActionPreference = 'Stop'
 $repository = 'Relactive55/lotro-turkiye-yama-calismasi'
@@ -29,6 +30,7 @@ if ($manifest.patch_generator_version -cne 'semantic-generator-v4-native-framing
     throw 'Obsolete DAT framing producer; rebuild a native-framing root before publication.'
 }
 if ($manifest.release_id -ne 0 -or $manifest.asset_id -ne 0 -or $manifest.patch_mode -cne 'full' -or
+    $manifest.asset_kind -cne 'semantic_delta_patch' -or
     $manifest.chain_depth -ne 0 -or $proof.status -cne 'VERIFIED_ROOT' -or !$proof.source_unchanged -or
     $proof.applied -ne $manifest.safe_translated_count -or $proof.candidate_sha256 -ine $manifest.candidate_dat_sha256 -or
     $proof.candidate_catalog_sha256 -ine $manifest.candidate_catalog_sha256 -or $proof.candidate_size -ne $manifest.candidate_dat_size) {
@@ -44,6 +46,20 @@ if ((Get-Item -LiteralPath $asset).Length -ne $manifest.asset_size -or
     (Get-FileHash -LiteralPath $asset -Algorithm SHA256).Hash -ine $manifest.asset_sha256 -or
     (Get-Item -LiteralPath $candidate).Length -ne $manifest.candidate_dat_size -or
     (Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash -ine $manifest.candidate_dat_sha256) { throw 'Local verified output changed.' }
+
+# The generator still keeps the reviewed semantic catalog as private audit
+# evidence, but the public release is always the complete translated DAT.  A
+# fresh asset name/hash is bound to the candidate after all local evidence has
+# been checked; no semantic layer can accidentally be uploaded.
+$candidateInfo = Get-Item -LiteralPath $candidate
+$candidateHash = (Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash.ToLowerInvariant()
+$manifest.asset_kind = 'full_dat'
+$manifest.asset_name = 'lotro-turkce-yama-' + $manifest.patch_version + '.dat'
+$manifest.asset_size = [long]$candidateInfo.Length
+$manifest.asset_sha256 = $candidateHash
+$manifest.candidate_dat_sha256 = $candidateHash
+$manifest.candidate_dat_size = [long]$candidateInfo.Length
+$manifest.minimum_updater_version = [LotroTurkceYama.Setup.LotroReleaseUpdater]::CurrentUpdaterVersion
 if ([Version][Diagnostics.FileVersionInfo]::GetVersionInfo($exe).FileVersion -lt [Version]$manifest.minimum_updater_version) {
     throw 'Updater executable is older than the manifest requirement.'
 }
@@ -98,11 +114,11 @@ function Ensure-Asset([string]$Path, [string]$Name, [string]$ExpectedSha, [long]
     }
     return $matches[0]
 }
-$semantic = Ensure-Asset $asset $manifest.asset_name $manifest.asset_sha256 $manifest.asset_size
+$fullDat = Ensure-Asset $candidate $manifest.asset_name $manifest.asset_sha256 $manifest.asset_size
 $updaterName = 'LOTRO_Turkce_Yama_Setup.exe'
 [void](Ensure-Asset $exe $updaterName (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash (Get-Item -LiteralPath $exe).Length)
 $manifest.release_id = $release.id
-$manifest.asset_id = $semantic.id
+$manifest.asset_id = $fullDat.id
 $releaseContract = [LotroTurkceYama.Setup.StableRelease]::new()
 $releaseContract.id = $release.id
 $releaseContract.tag_name = $tag

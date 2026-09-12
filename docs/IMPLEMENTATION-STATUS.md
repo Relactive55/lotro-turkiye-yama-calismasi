@@ -8,11 +8,13 @@
 - yerelleştirme kaydı: `825,136`
 - parse hatası: `0`
 
-## Nihai semantic paket
+## Tam DAT yayın modeli
 
-Zincirli incremental semantic katmanı da hazırlandı: predecessor release/asset,
-DAT/katalog kimlikleri, 32 katman sınırı, eksik katman indirme ve önceki Türkçe
-DAT üzerine fail-closed uygulama sentetik testlerle doğrulandı.
+Geliştirici tarafında semantic doğrulama ve aday üretimi korunur; son kullanıcı
+release'i artık her sürümde eksiksiz `full_dat` asset'i taşır. Updater mevcut
+DAT'ı tanımaya çalışmadan tam dosyayı doğrular, yedekler ve atomik olarak
+yerleştirir. Geçmiş semantic manifestleri okuyabilen kod yalnız geçiş uyumluluğu
+içindir.
 
 - güvenli Türkçe kayıt: `645,004`
 - dokunulan DID/blok: `231,463`
@@ -61,4 +63,6 @@ GitHub-hosted bir makine oyunun güncel proprietary DAT dosyasına kendiliğinde
 
 ## Public dağıtım sınırı
 
-Depoya ve release'e tam DAT, RAR, ham İngilizce katalog, özel çeviri havuzu, model ağırlığı veya oyuna ait native DLL konmaz. Release yalnız kurulum EXE'si, doğrulanmış semantic patch ve manifest içerir.
+Kaynak Git deposuna tam DAT, RAR, ham İngilizce katalog, özel çeviri havuzu,
+model ağırlığı veya oyuna ait native DLL konmaz. Doğrulanmış tam DAT yalnız
+GitHub Release asset'i olarak; setup ve manifest ile birlikte yayımlanır.

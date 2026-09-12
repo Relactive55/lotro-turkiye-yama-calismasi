@@ -426,10 +426,9 @@ public sealed class LotroReleaseUpdater
     }
 
     /// <summary>
-    /// Resolves and downloads only the missing portion of a chained semantic
-    /// release. A user already on the predecessor receives the small newest
-    /// layer; a clean/new installation receives the immutable full root once
-    /// and then each required layer in order.
+    /// Resolves and downloads the release asset. Current public releases are
+    /// one full_dat package; the semantic chain code below remains only for
+    /// reading historical manifests during migration.
     /// </summary>
     public async Task<List<PatchPackage>> DownloadPatchChainAsync(
         StableRelease latestRelease,
@@ -493,7 +492,7 @@ public sealed class LotroReleaseUpdater
         return DownloadPatchChainAsync(latestRelease, latestManifest, cacheDirectory, null, cancellationToken, progress);
     }
 
-    /// <summary>Returns the immutable root-to-latest release chain.</summary>
+    /// <summary>Returns the immutable package chain for legacy manifests.</summary>
     public async Task<List<PatchPackage>> ResolvePatchChainAsync(
         StableRelease latestRelease,
         ReleaseManifest latestManifest,
@@ -552,7 +551,7 @@ public sealed class LotroReleaseUpdater
         throw new UpdaterFailure("CHAIN_INVALID", "Semantic release zinciri güvenli derinlik sınırını aşıyor.");
     }
 
-    /// <summary>Installs already downloaded chain packages in order.</summary>
+    /// <summary>Installs already downloaded packages in order.</summary>
     public async Task<InstalledPatchState> InstallPatchChainAsync(
         string gameDirectory,
         IList<PatchPackage> packages,
@@ -679,16 +678,12 @@ public sealed class LotroReleaseUpdater
         if (!File.Exists(target)) throw new UpdaterFailure("LOTRO_DAT_MISSING", "LOTRO client_local_English.dat bulunamadı.");
         EnsureDatUnlocked(target);
         string priorStateText = TryRead(statePath);
-        InstalledPatchState priorState = ParseState(priorStateText);
         string currentHash = HashFile(target, cancellationToken);
-        bool cleanBaseline = string.Equals(currentHash, manifest.source_dat_sha256, StringComparison.OrdinalIgnoreCase);
-        bool knownPreviousPatch = priorState != null
-            && string.Equals(priorState.source_dat_sha256, manifest.source_dat_sha256, StringComparison.OrdinalIgnoreCase)
-            && string.Equals(currentHash, priorState.sha256, StringComparison.OrdinalIgnoreCase)
-            && priorState.size == new FileInfo(target).Length;
-        if (!cleanBaseline && !knownPreviousPatch)
-            throw new UpdaterFailure("OUTDATED_LOTRO_PATCH", "Mevcut LOTRO DAT için release baseline kimliği doğrulanamadı.");
-
+        // A full-DAT release is deliberately independent of the file currently
+        // installed in the game directory. The complete, verified translated
+        // DAT is copied atomically below, so a previous patch, a launcher
+        // rewrite, or a missing/old state file must not cause a baseline
+        // mismatch failure.
         EnsureFreeSpace(gameDirectory, checked(new FileInfo(target).Length + manifest.asset_size + 64L * 1024 * 1024));
         string backup = BackupFile(target, gameDirectory, cancellationToken, currentHash);
         string candidate = target + ".lotro-candidate.part";

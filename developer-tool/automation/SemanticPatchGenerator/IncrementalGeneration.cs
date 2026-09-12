@@ -118,6 +118,7 @@ internal static class IncrementalGeneration
                 || !SourceDigest.Matches(record.SourceDigest, correction.source_digest)
                 || !SourceDigest.Matches(record.TokenSignature, correction.token_signature))
                 throw new InvalidDataException("Correction must be human approved and bound to the exact predecessor text: " + record.Key);
+            correction.target = DurationUnitFix.NormalizeTranslated(record.Source, correction.target);
             if (string.Equals(record.Source, correction.target, StringComparison.Ordinal)) continue;
             string rejection = Program.Validate(record, correction);
             if (rejection != null) throw new InvalidDataException("Unsafe correction " + record.Key + ": " + rejection);

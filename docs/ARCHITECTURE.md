@@ -1,10 +1,11 @@
 # Mimari kararlar
 
-Semantic yayınlar kök + zincir katmanları olarak ilerler. Kök paket resmi temiz
-DAT temelini taşır; sonraki `patch_mode=incremental` paketler yalnız değişen
-kayıtları ve doğrulanmış predecessor kimliğini taşır. Updater, kurulu patch
-durumuna göre zincirin eksik ucunu indirir ve her katmanda DAT/katalog,
-token/format, aday ve rollback doğrulaması yapar.
+Yayın modeli eksiksiz DAT'tır. Her `full_dat` paketi belirli bir temiz LOTRO
+sürümüne uygulanmış bütün Türkçe çeviriyi taşır. Updater mevcut dosyanın
+geçmişine bakarak katman seçmez; tam paketi indirir, hash'ini doğrular ve
+oyun DAT'ını atomik olarak değiştirir. Semantic kataloglar geliştirici
+doğrulaması için kullanılabilir, ancak son kullanıcı release'ine katman olarak
+girmez.
 
 ## Roller
 
@@ -20,12 +21,11 @@ Resmî launcher ile güncellenmiş temiz İngilizce DAT → read-only native ext
 
 Sabit HTTPS GitHub stable release → manifest doğrulama → asset boyut/SHA-256 doğrulama → gerçek LOTRO dizini ve oyun/launcher kapalı kontrolü → backup → geçici candidate → güvenli replacement → post-install doğrulama → atomic `installed_patch.json`.
 
-İlk semantic kurulum yalnız manifest source SHA-256'sı ile eşleşen temiz baseline
-üzerinde kabul edilir ve sonraki sürümler için doğrulanmış temiz kaynak yedeği
-oluşturur. Resmî launcher daha sonra yamalı DAT'ı güncellerse updater; canlı DAT,
-önceki temiz yedek ve yeni semantic paketten hem temiz hem Türkçe aday üretir.
-Kaynak ve hedef katalog SHA-256 değerlerinin ikisi de eksiksiz eşleşmeden canlı
-dosya değiştirilmez. Aynı sürümün yeniden çalıştırılması idempotent başarıdır.
+Kurulum mevcut DAT'ın clean baseline veya önceki patch olarak tanınmasını
+gerektirmez. İndirilen tam asset boyut/hash ile doğrulanır; canlı DAT yedeklenir,
+geçici aday dosyası hazırlanır ve ancak son hash doğrulamasından sonra atomik
+değiştirilir. Launcher yeni bir oyun DAT'ı indirmiş olsa bile aynı akış uygulanır.
+Başarısızlıkta canlı dosya ve `installed_patch.json` geri yüklenir.
 
 ## Semantic patch sözleşmesi
 
@@ -33,4 +33,8 @@ dosya değiştirilmez. Aynı sürümün yeniden çalıştırılması idempotent 
 
 ## Yayın ayrımı
 
-Patch release (`manifest.json` + yama asset'i) ile **LOTR TÜRKÇE YAMA** kurulum varlığı ayrı kanallardır. Patch değiştiğinde installer yeniden derlenmek zorunda değildir. Her patch immutable tag/release ID/asset ID/size/SHA-256 ile yayınlanır; otomatik merge/approve yoktur. Source acquisition cloud tarafı kanıtlanmadığı için varsayılan `CLIENT_ASSISTED` bundle akışıdır; yalnız güvenli normal içerik release'e girer, riskli satırlar İngilizce fallback olur.
+Release (`manifest.json` + tam DAT asset'i) ile **LOTR TÜRKÇE YAMA** kurulum
+varlığı aynı stable release içinde doğrulanır. Tam DAT değiştiğinde installer
+yeniden derlenmek zorunda değildir; manifest yeni asset ID/size/SHA-256 taşır.
+Semantic paketler eski kurulumlarla uyumluluk için okunabilir olsa da yeni
+release üretim betiği onları yayımlamaz.

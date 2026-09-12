@@ -106,8 +106,9 @@ internal static class UpdaterBehaviorTests
                 byte[] wrong = Encoding.UTF8.GetBytes("wrong-baseline");
                 File.WriteAllBytes(Path.Combine(wrongGame, "client_local_English.dat"), wrong);
                 File.WriteAllBytes(Path.Combine(wrongGame, "LotroLauncher.exe"), new byte[] { 0 });
-                Expect("OUTDATED_LOTRO_PATCH", () => updater.InstallFullDatAsync(wrongGame, Path.Combine(cache, patchName), manifest, Path.Combine(wrongGame, "installed_patch.json"), CancellationToken.None).GetAwaiter().GetResult(), "baseline mismatch fail-closed");
-                Verify(Path.Combine(wrongGame, "client_local_English.dat"), wrong.Length, Hash(wrong));
+                await updater.InstallFullDatAsync(wrongGame, Path.Combine(cache, patchName), manifest, Path.Combine(wrongGame, "installed_patch.json"), CancellationToken.None);
+                Verify(Path.Combine(wrongGame, "client_local_English.dat"), patch.Length, patchHash);
+                Pass("full DAT replaces an unknown previous patch");
             }
             finally { TryDeleteDirectory(wrongGame); }
 

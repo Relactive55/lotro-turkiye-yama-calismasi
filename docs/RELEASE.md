@@ -1,27 +1,26 @@
 # Release modeli
 
-## Zincirli küçük düzeltmeler
+## Eksiksiz DAT yayınları
 
-İlk kararlı semantic paket zincirin tam köküdür ve yaklaşık 440 MB olarak bir
-kez indirilir. Sonraki düzeltmeler `patch_mode=incremental` ile yalnızca
-değişen kayıtları içerir. Manifest; predecessor release/tag/asset kimliğini,
-predecessor DAT ve katalog SHA-256 değerlerini ve zincir derinliğini taşır.
-Updater önce bu kimlikleri doğrular, yalnız eksik katmanları indirir ve
-katmanları kökten güncele sırayla uygular. Böylece mevcut kullanıcı için normal
-düzeltme indirmesi KB/MB seviyesine iner; predecessor asset her release'e
-yeniden yüklenmez.
-
-Yeni bir kök semantic paket, oyun DAT temeli değiştiğinde veya zincir bakımı
-gerektiğinde yayımlanır. Zincir 32 katmanla sınırlıdır; her katman bağımsız
-SHA-256, katalog ve rollback doğrulamasından geçer.
+Her kararlı yayın, güncel oyun sürümüne uygulanmış tüm Türkçe çeviriyi içeren
+tek bir `full_dat` varlığıdır. Güncelleme alan program bu dosyayı baştan
+indirir, SHA-256 ile doğrular, mevcut `client_local_English.dat` dosyasını
+yedekler ve tam dosyayı atomik olarak yerleştirir. Mevcut dosyanın daha önce
+Türkçe yamalanmış olması veya launcher tarafından değiştirilmiş olması yayın
+kurulumunu engellemez; yeni tam DAT eski katmanların üzerine uygulanmaz.
 
 İki ayrı kanal planlanır:
 
-- Patch release: manifest ve doğrulanmış `semantic_delta_patch` asset'i.
+- Patch release: manifest ve doğrulanmış `full_dat` asset'i.
 - Installer release: **LOTR TÜRKÇE YAMA** kurulum aracının güncellemesi.
 
 Patch release, installer'ın yeniden build edilmesini gerektirmemelidir. Her patch yeni immutable tag, release ID, asset ID, boyut ve SHA-256 alır. Draft/prerelease release'ler updater tarafından reddedilir.
 
-Tam DAT asset'i public release'e konmaz; kullanıcı kendi resmî DAT'ını kullanır. Semantic patch manifesti kaynak DAT/katalog SHA-256'sını, güvenli/atlanan/kritik sayaçlarını ve üretici/sağlayıcı sürümünü taşır. Güncel 1,9 GB resmî DAT kopyasındaki tam uygulama ve yeniden okuma testi geçmeden semantic sürüm yayımlanmaz.
+Tam DAT asset'i public release'e konur; kullanıcı uygulaması yalnız bu eksiksiz
+paketi kullanır. Manifest kaynak DAT kimliğini, tam aday DAT boyut/hash'ini,
+güvenli/atlanan/kritik sayaçlarını ve üretici/sağlayıcı sürümünü taşır.
+Güncel 1,9 GB resmî DAT kopyasındaki tam yazma ve yeniden okuma testi geçmeden
+yayın yapılmaz. Eski semantic manifestleri okuyabilen uyumluluk kodu yeni
+yayınlarda kullanılmaz.
 
 Sürüm kapıları: kaynak temel doğrulaması, deterministik paket üretimi, token/kalite koruması, yanlış-temel/tahrifat/geri alma testleri, DAT adayının tam yeniden okunması, kritik inceleme sayısının sıfır olması ve lisans incelemesi. Yayın işi hazır olmadan `contents: write` izni verilmez.

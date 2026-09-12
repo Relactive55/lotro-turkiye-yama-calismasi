@@ -2,13 +2,13 @@
 
 LOTRO Türkiye Yama Çalışması'nın son kullanıcı uygulaması ve güvenli güncelleme akışı.
 
-Sonraki semantic düzeltmeler için [zincirli küçük paket akışına](docs/SEMANTIC-CHAIN.md)
-bakın. İlk kök paket bir kez indirilir; güncellemeler yalnız eksik küçük
-`incremental` katmanları indirir.
+Her yayın güncel Türkçe `client_local_English.dat` dosyasını eksiksiz taşır.
+Güncellemede program semantic/delta katmanı uygulamaz; doğrulanmış tam DAT'ı
+baştan indirip oyun klasöründeki dosyayla değiştirir.
 
 ## Güncel programı indir
 
-Tam katalog taramasıyla arayüz, yetenek/eşya ve istatistik düzeltmeleri: [2026.09.09.5 notları](docs/RELEASE-NOTES-2026.09.09.5.md).
+Tam katalog taramasıyla arayüz, yetenek/eşya ve istatistik düzeltmeleri: [2026.09.12.1 notları](docs/RELEASE-NOTES-2026.09.12.1.md).
 Bu paket için kurulum aracı `1.4.0.0` gerekir.
 
 [**LOTR TÜRKÇE YAMA GitHub Releases sayfasını aç (Windows)**](https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/latest)
@@ -17,13 +17,12 @@ Açılan sayfadaki **LOTR TÜRKÇE YAMA** kurulum varlığını indirin. Son kul
 dağıtımında proje dışında barındırılan ZIP, EXE veya başka bir çalıştırılabilir
 dosya kullanılmaz.
 
-Program temiz resmî DAT üzerinde özel bir aday kopya oluşturur. Adayın bütün
-yerelleştirme kayıtları ve çeviri hedefleri yeniden doğrulanır. Modern DAT
-başlığına ilişkin son düzeltme, bağımsız fiziksel bayt testleriyle de sınandı;
-oyun içi test henüz tamamlanmadı. Hata durumunda canlı dosya değiştirilmez
-veya değiştirme başladıysa doğrulanmış yedekten geri dönme denenir.
+Program yayınlanmış tam Türkçe DAT'ı geçici dosyada indirir, boyut ve SHA-256
+doğrulamasını tamamlamadan canlı dosyayı değiştirmez. Hata durumunda canlı
+dosya değiştirilmez veya değiştirme başladıysa doğrulanmış yedekten geri dönme
+denenir.
 
-The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli güncelleme projesidir. Son kullanıcı tam oyun DAT'ı indirmez; GitHub Releases sayfasındaki **LOTR TÜRKÇE YAMA** kurulum aracını indirir ve **Yama Yap** düğmesine basar. Araç Steam ve bağımsız LOTRO kurulumlarını bulabilir, güncel semantic paketi indirir ve kullanıcının kendi resmî DAT dosyasına uygular.
+The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli güncelleme projesidir. Son kullanıcı GitHub Releases sayfasındaki **LOTR TÜRKÇE YAMA** kurulum aracını indirir ve **Yama Yap** düğmesine basar. Araç Steam ve bağımsız LOTRO kurulumlarını bulur, güncel tam Türkçe DAT'ı indirir ve oyun klasörüne güvenli biçimde yerleştirir.
 
 > Kullanıcıya görünen ürün adı **LOTR TÜRKÇE YAMA**'dır. GitHub varlığının teknik dosya adı, mevcut kurulumları bozmamak için uyumluluk amacıyla sabit tutulur.
 
@@ -34,12 +33,12 @@ The Lord of the Rings Online için ücretsiz Türkçe yerelleştirme ve güvenli
 1. GitHub Releases sayfasından kurulum aracını indirin.
 2. LOTRO ve launcher kapalıyken aracı çalıştırın.
 3. **Yama Yap** düğmesine basın.
-4. Araç kaynak DAT ve katalog kimliğini, paket boyutunu ve SHA-256 özetini doğrular; temiz kaynak yedeği almadan canlı dosyayı değiştirmez.
+4. Araç tam DAT boyutunu ve SHA-256 özetini doğrular; yedek almadan canlı
+   dosyayı değiştirmez.
 5. Yeni bir Türkçe paket yayımlandığında aynı kurulum aracı bunu otomatik gösterir.
 6. Resmî launcher daha önce yamalanmış DAT'ı güncellerse yine yalnız **Yama Yap**
-   düğmesine basılır. Araç önceki temiz yedeği, güncellenmiş DAT'ı ve yeni paketi
-   yalnız kaynak kimlikleri kanıtlanabiliyorsa birleştirir. Eşleşme yoksa eski
-   yedeği yeni oyun sürümüne zorla uygulamaz; uyumlu paket/kaynak ister.
+   düğmesine basılır. Araç güncel tam Türkçe DAT'ı sıfırdan indirir; mevcut
+   dosyayı semantic olarak birleştirmeye çalışmaz.
 
 Kod imzalama sertifikası eklenmediği sürece Windows SmartScreen uyarısı görülebilir.
 
@@ -60,7 +59,9 @@ Kod imzalama sertifikası eklenmediği sürece Windows SmartScreen uyarısı gö
 
 Komut anahtarları, değişkenler, biçim parçaları ve özel adlar çeviri sayılmaz; bozulmamaları için açık koruma kararlarıyla kaynak biçiminde tutulur. Semantic paketin güncel 1,9 GB resmî DAT kopyasına tam uygulanması ve oluşan `825,136` kaydın yeniden okunması başarıyla sınanmıştır.
 
-Tam DAT, RAR, ham katalog, özel çeviri havuzu, model dosyası veya oyuna ait native DLL bu depoda tutulmaz.
+Tam DAT kaynak Git deposunda tutulmaz; doğrulanmış tam DAT yalnız GitHub Release
+asset'i olarak yayımlanır. RAR, ham katalog, özel çeviri havuzu, model dosyası
+ve oyuna ait native DLL bu depoda tutulmaz.
 
 ## Hızlı düzeltme akışı
 
@@ -92,7 +93,9 @@ kaynak olarak okur; önceki katalogu aynı klasördeki
 `GÜNCELLEME/catalog.jsonl.gz` yerel durum kaydından alır. Durum dosyası `.gitignore`
 ile yerel tutulur; tam DAT veya katalog GitHub'a yüklenmez.
 
-Bir kullanıcı oyun içinde sorun bildirdiğinde ilgili kayıt düzeltilerek yeni semantic paket yayımlanabilir. Kurulum aracının kodu değişmediyse kullanıcı yeni EXE indirmek zorunda kalmaz; mevcut araç yeni patch sürümünü görür.
+Bir kullanıcı oyun içinde sorun bildirdiğinde ilgili kayıt düzeltilir ve yeni
+tam DAT adayı üretilir. Kurulum aracının kodu değişmediyse kullanıcı yeni EXE
+indirmek zorunda kalmaz; mevcut araç yeni full-DAT sürümünü görür.
 
 ## Depo yapısı
 

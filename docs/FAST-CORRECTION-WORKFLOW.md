@@ -136,3 +136,9 @@ eder. Kaynak çapası, önbellek biçimi veya otomatik UI içeriği değiştiği
 önbellek yeniden oluşturulur. Bozuk
 bir ikili yan dosya, doğrulanmış güncel JSONL'den `MaterializeFastRecords` ile
 yerel olarak yeniden üretilebilir.
+# Dağıtım notu
+
+Bu hızlı düzeltme akışı geliştirici doğrulaması ve geçmiş semantic paketler
+içindir. Son kullanıcıya yayımlanan her güncelleme, bu kayıtlar yeniden
+oluşturularak eksiksiz `full_dat` olarak paketlenir; semantic/delta katmanı
+paylaşılmaz.

@@ -102,7 +102,10 @@ internal sealed class SetupForm : Form
             using (IReleaseTransport transport = new FixedGitHubTransport())
             {
                 LotroReleaseUpdater updater = new LotroReleaseUpdater(transport);
-                _available = await updater.CheckLatestAsync(CancellationToken.None);
+                Tuple<StableRelease, ReleaseManifest> available = await updater.CheckLatestAsync(CancellationToken.None);
+                if (available.Item2 == null || available.Item2.asset_kind != "full_dat")
+                    throw new UpdaterFailure("FULL_DAT_REQUIRED", "Bu sürüm yalnızca eksiksiz Türkçe DAT paketi kullanır; yama katmanı yayınlanmıyor.");
+                _available = available;
             }
             if (IsDisposed) return;
             _gameDirectory = await Task.Run(() => LotroGameLocator.FindFirst());
@@ -139,6 +142,8 @@ internal sealed class SetupForm : Form
                 _status.Text = "GitHub projesine dışarıdan erişilemiyor (404). Proje sahibi hesap kısıtlamasını kontrol etmelidir.";
             else if (ex.Code == "UPDATER_TOO_OLD")
                 _status.Text = ex.Message;
+            else if (ex.Code == "FULL_DAT_REQUIRED")
+                _status.Text = ex.Message;
             else
                 _status.Text = "Güncelleme kontrol edilemedi. İnternet bağlantınızı kontrol edip yeniden deneyin.";
             _install.Text = "Tekrar Dene";
@@ -172,6 +177,11 @@ internal sealed class SetupForm : Form
             await CheckAsync();
             return;
         }
+        if (_available.Item2 == null || _available.Item2.asset_kind != "full_dat")
+        {
+            MessageBox.Show(this, "Bu sürüm yalnızca eksiksiz Türkçe DAT paketi kullanır; yama katmanı yayınlanmıyor.", LotroSetupApp.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
+            return;
+        }
         _install.Enabled = false;
         _progress.Value = 0;
         _progress.Style = ProgressBarStyle.Continuous;
@@ -198,7 +208,7 @@ internal sealed class SetupForm : Form
                 string statePath = Path.Combine(gameDir, "installed_patch.json");
                 InstalledPatchState installedState = ReadState(statePath);
                 if (installedState != null && !string.Equals(installedState.game_dir, gameDir, StringComparison.OrdinalIgnoreCase)) installedState = null;
-                _status.Text = "Güncelleme zinciri doğrulanıyor...";
+                _status.Text = "Tam Türkçe DAT paketi doğrulanıyor...";
                 _progress.Style = ProgressBarStyle.Marquee;
                 _progress.MarqueeAnimationSpeed = 24;
                 _install.Text = "İptal";

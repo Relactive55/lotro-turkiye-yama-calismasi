@@ -21,6 +21,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\developer-tool\src\LotroTrGemini\ProtectedFormat.cs" Link="LotroTrGemini\ProtectedFormat.cs" />
+    <Compile Include="..\developer-tool\src\LotroTrGemini\DurationUnitFix.cs" Link="LotroTrGemini\DurationUnitFix.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\SourceDigest.cs" Link="LotroTrGemini\SourceDigest.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\SemanticPatch.cs" Link="LotroTrGemini\SemanticPatch.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\CatalogIdentity.cs" Link="LotroTrGemini\CatalogIdentity.cs" />

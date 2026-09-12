@@ -112,7 +112,9 @@ public static class ManagedSemanticDatPatcher
                 + "applied=" + apply.Applied + "/" + patch.entries.Count
                 + ", changed=" + apply.SourceChanged + ", ambiguous=" + apply.Ambiguous
                 + ", critical=" + apply.CriticalSkipped + ", rejected=" + apply.Rejected
-                + ", missing=" + apply.Missing);
+                + ", missing=" + apply.Missing
+                + (apply.Warnings.Count == 0 ? string.Empty
+                    : ", warnings=" + string.Join(" | ", apply.Warnings.Take(12))));
         }
 
         MarkChangedUnits(units, patch.entries.Select(entry => entry.dat_key));

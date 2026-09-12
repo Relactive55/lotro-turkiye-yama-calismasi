@@ -29,3 +29,10 @@ Kurulum akışı:
 Temiz kurulumda yaklaşık 440 MB'lık kök paket yalnızca bir kez indirilir.
 Günlük UI düzeltmeleri küçük JSON katmanlarıdır. Zincir 32 katmana ulaştığında
 veya resmi LOTRO DAT temeli değiştiğinde yeni bir kök paket yayımlanır.
+# Arşiv notu
+
+Bu belge geçmiş semantic/delta yayın sözleşmesini açıklar. Son kullanıcı
+release'leri artık `full_dat` kullanır: güncel Türkçe DAT her sürümde baştan
+indirilir ve oyun klasörüne yerleştirilir. Yeni yayınlarda bu zincir akışı
+kullanılmaz; belge yalnız eski release'leri ve geliştirici doğrulama kodunu
+anlamak için tutulur.
