@@ -20,10 +20,23 @@ public static class KnownUiFixes
 	{
 		CharacterSelectionDid,
 		unchecked((int)0x25004744u), // Hobbit
+		unchecked((int)0x2500475Fu), // Hobbit racial trait: size
+		unchecked((int)0x25004760u), // Hobbit racial trait: toughness
+		unchecked((int)0x25004761u), // Hobbit racial trait: recovery
+		unchecked((int)0x25004762u), // Hobbit racial trait: courage
+		unchecked((int)0x25004763u), // Hobbit racial trait: corruption resistance
 		unchecked((int)0x25004765u), // Man
+		unchecked((int)0x2500477Eu), // Man racial trait: fate
+		unchecked((int)0x2500477Fu), // Man racial trait: will
 		unchecked((int)0x25004780u), // Man racial trait: morale
 		unchecked((int)0x25004781u), // Man racial trait: strength
 		unchecked((int)0x25004782u), // Elf
+		unchecked((int)0x25004799u), // Elf racial trait: sorrow
+		unchecked((int)0x2500479Au), // Elf racial trait: agility
+		unchecked((int)0x2500479Bu), // Elf racial trait: fate
+		unchecked((int)0x2500479Cu), // Elf racial trait: illness resistance
+		unchecked((int)0x2503C6F6u), // Elf racial trait duplicate: fate
+		unchecked((int)0x2503C6F7u), // Elf racial trait duplicate: illness resistance
 		unchecked((int)0x2500479Du), // Dwarf
 		unchecked((int)0x25002D96u), // Champion
 		unchecked((int)0x25002DC1u), // Captain
@@ -48,11 +61,24 @@ public static class KnownUiFixes
 	{
 		"250001BD:219:-1:0", "250001BD:321:-1:0", "250001BD:346:-1:0",
 		"25004744:0:-1:0", "25004744:2:-1:0",
+		"2500475F:0:-1:0", "2500475F:1:-1:0", "2500475F:2:-1:0",
+		"25004760:0:-1:0", "25004760:1:-1:0", "25004760:2:-1:0",
+		"25004761:0:-1:0", "25004761:1:-1:0", "25004761:2:-1:0",
+		"25004762:0:-1:0", "25004762:1:-1:0", "25004762:2:-1:0",
+		"25004763:0:-1:0", "25004763:1:-1:0", "25004763:2:-1:0",
 		"25004765:0:-1:0", "25004765:2:-1:0",
+		"2500477E:0:-1:0", "2500477E:1:-1:0", "2500477E:2:-1:0",
+		"2500477F:0:-1:0", "2500477F:1:-1:0", "2500477F:2:-1:0",
 		"25004780:0:-1:0", "25004780:1:-1:0", "25004780:2:-1:0", "25004780:3:-1:0",
 		"25004781:0:-1:0", "25004781:1:-1:0", "25004781:2:-1:0",
 		"25004782:0:-1:0",
+		"25004799:0:-1:0", "25004799:1:-1:0", "25004799:2:-1:0",
+		"2500479A:0:-1:0", "2500479A:1:-1:0", "2500479A:2:-1:0",
+		"2500479B:0:-1:0", "2500479B:1:-1:0", "2500479B:2:-1:0",
+		"2500479C:0:-1:0", "2500479C:1:-1:0", "2500479C:2:-1:0",
 		"2500479D:0:-1:0",
+		"2503C6F6:0:-1:0", "2503C6F6:1:-1:0", "2503C6F6:2:-1:0",
+		"2503C6F7:0:-1:0", "2503C6F7:1:-1:0", "2503C6F7:2:-1:0",
 		"25002D96:10:-1:0", "25002DC1:8:-1:0", "25002DD6:10:-1:0",
 		"25002DED:8:-1:0", "25002DFE:8:-1:0", "25002E13:8:-1:0",
 		"25002E21:8:-1:0", "2500B1A7:10:-1:0", "2500B69F:10:-1:0",
@@ -89,12 +115,21 @@ public static class KnownUiFixes
 		new FlatUiFix("25004744:4:-1:0", "O deli erkek hobbitler. Bla bla bla.", "Erkek hobbitler."),
 		new FlatUiFix("25004744:7:-1:0", "O deli dişi Hobbitler. Bla bla bla.", "Kadın hobbitler."),
 
+		new FlatUiFix("2500475F:1:-1:0", "Small Size", "Küçük Yapı"),
+		new FlatUiFix("25004760:1:-1:0", "Hobbit-toughness", "Hobbit Dayanıklılığı"),
+		new FlatUiFix("25004761:1:-1:0", "Rapid Recovery", "Hızlı Toparlanma"),
+		new FlatUiFix("25004762:1:-1:0", "Hobbit-courage", "Hobbit Cesareti"),
+		new FlatUiFix("25004763:1:-1:0", "Resist Corruption", "Yozlaşmaya Direnç"),
+
 		new FlatUiFix("25004765:0:-1:0", "\\nElfler kadar uzun ömürlü, cüceler kadar sağlam veya hobbitler kadar dayanıklı olmayan erkekler, cesaretleri ve beceriklilikleri ile ünlüdür.\\n\\n", "\\nElfler kadar uzun ömürlü, Cüceler kadar sağlam veya Hobbitler kadar dayanıklı olmasalar da İnsanlar cesaretleri ve beceriklilikleriyle tanınır.\\n\\n"),
 		new FlatUiFix("25004765:1:-1:0", "İnsanın Irkı (Kadın)", "İnsan Irkı (Kadın)"),
 		new FlatUiFix("25004765:2:-1:0", "Elfler kadar uzun ömürlü olmasalar da, cüceler gibi sağlam veya hobbitler kadar dirençli olmayan İnsanlar, cesaretleri ve zekalarıyla tanınırlar. Güçlü bir kavimdir onlar, kaderleri Orta Dünya'nın baskın halkı olmak olsa da, iradeleri daha zayıf ve Düşman'ın baştan çıkarıcılarına ve hilelerine karşı daha yatkındır.", "Elfler kadar uzun ömürlü, Cüceler kadar sağlam veya Hobbitler kadar dayanıklı olmasalar da İnsanlar cesaretleri ve beceriklilikleriyle tanınır. Güçlü bir halktır; Orta Dünya'nın baskın halkı olmaya yazgılıdırlar, ancak iradeleri daha zayıftır ve Düşman'ın ayartılarına ve hilelerine daha açıktırlar."),
 		new FlatUiFix("25004765:4:-1:0", "Erkek insanlar. Bla bla bla.", "Erkek insanlar."),
 		new FlatUiFix("25004765:7:-1:0", "Kadın insanlar mı? Hıh? Bla bla bla.", "Kadın insanlar."),
 		new FlatUiFix("25004765:9:-1:0", "İnsanın Irkı (Erkek)", "İnsan Irkı (Erkek)"),
+
+		new FlatUiFix("2500477E:1:-1:0", "Gift of Men", "İnsanların Hediyesi"),
+		new FlatUiFix("2500477F:1:-1:0", "Diminishing of Mankind", "İnsanlığın Zayıflaması"),
 
 		new FlatUiFix("25004780:0:-1:0", "Artan Moral Restorasyonu - İnsanlar diğer ırklara göre daha hızlı harekete geçebilir. (İyileştiriciler, insanlar üzerinde daha fazla iyileşme sağlar)", "Artan Moral Yenilenmesi - İnsanlar diğer ırklara göre daha çabuk toparlanır. (İyileştirme etkileri İnsanlar üzerinde daha güçlüdür.)"),
 		new FlatUiFix("25004780:2:-1:0", "Artan Moral Restorasyonu - İnsanlar diğer ırklardan daha hızlı cesaretlenirler.", "Artan Moral Yenilenmesi - İnsanlar diğer ırklara göre daha çabuk cesaretlenir."),
@@ -105,6 +140,13 @@ public static class KnownUiFixes
 		new FlatUiFix("25004782:0:-1:0", "\\nUzun zaman önce, Elfler genç ırkları karşıladılar. Middle-earth İhtiyacı büyük olduğunda onlarla müttefik oldular, ama yüzyıllarca süren savaş, ihanet ve zorluklar onları inzivalarına karşı şiddetle korudu.\\n\\n", "\\nUzun zaman önce Elfler, Orta Dünya'nın genç ırklarını kabul edip ihtiyaç büyük olduğunda onlarla ittifak kurdu; ancak yüzyıllar süren savaş, ihanet ve zorluklar onları inzivalarını korumakta kararlı hâle getirdi.\\n\\n"),
 		new FlatUiFix("25004782:2:-1:0", "Bu seçenek henüz tamamlanmadı.", "Bu seçenek henüz uygulanmadı."),
 		new FlatUiFix("25004782:7:-1:0", "Kadın Elfler. Bla bla bla.", "Kadın elfler."),
+
+		new FlatUiFix("25004799:1:-1:0", "Sorrow of the Firstborn", "İlkdoğanların Kederi"),
+		new FlatUiFix("2500479A:1:-1:0", "Agility of the Woods", "Ormanın Çevikliği"),
+		new FlatUiFix("2500479B:1:-1:0", "Fading of the Firstborn", "İlkdoğanların Soluşu"),
+		new FlatUiFix("2500479C:1:-1:0", "Suffer no Illness", "Hastalık Çekmez"),
+		new FlatUiFix("2503C6F6:1:-1:0", "Fading of the Firstborn", "İlkdoğanların Soluşu"),
+		new FlatUiFix("2503C6F7:1:-1:0", "Suffer no Illness", "Hastalık Çekmez"),
 
 		new FlatUiFix("2500479D:0:-1:0", "\\nTaştan ve madenden yapılmış kuyumcular, cüceler, düşmanın yolsuzluğuna karşı dirençli, ama açgözlülüğe karşı değil, donuk bir halktır.\\n\\n", "\\nTaşın sakinleri ve metal madencileri olan Cüceler cesur bir halktır; Düşman'ın yozlaşmasına dirençlidirler, ancak açgözlülüğe karşı değil.\\n\\n"),
 		new FlatUiFix("2500479D:1:-1:0", "KULLANILMAMALIDIR", "KULLANILMAMALI"),
@@ -371,7 +413,7 @@ public static class KnownUiFixes
 			using (BinaryWriter writer = new BinaryWriter(stream, Encoding.UTF8, true))
 			using (System.Security.Cryptography.SHA256 sha = System.Security.Cryptography.SHA256.Create())
 			{
-				writer.Write("lotro-known-ui-fixes-v7-character-creation-game-font-safe-rich-text");
+				writer.Write("lotro-known-ui-fixes-v8-character-creation-racial-trait-game-font-safe-rich-text");
 				foreach (var fix in HiddenTooltipFixes) { writer.Write(fix.Item1); writer.Write(fix.Item2); }
 				writer.Write(CharacterSelectionDid);
 				writer.Write(CharacterSelectionSource.Length);

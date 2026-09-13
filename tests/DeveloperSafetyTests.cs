@@ -104,6 +104,38 @@ internal static class DeveloperSafetyTests
 			&& traitRows.TrueForAll(row => row.Original.IndexOf("?", StringComparison.Ordinal) < 0),
 			"character-creation racial trait rich text uses the game-font-safe fallback");
 		passed++;
+		byte[] hobbitTraitFixture = BuildFlatFixture(unchecked((int)0x2500475Fu), new[]
+		{
+			"Reduced Might - hobbits lack the physical strength of other races.",
+			"Small Size",
+			"Reduced Might - hobbits lack the physical strength of other races."
+		});
+		byte[] fixedHobbitTraitFixture = KnownUiFixes.ApplyTranslatedPayload(unchecked((int)0x2500475Fu), hobbitTraitFixture);
+		List<LocRow> hobbitTraitRows = LocBin.Parse(fixedHobbitTraitFixture, unchecked((int)0x2500475Fu)).GetRows(unchecked((int)0x2500475Fu));
+		byte[] manTraitFixture = BuildFlatFixture(unchecked((int)0x2500477Fu), new[]
+		{
+			"Decreased Will - Men have weaker wills than the other races.",
+			"Diminishing of Mankind",
+			"Decreased Will - Men have weaker wills than the other races."
+		});
+		byte[] fixedManTraitFixture = KnownUiFixes.ApplyTranslatedPayload(unchecked((int)0x2500477Fu), manTraitFixture);
+		List<LocRow> manTraitRows = LocBin.Parse(fixedManTraitFixture, unchecked((int)0x2500477Fu)).GetRows(unchecked((int)0x2500477Fu));
+		byte[] elfTraitFixture = BuildFlatFixture(unchecked((int)0x2500479Bu), new[]
+		{
+			"Reduced Fate - The time of the Elves in Middle-earth is nearly at its end.",
+			"İlk doğanın Fading",
+			"Reduced Fate - The time of the Elves in Middle-earth is nearly at its end."
+		});
+		byte[] fixedElfTraitFixture = KnownUiFixes.ApplyTranslatedPayload(unchecked((int)0x2500479Bu), elfTraitFixture);
+		List<LocRow> elfTraitRows = LocBin.Parse(fixedElfTraitFixture, unchecked((int)0x2500479Bu)).GetRows(unchecked((int)0x2500479Bu));
+		Check(hobbitTraitRows[1].Original == "Küçük Yapi"
+			&& manTraitRows[1].Original == "Insanligin Zayiflamasi"
+			&& elfTraitRows[1].Original == "Ilkdoganlarin Solusu"
+			&& hobbitTraitRows.TrueForAll(row => row.Original.IndexOf("?", StringComparison.Ordinal) < 0)
+			&& manTraitRows.TrueForAll(row => row.Original.IndexOf("?", StringComparison.Ordinal) < 0)
+			&& elfTraitRows.TrueForAll(row => row.Original.IndexOf("?", StringComparison.Ordinal) < 0),
+			"character-creation Hobbit, Man and Elf racial trait names are translated and font-safe");
+		passed++;
 
 		List<CatalogRecord> oldRecords = new List<CatalogRecord>
 		{

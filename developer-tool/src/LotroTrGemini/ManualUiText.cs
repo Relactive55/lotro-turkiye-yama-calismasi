@@ -70,6 +70,27 @@ public static class ManualUiText
 		{ "Good luck telling the difference.", "Aradaki farkı anlamakta bol şans." },
 		{ "a hobbit[n]", "bir hobbit[n]" }, { "a Man[n]", "bir insan[n]" },
 		{ "an Elf[n]", "bir Elf[n]" }, { "a Dwarf[n]", "bir cüce[n]" },
+		// Racial trait names shown in the character-creation panel.  These are
+		// short labels and therefore need exact entries rather than a fuzzy
+		// translation-memory lookup.
+		{ "Small Size", "Küçük Yapı" }, { "Hobbit-toughness", "Hobbit Dayanıklılığı" },
+		{ "Rapid Recovery", "Hızlı Toparlanma" }, { "Hobbit-courage", "Hobbit Cesareti" },
+		{ "Resist Corruption", "Yozlaşmaya Direnç" },
+		{ "Gift of Men", "İnsanların Hediyesi" }, { "Diminishing of Mankind", "İnsanlığın Zayıflaması" },
+		{ "Sorrow of the Firstborn", "İlkdoğanların Kederi" },
+		{ "Agility of the Woods", "Ormanın Çevikliği" },
+		{ "Fading of the Firstborn", "İlkdoğanların Soluşu" },
+		{ "Suffer no Illness", "Hastalık Çekmez" },
+		{ "Endurance of Stone", "Taş Dayanıklılığı" }, { "Fateful Dwarf", "Kaderli Cüce" },
+		{ "Dwarf-endurance", "Cüce Dayanıklılığı" }, { "Dwarf Endurance", "Cüce Dayanıklılığı" },
+		// Variants already present in the previous full DAT.  Keeping these
+		// aliases makes the next root rebuild correct old translated rows too.
+		{ "Erkeklerin Hediyesi", "İnsanların Hediyesi" },
+		{ "İnsanlığın Azaltılması", "İnsanlığın Zayıflaması" },
+		{ "İnsanların Azaltılması", "İnsanlığın Zayıflaması" },
+		{ "İlk doğanların acısı", "İlkdoğanların Kederi" },
+		{ "Ormanin Çevikligi", "Ormanın Çevikliği" },
+		{ "İlk doğanın Fading", "İlkdoğanların Soluşu" },
 		{ "+5% Incoming Healing", "+5% Gelen İyileştirme" },
 		{ "Ranger", "Korucu" }, { "Basic", "Temel" }, { "Moderate", "Orta" },
 		{ "Advanced", "Gelişmiş" }, { "Healer", "İyileştirme" }, { "Support", "Destek" },
