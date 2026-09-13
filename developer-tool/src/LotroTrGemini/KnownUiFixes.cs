@@ -38,6 +38,26 @@ public static class KnownUiFixes
 		unchecked((int)0x25043FB8u), // Brawler
 		unchecked((int)0x2504CEECu)  // Mariner
 	};
+	// The character-creation rich-text control uses a restricted game font.  It
+	// renders the Turkish dotless-i, breve-g and cedilla-s as literal question
+	// marks even when the DAT contains valid UTF-16.  Keep this compatibility
+	// list exact-keyed: normal headings and ordinary UI labels retain their
+	// reviewed Turkish spelling, while only the long descriptions that use that
+	// renderer receive the safe fallback below.
+	private static readonly HashSet<string> CharacterCreationRichTextKeys = new HashSet<string>(new[]
+	{
+		"250001BD:219:-1:0", "250001BD:321:-1:0", "250001BD:346:-1:0",
+		"25004744:0:-1:0", "25004744:2:-1:0",
+		"25004765:0:-1:0", "25004765:2:-1:0",
+		"25004780:0:-1:0", "25004780:1:-1:0", "25004780:2:-1:0", "25004780:3:-1:0",
+		"25004781:0:-1:0", "25004781:1:-1:0", "25004781:2:-1:0",
+		"25004782:0:-1:0",
+		"2500479D:0:-1:0",
+		"25002D96:10:-1:0", "25002DC1:8:-1:0", "25002DD6:10:-1:0",
+		"25002DED:8:-1:0", "25002DFE:8:-1:0", "25002E13:8:-1:0",
+		"25002E21:8:-1:0", "2500B1A7:10:-1:0", "2500B69F:10:-1:0",
+		"2502EBC1:10:-1:0", "25043FB8:10:-1:0", "2504CEEC:10:-1:0"
+	}, StringComparer.Ordinal);
 	private static readonly string[] CharacterSelectionSource = { "", " of ", " Character Slots Used" };
 	private static readonly string[] CharacterSelectionTarget = { "", " / ", " KARAKTER YUVASI KULLANILIYOR" };
 
@@ -351,7 +371,7 @@ public static class KnownUiFixes
 			using (BinaryWriter writer = new BinaryWriter(stream, Encoding.UTF8, true))
 			using (System.Security.Cryptography.SHA256 sha = System.Security.Cryptography.SHA256.Create())
 			{
-				writer.Write("lotro-known-ui-fixes-v6-character-creation-race-class-exact-vocabulary");
+				writer.Write("lotro-known-ui-fixes-v7-character-creation-game-font-safe-rich-text");
 				foreach (var fix in HiddenTooltipFixes) { writer.Write(fix.Item1); writer.Write(fix.Item2); }
 				writer.Write(CharacterSelectionDid);
 				writer.Write(CharacterSelectionSource.Length);
@@ -436,7 +456,11 @@ public static class KnownUiFixes
 			byKey.Add(row.Key, row);
 		}
 
-		List<FlatUiFix> fixes = FlatFixes.Where(item => item.Key.StartsWith(did.ToString("X8") + ":", StringComparison.Ordinal)).ToList();
+		List<FlatUiFix> fixes = FlatFixes
+			.Where(item => item.Key.StartsWith(did.ToString("X8") + ":", StringComparison.Ordinal))
+			.Select(item => new FlatUiFix(item.Key, item.Source,
+				CharacterCreationRichTextKeys.Contains(item.Key) ? GameRichTextSafe(item.Target) : item.Target))
+			.ToList();
 		// Structural fallback tables are intentionally kept out of the semantic
 		// catalog, but their reviewed labels and row-key class descriptions are
 		// still safe to translate.  Run the same exact/key-aware manual table used
@@ -446,9 +470,12 @@ public static class KnownUiFixes
 		foreach (LocRow row in rows)
 		{
 			if (knownFixKeys.Contains(row.Key)) continue;
-			if (string.IsNullOrEmpty(row.Translation) || string.Equals(row.Original, row.Translation, StringComparison.Ordinal)) continue;
-			if (!ProtectedFormat.HasSameProtectedTokens(row.Original, row.Translation)) continue;
-			fixes.Add(new FlatUiFix(row.Key, row.Original, row.Translation));
+			string target = row.Translation;
+			if (CharacterCreationRichTextKeys.Contains(row.Key))
+				target = GameRichTextSafe(target);
+			if (string.IsNullOrEmpty(target) || string.Equals(row.Original, target, StringComparison.Ordinal)) continue;
+			if (!ProtectedFormat.HasSameProtectedTokens(row.Original, target)) continue;
+			fixes.Add(new FlatUiFix(row.Key, row.Original, target));
 			knownFixKeys.Add(row.Key);
 		}
 		if (fixes.Count == 0) return payload;
@@ -458,7 +485,9 @@ public static class KnownUiFixes
 			if (!byKey.TryGetValue(fix.Key, out LocRow row))
 				throw new InvalidDataException("Doğrulanmış UI satırı bulunamadı: " + fix.Key);
 			bool sourceMatches = string.Equals(row.Original, fix.Source, StringComparison.Ordinal)
-				|| string.Equals(row.Original, fix.Target, StringComparison.Ordinal);
+				|| string.Equals(row.Original, fix.Target, StringComparison.Ordinal)
+				|| (CharacterCreationRichTextKeys.Contains(fix.Key)
+					&& string.Equals(GameRichTextSafe(row.Original), fix.Target, StringComparison.Ordinal));
 			if (!sourceMatches)
 			{
 				// A root build applies the automatic pass after semantic targets, but
@@ -467,11 +496,13 @@ public static class KnownUiFixes
 				// reviewed exact vocabulary independently resolves to this exact target;
 				// otherwise a source drift remains fail-closed.
 				string cleanTarget = ManualUiText.ExactForEnglish(row.Original);
+				if (CharacterCreationRichTextKeys.Contains(fix.Key))
+					cleanTarget = GameRichTextSafe(cleanTarget);
 				if (!string.Equals(cleanTarget, fix.Target, StringComparison.Ordinal)
 					|| !ProtectedFormat.HasSameProtectedTokens(row.Original, cleanTarget))
 					throw new InvalidDataException("UI satırı beklenmeyen kaynakla eşleşti: " + fix.Key);
 			}
-			if (string.Equals(row.Original, fix.Source, StringComparison.Ordinal)) changedKeys.Add(fix.Key);
+			if (!string.Equals(row.Original, fix.Target, StringComparison.Ordinal)) changedKeys.Add(fix.Key);
 			row.Translation = fix.Target;
 		}
 		if (changedKeys.Count == 0) return payload;
@@ -495,6 +526,15 @@ public static class KnownUiFixes
 				throw new InvalidDataException("UI tablosunda beklenmeyen satır değişti: " + rows[i].Key);
 		}
 		return rebuilt;
+	}
+
+	private static string GameRichTextSafe(string value)
+	{
+		if (string.IsNullOrEmpty(value)) return value;
+		return value
+			.Replace('ğ', 'g').Replace('Ğ', 'G')
+			.Replace('ı', 'i').Replace('İ', 'I')
+			.Replace('ş', 's').Replace('Ş', 'S');
 	}
 
 	// Empty-leading variants are deliberately absent from the heuristic catalog.

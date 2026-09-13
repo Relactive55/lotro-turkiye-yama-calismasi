@@ -82,12 +82,27 @@ internal static class DeveloperSafetyTests
 		byte[] fixedRaceFixture = KnownUiFixes.ApplyTranslatedPayload(unchecked((int)0x25004744u), raceUiFixture);
 		List<LocRow> raceRows = LocBin.Parse(fixedRaceFixture, unchecked((int)0x25004744u)).GetRows(unchecked((int)0x25004744u));
 		Check(raceRows.Count == 10
-			&& raceRows[0].Original.IndexOf("Günde altı doyurucu öğün", StringComparison.Ordinal) >= 0
+			&& raceRows[0].Original.IndexOf("Günde alti doyurucu ögün", StringComparison.Ordinal) >= 0
+			&& raceRows[0].Original.IndexOf("?", StringComparison.Ordinal) < 0
 			&& raceRows[1].Original == "Hobbit (Kadın)"
 			&& raceRows[4].Original == "Erkek hobbitler."
 			&& raceRows[6].Original == "Adlandırma Kuralları"
 			&& raceRows[9].Original == "Hobbit (Erkek)",
 			"character-creation race fallback rows are translated end-to-end");
+		passed++;
+		byte[] traitUiFixture = BuildFlatFixture(unchecked((int)0x25004780u), new[]
+		{
+			"Increased Morale Restoration- Men can be roused to action faster than the other races.  (heals heal for more on men)",
+			"Easily Inspired", "Increased Morale Restoration- Men are more quickly emboldened than the other races.",
+			"+5% Incoming Healing"
+		});
+		byte[] fixedTraitFixture = KnownUiFixes.ApplyTranslatedPayload(unchecked((int)0x25004780u), traitUiFixture);
+		List<LocRow> traitRows = LocBin.Parse(fixedTraitFixture, unchecked((int)0x25004780u)).GetRows(unchecked((int)0x25004780u));
+		Check(traitRows.Count == 4
+			&& traitRows[1].Original == "Kolay Ilham Alan"
+			&& traitRows[3].Original == "+5% Gelen Iyilestirme"
+			&& traitRows.TrueForAll(row => row.Original.IndexOf("?", StringComparison.Ordinal) < 0),
+			"character-creation racial trait rich text uses the game-font-safe fallback");
 		passed++;
 
 		List<CatalogRecord> oldRecords = new List<CatalogRecord>
@@ -460,13 +475,18 @@ internal static class DeveloperSafetyTests
 
 	private static byte[] BuildFlatFixture(string[] values)
 	{
+		return BuildFlatFixture(unchecked((int)0x25004744u), values);
+	}
+
+	private static byte[] BuildFlatFixture(int did, string[] values)
+	{
 		using (MemoryStream stream = new MemoryStream())
 		using (BinaryWriter writer = new BinaryWriter(stream, Encoding.Unicode, true))
 		{
 			// Keep one main string per record so the reviewed race rows at record
 			// indexes 0, 2, 4 and 7 are exercised with their real identities.
 			writer.Write(0);
-			writer.Write(unchecked((int)0x25004744u));
+			writer.Write(did);
 			writer.Write(1);
 			writer.Write(values.Length);
 			for (int i = 0; i < values.Length; i++)
