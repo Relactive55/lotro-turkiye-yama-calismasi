@@ -359,7 +359,7 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
                 token.ThrowIfCancellationRequested();
                 int wanted = (int)Math.Min(buffer.Length, remaining);
                 int read = input.Read(buffer, 0, wanted);
-                if (read != wanted) throw new UpdaterFailure("DOWNLOAD_VERIFICATION_FAILED", "KÄ±smi indirme dosyasÄ± eksik.");
+                if (read != wanted) throw new UpdaterFailure("DOWNLOAD_VERIFICATION_FAILED", "Kısmi indirme dosyası eksik.");
                 sha.TransformBlock(buffer, 0, read, null, 0);
                 remaining -= read;
             }
@@ -406,7 +406,7 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
 
 public sealed class LotroReleaseUpdater
 {
-    public const string CurrentUpdaterVersion = "1.4.0.0";
+    public const string CurrentUpdaterVersion = "1.5.0.0";
     public const int RollbackBackupRetention = 2;
     public const string Owner = "Relactive55";
     public const string Repository = "lotro-turkiye-yama-calismasi";
@@ -496,13 +496,13 @@ public sealed class LotroReleaseUpdater
         if (manifest == null || manifest.schema_version < 2) return;
         ReleaseAsset signatureAsset = FindUniqueAsset(release.assets, manifest.signature_asset_name);
         if (signatureAsset == null || signatureAsset.id < 1 || signatureAsset.size < 1 || string.IsNullOrWhiteSpace(signatureAsset.browser_download_url))
-            throw new UpdaterFailure("MANIFEST_SIGNATURE_MISSING", "Manifest imza varlÄ±ÄŸÄ± stable release iÃ§inde bulunamadÄ±.");
+            throw new UpdaterFailure("MANIFEST_SIGNATURE_MISSING", "Manifest imza varlığı stable release içinde bulunamadı.");
         FixedGitHubTransport.ValidateReleaseAssetUri(new Uri(signatureAsset.browser_download_url), release.tag_name, manifest.signature_asset_name);
         string signature = await _transport.GetStringAsync(new Uri(signatureAsset.browser_download_url), cancellationToken).ConfigureAwait(false);
         if (Encoding.UTF8.GetByteCount(signature) != signatureAsset.size
             || !ManifestSignatureVerifier.Verify(manifestJson, signature)
             || !string.Equals(manifest.signature_algorithm, ManifestSignatureVerifier.Algorithm, StringComparison.Ordinal))
-            throw new UpdaterFailure("MANIFEST_SIGNATURE_INVALID", "Release manifest imzasÄ± doÄŸrulanamadÄ±.");
+            throw new UpdaterFailure("MANIFEST_SIGNATURE_INVALID", "Release manifest imzası doğrulanamadı.");
     }
 
     public Task<DownloadResult> DownloadPatchAsync(StableRelease release, ReleaseManifest manifest, string cacheDirectory, CancellationToken cancellationToken)
@@ -1679,8 +1679,8 @@ public sealed class LotroReleaseUpdater
         }
         catch (FileNotFoundException) { return null; }
         catch (DirectoryNotFoundException) { return null; }
-        catch (UnauthorizedAccessException ex) { throw new UpdaterFailure("STATE_IO_FAILED", "Kurulu yama state dosyasÄ± okunamadÄ±: " + ex.Message); }
-        catch (IOException ex) { throw new UpdaterFailure("STATE_IO_FAILED", "Kurulu yama state dosyasÄ± okunamadÄ±: " + ex.Message); }
+        catch (UnauthorizedAccessException ex) { throw new UpdaterFailure("STATE_IO_FAILED", "Kurulu yama state dosyası okunamadı: " + ex.Message); }
+        catch (IOException ex) { throw new UpdaterFailure("STATE_IO_FAILED", "Kurulu yama state dosyası okunamadı: " + ex.Message); }
     }
     private InstalledPatchState ParseState(string text) { try { return string.IsNullOrWhiteSpace(text) ? null : _json.Deserialize<InstalledPatchState>(text); } catch { throw new UpdaterFailure("STATE_INVALID", "installed_patch.json bozuk."); } }
 
@@ -1722,7 +1722,7 @@ public static class ManifestValidator
     public static void EnsureUpdaterSupported(ReleaseManifest manifest)
     {
         if (manifest == null || string.IsNullOrWhiteSpace(manifest.minimum_updater_version))
-            throw new UpdaterFailure("MANIFEST_INVALID", "Manifest minimum_updater_version alanÄ± zorunludur.");
+            throw new UpdaterFailure("MANIFEST_INVALID", "Manifest minimum_updater_version alanı zorunludur.");
         if (!Version.TryParse(manifest.minimum_updater_version, out Version minimum))
             throw new UpdaterFailure("MANIFEST_INVALID", "Gerekli kurulum aracı sürümü geçersiz.");
         if (minimum > new Version(LotroReleaseUpdater.CurrentUpdaterVersion))

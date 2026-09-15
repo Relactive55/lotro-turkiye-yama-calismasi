@@ -22,7 +22,7 @@ uygular; tam DAT'ı yeniden dağıtmaz.
 ## Güncel programı indir
 
 Tam katalog taramasıyla arayüz, yetenek/eşya ve istatistik düzeltmeleri: [2026.09.12.1 notları](docs/RELEASE-NOTES-2026.09.12.1.md).
-Bu paket için kurulum aracı `1.4.0.0` gerekir.
+Bu paket için kurulum aracı `1.5.0.0` gerekir.
 
 [**LOTR TÜRKÇE YAMA GitHub Releases sayfasını aç (Windows)**](https://github.com/Relactive55/lotro-turkiye-yama-calismasi/releases/latest)
 

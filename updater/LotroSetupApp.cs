@@ -316,6 +316,6 @@ internal sealed class SetupForm : Form
         }
         catch (FileNotFoundException) { return null; }
         catch (DirectoryNotFoundException) { return null; }
-        catch (Exception ex) { throw new UpdaterFailure("STATE_IO_FAILED", "Kurulu yama state dosyasÄ± okunamadÄ±: " + ex.Message); }
+        catch (Exception ex) { throw new UpdaterFailure("STATE_IO_FAILED", "Kurulu yama state dosyası okunamadı: " + ex.Message); }
     }
 }
