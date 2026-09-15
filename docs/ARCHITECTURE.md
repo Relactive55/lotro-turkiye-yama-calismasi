@@ -1,11 +1,13 @@
 # Mimari kararlar
 
-Yayın modeli eksiksiz DAT'tır. Her `full_dat` paketi belirli bir temiz LOTRO
-sürümüne uygulanmış bütün Türkçe çeviriyi taşır. Updater mevcut dosyanın
-geçmişine bakarak katman seçmez; tam paketi indirir, hash'ini doğrular ve
-oyun DAT'ını atomik olarak değiştirir. Semantic kataloglar geliştirici
-doğrulaması için kullanılabilir, ancak son kullanıcı release'ine katman olarak
-girmez.
+> 2026-09-15: Public dağıtımın varsayılanı imzalı semantic patch + kullanıcının
+> resmî DAT'ıdır. Full-DAT yalnız açık hukukî onayla legacy seçenek olarak kalır.
+
+Yayın modeli imzalı semantic patch'tir. Her paket belirli bir temiz LOTRO
+sürümüne ait kayıt kimliklerini taşır; updater imzayı ve temel DAT kimliğini
+doğruladıktan sonra değişiklikleri kullanıcının resmî DAT'ına uygular. Semantic
+kataloglar hem geliştirici hem son kullanıcı akışının güvenli sözleşmesidir;
+full DAT yalnız hukukî onayla açılan legacy kanaldır.
 
 ## Roller
 
@@ -29,12 +31,12 @@ Başarısızlıkta canlı dosya ve `installed_patch.json` geri yüklenir.
 
 ## Semantic patch sözleşmesi
 
-`semantic_delta_patch` JSON satırı raw English taşımaz. Her satır `entry_identity`, `dat_key`, DID/koordinatlar, `source_digest`, `token_signature`, `target`, `translation_status`, engine/version, classification ve `critical_ui` alanlarını taşır. `SemanticPatchBuilder` yalnız validation geçen `HUMAN_APPROVED`, `TM_REUSED`, `GLOSSARY` veya doğrulanmış `MACHINE_TRANSLATED` kayıtlarını deterministic sırada üretir. `SemanticPatchApplier` gerçek DAT yazıcısından bağımsız olarak source-digest, token ve critical-UI admission testini yapar; gerçek binary writer ayrı bir release kapısıdır.
+`semantic_delta_patch` JSON satırı raw English taşımaz. Her satır `entry_identity`, `dat_key`, DID/koordinatlar, `source_digest`, `token_signature`, `target`, `translation_status`, engine/version, classification ve `critical_ui` alanlarını taşır. `SemanticPatchBuilder` yalnız validation geçen `HUMAN_APPROVED`, `TM_REUSED` ve `GLOSSARY` kayıtlarını deterministic sırada üretir; `MACHINE_TRANSLATED` üretim paketine giremez. `SemanticPatchApplier` gerçek DAT yazıcısından bağımsız olarak source-digest, token ve critical-UI admission testini yapar; gerçek binary writer ayrı bir release kapısıdır.
 
 ## Yayın ayrımı
 
-Release (`manifest.json` + tam DAT asset'i) ile **LOTR TÜRKÇE YAMA** kurulum
-varlığı aynı stable release içinde doğrulanır. Tam DAT değiştiğinde installer
-yeniden derlenmek zorunda değildir; manifest yeni asset ID/size/SHA-256 taşır.
-Semantic paketler eski kurulumlarla uyumluluk için okunabilir olsa da yeni
-release üretim betiği onları yayımlamaz.
+Release (`manifest.json` + semantic asset + `manifest.sig`) ile **LOTR TÜRKÇE
+YAMA** kurulum varlığı aynı stable release içinde doğrulanır. Semantic paket
+değiştiğinde installer yeniden derlenmek zorunda değildir; manifest yeni asset
+ID/size/SHA-256 taşır. Full DAT geçmiş kurulumlarla uyumluluk için okunabilir,
+ancak yeni üretim betiği hukukî bayrak olmadan onu yayımlamaz.

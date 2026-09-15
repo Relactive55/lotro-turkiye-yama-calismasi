@@ -22,8 +22,7 @@ public static class TranslationStatuses
     {
         return string.Equals(value, HumanApproved, StringComparison.Ordinal)
             || string.Equals(value, TmReused, StringComparison.Ordinal)
-            || string.Equals(value, Glossary, StringComparison.Ordinal)
-            || string.Equals(value, MachineTranslated, StringComparison.Ordinal);
+            || string.Equals(value, Glossary, StringComparison.Ordinal);
     }
 }
 

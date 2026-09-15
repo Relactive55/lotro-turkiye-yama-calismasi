@@ -57,7 +57,7 @@ internal static class UpdaterBehaviorTests
             schema_version = 1, patch_version = "2026.09.05.test", release_tag = "patch-2026.09.05-test",
             release_id = 42, asset_id = 2, asset_name = patchName, asset_size = patch.Length,
             asset_sha256 = patchHash, source_dat_sha256 = cleanHash, source_dat_size = clean.Length,
-            game_version = "fixture", asset_kind = "full_dat"
+            game_version = "fixture", asset_kind = "full_dat", minimum_updater_version = LotroReleaseUpdater.CurrentUpdaterVersion
         };
         StableRelease release = new StableRelease
         {
@@ -208,6 +208,7 @@ internal static class UpdaterBehaviorTests
             candidate_catalog_sha256 = semanticCandidateCatalogHash,
             game_version = "fixture",
             asset_kind = LotroReleaseUpdater.SemanticPatchKind,
+            minimum_updater_version = LotroReleaseUpdater.CurrentUpdaterVersion,
             safe_translated_count = 1,
             skipped_changed_count = 0,
             critical_review_required_count = 0
@@ -461,6 +462,7 @@ internal static class UpdaterBehaviorTests
                         candidate_dat_size = preview.DatSize,
                         game_version = "fixture-3",
                         asset_kind = LotroReleaseUpdater.SemanticPatchKind,
+                        minimum_updater_version = LotroReleaseUpdater.CurrentUpdaterVersion,
                         base_patch_version = semanticManifest.patch_version,
                         base_release_tag = semanticManifest.release_tag,
                         base_release_id = semanticRelease.id,
@@ -617,6 +619,7 @@ internal static class UpdaterBehaviorTests
                     candidate_catalog_sha256 = semanticCandidateCatalogHash,
                     game_version = "fixture-2",
                     asset_kind = LotroReleaseUpdater.SemanticPatchKind,
+                    minimum_updater_version = LotroReleaseUpdater.CurrentUpdaterVersion,
                     safe_translated_count = 1
                 };
                 ExpectCancellationAtProgress(semanticUpdater, semanticGame, nextPatchPath, nextManifest,

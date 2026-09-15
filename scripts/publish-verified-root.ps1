@@ -5,12 +5,14 @@ param(
     [Parameter(Mandatory)][string]$NotesFile,
     [Parameter(Mandatory)][ValidatePattern('^[a-fA-F0-9]{40}$')][string]$CommitSha,
     [string]$GhPath = 'gh',
+    [string]$SigningKeyXmlPath = $env:LOTRO_MANIFEST_SIGNING_KEY_XML,
     [switch]$Publish,
-    [switch]$ValidateOnly
+    [switch]$ValidateOnly,
+    [switch]$AllowFullDatDistribution
 )
 
-# Only the complete DAT, updater and manifest are uploaded.  The semantic
-# review artifact remains local evidence and is never shipped to players.
+# The default publication is semantic asset + updater + manifest/signature.
+# Full DAT remains an explicit, legally-approved legacy mode.
 # A failed transfer leaves a draft. Re-running resumes only matching drafts.
 $ErrorActionPreference = 'Stop'
 $repository = 'Relactive55/lotro-turkiye-yama-calismasi'
@@ -23,6 +25,14 @@ $json = [System.Web.Script.Serialization.JavaScriptSerializer]::new()
 $json.MaxJsonLength = [int]::MaxValue
 $manifest = $json.Deserialize([IO.File]::ReadAllText((Join-Path $directory 'manifest-template.json')), [LotroTurkceYama.Setup.ReleaseManifest])
 $proof = Get-Content -LiteralPath (Join-Path $directory 'verification.json') -Raw -Encoding UTF8 | ConvertFrom-Json
+if (!$AllowFullDatDistribution) {
+    if ([string]::IsNullOrWhiteSpace($SigningKeyXmlPath) -or !(Test-Path -LiteralPath $SigningKeyXmlPath)) {
+        throw 'Semantic release requires an offline RSA signing key. Pass -SigningKeyXmlPath or LOTRO_MANIFEST_SIGNING_KEY_XML.'
+    }
+    $manifest.schema_version = 2
+    $manifest.signature_asset_name = 'manifest.sig'
+    $manifest.signature_algorithm = 'RSA-SHA256'
+}
 # Earlier producers validated a four-byte-shifted view with the same buggy
 # reader/writer. Matching hashes alone cannot rehabilitate those candidates.
 if ($manifest.patch_generator_version -cne 'semantic-generator-v4-native-framing' -or
@@ -36,10 +46,14 @@ if ($manifest.release_id -ne 0 -or $manifest.asset_id -ne 0 -or $manifest.patch_
     $proof.candidate_catalog_sha256 -ine $manifest.candidate_catalog_sha256 -or $proof.candidate_size -ne $manifest.candidate_dat_size) {
     throw 'Verified root evidence does not agree with its unfinished template.'
 }
+if (!$AllowFullDatDistribution -and $manifest.asset_kind -ne 'semantic_delta_patch') {
+    throw 'Full proprietary DAT publication is blocked by policy. Use a semantic asset or pass -AllowFullDatDistribution only after legal approval.'
+}
 if ($manifest.release_tag -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$' -or
     $manifest.asset_name -cnotmatch '^lotro-turkce-yama-[A-Za-z0-9][A-Za-z0-9._-]{0,110}$' -or
-    !($manifest.asset_name.EndsWith('.semantic.json',[StringComparison]::Ordinal) -or
-      $manifest.asset_name.EndsWith('.semantic.json.gz',[StringComparison]::Ordinal))) { throw 'Unsafe semantic asset name.' }
+    (!$AllowFullDatDistribution -and !($manifest.asset_name.EndsWith('.semantic.json',[StringComparison]::Ordinal) -or
+      $manifest.asset_name.EndsWith('.semantic.json.gz',[StringComparison]::Ordinal))) -or
+    ($AllowFullDatDistribution -and !$manifest.asset_name.EndsWith('.dat',[StringComparison]::Ordinal))) { throw 'Unsafe release asset name.' }
 $asset = Join-Path $directory $manifest.asset_name
 $candidate = Join-Path $directory 'private-candidate.dat'
 if ((Get-Item -LiteralPath $asset).Length -ne $manifest.asset_size -or
@@ -47,21 +61,27 @@ if ((Get-Item -LiteralPath $asset).Length -ne $manifest.asset_size -or
     (Get-Item -LiteralPath $candidate).Length -ne $manifest.candidate_dat_size -or
     (Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash -ine $manifest.candidate_dat_sha256) { throw 'Local verified output changed.' }
 
-# The generator still keeps the reviewed semantic catalog as private audit
-# evidence, but the public release is always the complete translated DAT.  A
-# fresh asset name/hash is bound to the candidate after all local evidence has
-# been checked; no semantic layer can accidentally be uploaded.
-$candidateInfo = Get-Item -LiteralPath $candidate
-$candidateHash = (Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash.ToLowerInvariant()
-$manifest.asset_kind = 'full_dat'
-$manifest.asset_name = 'lotro-turkce-yama-' + $manifest.patch_version + '.dat'
-$manifest.asset_size = [long]$candidateInfo.Length
-$manifest.asset_sha256 = $candidateHash
-$manifest.candidate_dat_sha256 = $candidateHash
-$manifest.candidate_dat_size = [long]$candidateInfo.Length
+if ($AllowFullDatDistribution) {
+    # Legacy full-DAT mode is opt-in because it redistributes proprietary
+    # game data. The semantic package is the default public distribution.
+    $candidateInfo = Get-Item -LiteralPath $candidate
+    $candidateHash = (Get-FileHash -LiteralPath $candidate -Algorithm SHA256).Hash.ToLowerInvariant()
+    $manifest.asset_kind = 'full_dat'
+    $manifest.asset_name = 'lotro-turkce-yama-' + $manifest.patch_version + '.dat'
+    $manifest.asset_size = [long]$candidateInfo.Length
+    $manifest.asset_sha256 = $candidateHash
+    $manifest.candidate_dat_sha256 = $candidateHash
+    $manifest.candidate_dat_size = [long]$candidateInfo.Length
+}
 $manifest.minimum_updater_version = [LotroTurkceYama.Setup.LotroReleaseUpdater]::CurrentUpdaterVersion
 if ([Version][Diagnostics.FileVersionInfo]::GetVersionInfo($exe).FileVersion -lt [Version]$manifest.minimum_updater_version) {
     throw 'Updater executable is older than the manifest requirement.'
+}
+if ($Publish -and !$AllowFullDatDistribution) {
+    $signature = Get-AuthenticodeSignature -FilePath $exe
+    if ($signature.Status -ne 'Valid') {
+        throw "Semantic production release requires a valid Authenticode signature: $($signature.Status) $($signature.StatusMessage)"
+    }
 }
 # Validate all non-binding runtime fields before any remote write. These local
 # fixture IDs are never saved or used to publish; actual IDs are bound below.
@@ -130,11 +150,12 @@ function Ensure-Asset([string]$Path, [string]$Name, [string]$ExpectedSha, [long]
     }
     return $matches[0]
 }
-$fullDat = Ensure-Asset $candidate $manifest.asset_name $manifest.asset_sha256 $manifest.asset_size
+$publicAssetPath = if ($AllowFullDatDistribution) { $candidate } else { $asset }
+$publicAsset = Ensure-Asset $publicAssetPath $manifest.asset_name $manifest.asset_sha256 $manifest.asset_size
 $updaterName = 'LOTRO_Turkce_Yama_Setup.exe'
 [void](Ensure-Asset $exe $updaterName (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash (Get-Item -LiteralPath $exe).Length)
 $manifest.release_id = $release.id
-$manifest.asset_id = $fullDat.id
+$manifest.asset_id = $publicAsset.id
 $releaseContract = [LotroTurkceYama.Setup.StableRelease]::new()
 $releaseContract.id = $release.id
 $releaseContract.tag_name = $tag
@@ -143,10 +164,27 @@ $manifestAsset.id = -1
 [LotroTurkceYama.Setup.ManifestValidator]::Validate($manifest,$releaseContract,$manifestAsset)
 $manifestPath = Join-Path $directory 'manifest.json'
 [IO.File]::WriteAllText($manifestPath,$json.Serialize($manifest),[Text.UTF8Encoding]::new($false))
+[string]$signaturePath = $null
+if ($manifest.schema_version -ge 2) {
+    $signaturePath = Join-Path $directory 'manifest.sig'
+    $rsa = New-Object System.Security.Cryptography.RSACryptoServiceProvider
+    try {
+        $rsa.FromXmlString([IO.File]::ReadAllText($SigningKeyXmlPath))
+        $signature = $rsa.SignData([IO.File]::ReadAllBytes($manifestPath), [Security.Cryptography.CryptoConfig]::MapNameToOID('SHA256'))
+        [IO.File]::WriteAllText($signaturePath, [Convert]::ToBase64String($signature) + "`n", [Text.UTF8Encoding]::new($false))
+    } finally { $rsa.Dispose() }
+}
 [void](Ensure-Asset $manifestPath 'manifest.json' (Get-FileHash -LiteralPath $manifestPath -Algorithm SHA256).Hash (Get-Item -LiteralPath $manifestPath).Length)
+$signatureAssetName = $null
+if ($signaturePath) {
+    $signatureAssetName = 'manifest.sig'
+    [void](Ensure-Asset $signaturePath $signatureAssetName (Get-FileHash -LiteralPath $signaturePath -Algorithm SHA256).Hash (Get-Item -LiteralPath $signaturePath).Length)
+}
 $final = Invoke-GhJson @('api',"repos/$repository/releases/$($release.id)")
 $allowed = @($manifest.asset_name,$updaterName,'manifest.json')
-if (@($final.assets).Count -ne 3 -or @($final.assets | Where-Object { $_.name -cnotin $allowed }).Count) {
+if ($signatureAssetName) { $allowed += $signatureAssetName }
+$expectedAssetCount = $allowed.Count
+if (@($final.assets).Count -ne $expectedAssetCount -or @($final.assets | Where-Object { $_.name -cnotin $allowed }).Count) {
     throw 'Unexpected release assets; refuse publication.'
 }
 if ($Publish) {
@@ -155,4 +193,4 @@ if ($Publish) {
 }
 $confirmed = Invoke-GhJson @('api',"repos/$repository/releases/$($release.id)")
 if ($Publish -and $confirmed.draft) { throw 'Publication was not confirmed.' }
-"VERIFIED_RELEASE|url=$($confirmed.html_url)|draft=$($confirmed.draft)|assets=3"
+"VERIFIED_RELEASE|url=$($confirmed.html_url)|draft=$($confirmed.draft)|assets=$expectedAssetCount"

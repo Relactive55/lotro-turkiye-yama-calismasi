@@ -1,26 +1,29 @@
 # Release modeli
 
-## Eksiksiz DAT yayınları
+## Yeni güvenlik kuralı
 
-Her kararlı yayın, güncel oyun sürümüne uygulanmış tüm Türkçe çeviriyi içeren
-tek bir `full_dat` varlığıdır. Güncelleme alan program bu dosyayı baştan
-indirir, SHA-256 ile doğrular, mevcut `client_local_English.dat` dosyasını
-yedekler ve tam dosyayı atomik olarak yerleştirir. Mevcut dosyanın daha önce
-Türkçe yamalanmış olması veya launcher tarafından değiştirilmiş olması yayın
-kurulumunu engellemez; yeni tam DAT eski katmanların üzerine uygulanmaz.
+Public release akışının varsayılanı imzalı semantic pakettir; kurulum aracı
+kullanıcının resmî DAT'ı üzerinde yerel olarak çalışır. Tam DAT yeniden
+dağıtımı hukukî onay olmadan yayın betiği tarafından engellenir.
+
+## Semantic patch yayınları
+
+Her kararlı yayın, güncel oyun sürümüne ait imzalı bir `semantic_delta_patch`
+varlığıdır. Updater manifest imzasını ve SHA-256'yı doğrular, kullanıcının resmî
+`client_local_English.dat` dosyasını yedekler ve semantic değişiklikleri atomik
+olarak uygular. Temel DAT kimliği uyuşmuyorsa yayın fail-closed durur.
 
 İki ayrı kanal planlanır:
 
-- Patch release: manifest ve doğrulanmış `full_dat` asset'i.
+- Patch release: manifest, detached `manifest.sig` ve doğrulanmış semantic asset.
 - Installer release: **LOTR TÜRKÇE YAMA** kurulum aracının güncellemesi.
 
 Patch release, installer'ın yeniden build edilmesini gerektirmemelidir. Her patch yeni immutable tag, release ID, asset ID, boyut ve SHA-256 alır. Draft/prerelease release'ler updater tarafından reddedilir.
 
-Tam DAT asset'i public release'e konur; kullanıcı uygulaması yalnız bu eksiksiz
-paketi kullanır. Manifest kaynak DAT kimliğini, tam aday DAT boyut/hash'ini,
-güvenli/atlanan/kritik sayaçlarını ve üretici/sağlayıcı sürümünü taşır.
-Güncel 1,9 GB resmî DAT kopyasındaki tam yazma ve yeniden okuma testi geçmeden
-yayın yapılmaz. Eski semantic manifestleri okuyabilen uyumluluk kodu yeni
-yayınlarda kullanılmaz.
+Semantic asset public release'e konur; kullanıcı uygulaması yalnız imzası
+doğrulanmış bu paketi kullanır. Manifest kaynak DAT kimliğini, asset boyut/hash'ini,
+güvenli/atlanan/kritik sayaçlarını ve üretici/sağlayıcı sürümünü taşır. Eski
+full-DAT manifestleri geçiş uyumluluğu için okunabilir; yeni üretim betiği
+`-AllowFullDatDistribution` olmadan bunları yayımlamaz.
 
 Sürüm kapıları: kaynak temel doğrulaması, deterministik paket üretimi, token/kalite koruması, yanlış-temel/tahrifat/geri alma testleri, DAT adayının tam yeniden okunması, kritik inceleme sayısının sıfır olması ve lisans incelemesi. Yayın işi hazır olmadan `contents: write` izni verilmez.

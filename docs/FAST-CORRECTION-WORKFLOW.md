@@ -138,7 +138,7 @@ bir ikili yan dosya, doğrulanmış güncel JSONL'den `MaterializeFastRecords` i
 yerel olarak yeniden üretilebilir.
 # Dağıtım notu
 
-Bu hızlı düzeltme akışı geliştirici doğrulaması ve geçmiş semantic paketler
+Bu hızlı düzeltme akışı geliştirici doğrulaması ve imzalı semantic paketler
 içindir. Son kullanıcıya yayımlanan her güncelleme, bu kayıtlar yeniden
-oluşturularak eksiksiz `full_dat` olarak paketlenir; semantic/delta katmanı
-paylaşılmaz.
+oluşturularak `semantic_delta_patch` olarak paketlenir ve mevcut resmî DAT'a
+uygulanır. Full DAT yalnız hukukî onaylı legacy kanaldır.

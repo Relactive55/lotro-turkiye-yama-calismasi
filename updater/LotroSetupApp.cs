@@ -103,8 +103,6 @@ internal sealed class SetupForm : Form
             {
                 LotroReleaseUpdater updater = new LotroReleaseUpdater(transport);
                 Tuple<StableRelease, ReleaseManifest> available = await updater.CheckLatestAsync(CancellationToken.None);
-                if (available.Item2 == null || available.Item2.asset_kind != "full_dat")
-                    throw new UpdaterFailure("FULL_DAT_REQUIRED", "Bu sürüm yalnızca eksiksiz Türkçe DAT paketi kullanır; yama katmanı yayınlanmıyor.");
                 _available = available;
             }
             if (IsDisposed) return;
@@ -177,11 +175,6 @@ internal sealed class SetupForm : Form
             await CheckAsync();
             return;
         }
-        if (_available.Item2 == null || _available.Item2.asset_kind != "full_dat")
-        {
-            MessageBox.Show(this, "Bu sürüm yalnızca eksiksiz Türkçe DAT paketi kullanır; yama katmanı yayınlanmıyor.", LotroSetupApp.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
-            return;
-        }
         _install.Enabled = false;
         _progress.Value = 0;
         _progress.Style = ProgressBarStyle.Continuous;
@@ -208,7 +201,9 @@ internal sealed class SetupForm : Form
                 string statePath = Path.Combine(gameDir, "installed_patch.json");
                 InstalledPatchState installedState = ReadState(statePath);
                 if (installedState != null && !string.Equals(installedState.game_dir, gameDir, StringComparison.OrdinalIgnoreCase)) installedState = null;
-                _status.Text = "Tam Türkçe DAT paketi doğrulanıyor...";
+                _status.Text = _available.Item2.asset_kind == LotroReleaseUpdater.SemanticPatchKind
+                    ? "İmzalı çeviri paketi doğrulanıyor..."
+                    : "Tam Türkçe DAT paketi doğrulanıyor...";
                 _progress.Style = ProgressBarStyle.Marquee;
                 _progress.MarqueeAnimationSpeed = 24;
                 _install.Text = "İptal";
@@ -304,8 +299,15 @@ internal sealed class SetupForm : Form
 
     private static InstalledPatchState ReadState(string path)
     {
-        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path)) return null;
-        try { return new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<InstalledPatchState>(File.ReadAllText(path)); }
-        catch { return null; }
+        if (string.IsNullOrWhiteSpace(path)) return null;
+        try
+        {
+            using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (StreamReader reader = new StreamReader(stream))
+                return new System.Web.Script.Serialization.JavaScriptSerializer().Deserialize<InstalledPatchState>(reader.ReadToEnd());
+        }
+        catch (FileNotFoundException) { return null; }
+        catch (DirectoryNotFoundException) { return null; }
+        catch (Exception ex) { throw new UpdaterFailure("STATE_IO_FAILED", "Kurulu yama state dosyasÄ± okunamadÄ±: " + ex.Message); }
     }
 }

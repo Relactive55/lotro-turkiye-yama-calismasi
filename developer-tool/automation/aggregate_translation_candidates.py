@@ -132,6 +132,10 @@ def _validate_identity(row: dict, origin: str, ordinal: int) -> None:
         raise ValueError(f"empty target in {origin} row {ordinal}: {key!r}")
     if "\x00" in row["target"]:
         raise ValueError(f"NUL byte in target in {origin} row {ordinal}: {key!r}")
+    if row["translation_status"] == "MACHINE_TRANSLATED":
+        raise ValueError(
+            f"machine translation requires human approval in {origin} row {ordinal}: {key!r}"
+        )
     if row["translation_status"] in {"UNTRANSLATED", "REVIEW_REQUIRED"}:
         raise ValueError(
             f"unapproved status in {origin} row {ordinal}: {row['translation_status']} {key!r}"

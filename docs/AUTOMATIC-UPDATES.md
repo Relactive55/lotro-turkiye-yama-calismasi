@@ -23,12 +23,11 @@ getirildiği için Steam istemcisi zorunlu değildir. `Game.Version` yine yalnı
    Türkçe satırlar otomatik yayımdan çıkar ve İngilizce fallback olarak kalır.
 5. Biçim belirteçleri, token sırası, kritik arayüz, katalog bütünlüğü ve DAT
    round-trip kapıları geçmeden release oluşmaz.
-6. İnsan onayından sonra manifest, eksiksiz Türkçe DAT ve gerekiyorsa ayrı setup
-   sürümü GitHub Release'e konur. Semantic/delta asset son kullanıcıya
-   yayımlanmaz.
-7. Kullanıcının setup uygulaması stable release'i kontrol eder; tam DAT boyutu
-   ve SHA-256 doğrulandıktan sonra mevcut oyun DAT'ını backup/rollback
-   korumasıyla tamamen değiştirir.
+6. İnsan onayından sonra manifest, imzalı semantic paket ve gerekiyorsa ayrı
+   setup sürümü GitHub Release'e konur.
+7. Kullanıcının setup uygulaması stable release'i kontrol eder; detached imza,
+   paket boyutu ve SHA-256 doğrulandıktan sonra semantic değişiklikleri mevcut
+   oyun DAT'ına backup/rollback korumasıyla uygular.
 
 ## Kaynak ve otomatik çeviri
 

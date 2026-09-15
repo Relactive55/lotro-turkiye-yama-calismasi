@@ -1,5 +1,12 @@
 # Uygulama durumu — 2026-09-06
 
+## 2026-09-15 denetim düzeltmeleri
+
+- Production adayları artık yalnız insan onaylı/TM/glossary statülerinden oluşabilir; `MACHINE_TRANSLATED` fail-closed reddedilir.
+- Updater `.part` indirmeleri korur ve HTTP Range ile devam eder; full-DAT akışında rollback yedekleri en fazla iki dosya tutulur.
+- State okuma ve ProcessGuard erişim hataları sessizce yok sayılmaz; manifestte `minimum_updater_version` zorunludur.
+- Yeni semantic yayınlar schema v2 detached RSA-SHA256 imzası ister; tam DAT yayın betiği hukukî onay anahtarı olmadan engellenir.
+
 ## Doğrulanmış kaynak
 
 - resmî İngilizce DAT: `1,894,213,416` bayt
@@ -8,13 +15,13 @@
 - yerelleştirme kaydı: `825,136`
 - parse hatası: `0`
 
-## Tam DAT yayın modeli
+## Semantic yayın modeli
 
 Geliştirici tarafında semantic doğrulama ve aday üretimi korunur; son kullanıcı
-release'i artık her sürümde eksiksiz `full_dat` asset'i taşır. Updater mevcut
-DAT'ı tanımaya çalışmadan tam dosyayı doğrular, yedekler ve atomik olarak
-yerleştirir. Geçmiş semantic manifestleri okuyabilen kod yalnız geçiş uyumluluğu
-içindir.
+release'i imzalı `semantic_delta_patch` asset'i taşır. Updater manifest imzasını,
+temel DAT kimliğini ve paket hash'ini doğrular; ardından değişiklikleri yerel
+resmî DAT'a uygular. Geçmiş full-DAT manifestleri yalnız geçiş uyumluluğu için
+okunabilir; yeni üretim betiği hukukî bayrak olmadan bunları yayımlamaz.
 
 - güvenli Türkçe kayıt: `645,004`
 - dokunulan DID/blok: `231,463`
@@ -64,5 +71,6 @@ GitHub-hosted bir makine oyunun güncel proprietary DAT dosyasına kendiliğinde
 ## Public dağıtım sınırı
 
 Kaynak Git deposuna tam DAT, RAR, ham İngilizce katalog, özel çeviri havuzu,
-model ağırlığı veya oyuna ait native DLL konmaz. Doğrulanmış tam DAT yalnız
-GitHub Release asset'i olarak; setup ve manifest ile birlikte yayımlanır.
+model ağırlığı veya oyuna ait native DLL konmaz. Yeni public release'lerde
+yalnız imzalı semantic asset, setup ve manifest yayımlanır; full DAT legacy
+varlığı hukukî onay olmadan üretilmez.

@@ -37,6 +37,15 @@ jobs:
         run: |
           Get-Content -LiteralPath ./schemas/semantic-translation-patch.schema.json -Raw | ConvertFrom-Json | Out-Null
           Get-Content -LiteralPath ./schemas/source-bundle.schema.json -Raw | ConvertFrom-Json | Out-Null
+      - name: Enforce private release QA summaries when present
+        shell: pwsh
+        run: |
+          $summaries = @(Get-ChildItem -Path . -Recurse -File -Filter '*release*qa*.json')
+          foreach ($summary in $summaries) {
+            $output = Join-Path $summary.DirectoryName ($summary.BaseName + '.verified.json')
+            python ./developer-tool/automation/validate_release_qa.py --summary $summary.FullName --output $output
+          }
+          if ($summaries.Count -eq 0) { Write-Output 'No release QA summary in public repository; private release gate remains required.' }
 
   # This validation workflow validates the provider-independent contract without
   # proprietary game data. Real source refresh and release generation run only

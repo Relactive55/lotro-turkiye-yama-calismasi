@@ -512,9 +512,19 @@ def load_context(path: str | None) -> tuple[dict[str, str], dict[str, str], dict
 
 def process(row: dict, provider: TranslationProvider, approved: dict[str, str], tm: dict[str, str], glossary: dict[str, str], protected_names: list[str], generated: str | None = None, provider_error: str | None = None) -> dict:
     source = str(row.get("english", ""))
-    exact_glossary = glossary.get(source)
-    target = approved.get(source) or tm.get(source) or exact_glossary
-    status = "HUMAN_APPROVED" if source in approved else ("TM_REUSED" if source in tm else ("GLOSSARY" if exact_glossary else None))
+    # Context can be keyed by the complete DAT key (entry identity + field)
+    # or, for legacy pools, by source text.  Prefer the scoped key so one
+    # English word can legitimately have different UI translations.
+    scoped_key = str(row.get("dat_key") or row.get("key") or "")
+    def lookup(mapping: dict[str, str]) -> tuple[str | None, bool]:
+        if scoped_key and scoped_key in mapping:
+            return mapping[scoped_key], True
+        return mapping.get(source), source in mapping
+    approved_target, approved_found = lookup(approved)
+    tm_target, tm_found = lookup(tm)
+    glossary_target, glossary_found = lookup(glossary)
+    target = approved_target or tm_target or glossary_target
+    status = "HUMAN_APPROVED" if approved_found else ("TM_REUSED" if tm_found else ("GLOSSARY" if glossary_found else None))
     engine = "approved" if status == "HUMAN_APPROVED" else ("tm" if status == "TM_REUSED" else ("glossary" if status == "GLOSSARY" else "NONE"))
     version = "curated" if status else "local"
     problem = ""

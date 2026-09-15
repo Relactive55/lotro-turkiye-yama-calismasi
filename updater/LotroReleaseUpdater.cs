@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -61,6 +62,8 @@ public sealed class ReleaseManifest
     public int safe_translated_count { get; set; }
     public int skipped_changed_count { get; set; }
     public int critical_review_required_count { get; set; }
+    public string signature_asset_name { get; set; }
+    public string signature_algorithm { get; set; }
 }
 
 public sealed class InstalledPatchState
@@ -147,7 +150,10 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
     {
         HttpClientHandler handler = new HttpClientHandler { AllowAutoRedirect = false };
         _client = new HttpClient(handler, true);
-        _client.Timeout = TimeSpan.FromMinutes(30);
+        // Full DAT files are close to 2 GB. A fixed wall-clock timeout makes
+        // a healthy slow connection lose all progress; cancellation is owned
+        // by the UI and the transport resumes a preserved .part file.
+        _client.Timeout = Timeout.InfiniteTimeSpan;
         _client.DefaultRequestHeaders.UserAgent.ParseAdd("LOTR-Turkce-Yama/1");
         _client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
     }
@@ -170,24 +176,44 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
     public async Task<DownloadResult> DownloadAsync(Uri uri, string partPath, long expectedSize, string expectedSha256, IProgress<DownloadProgress> progress, CancellationToken cancellationToken)
     {
         if (expectedSize < 1) throw new UpdaterFailure("DOWNLOAD_VERIFICATION_FAILED", "Beklenen asset boyutu geçersiz.");
-        EnsureDiskSpace(partPath, expectedSize);
         string directory = Path.GetDirectoryName(partPath);
         if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
+        long resumeAt = PrepareResumePart(partPath, expectedSize, expectedSha256, uri);
+        EnsureDiskSpace(partPath, Math.Max(0L, expectedSize - resumeAt));
         try
         {
-            using (HttpResponseMessage response = await SendAllowedAsync(uri, cancellationToken).ConfigureAwait(false))
+            using (HttpResponseMessage response = await SendAllowedAsync(uri, cancellationToken, resumeAt).ConfigureAwait(false))
             {
+                if (resumeAt > 0 && (int)response.StatusCode == 416)
+                {
+                    response.Dispose();
+                    if (new FileInfo(partPath).Length == expectedSize
+                        && string.Equals(HashFile(partPath, cancellationToken), expectedSha256, StringComparison.OrdinalIgnoreCase))
+                        return new DownloadResult { Size = expectedSize, Sha256 = expectedSha256 };
+                    TryDelete(partPath);
+                    resumeAt = 0;
+                    return await DownloadAsync(uri, partPath, expectedSize, expectedSha256, progress, cancellationToken).ConfigureAwait(false);
+                }
+                if (resumeAt > 0 && (int)response.StatusCode != 206)
+                {
+                    response.Dispose();
+                    TryDelete(partPath);
+                    resumeAt = 0;
+                    return await DownloadAsync(uri, partPath, expectedSize, expectedSha256, progress, cancellationToken).ConfigureAwait(false);
+                }
                 if (!response.IsSuccessStatusCode)
                     throw new UpdaterFailure("DOWNLOAD_HTTP_FAILED", "Yama asset isteği başarısız: " + (int)response.StatusCode);
-                if (response.Content.Headers.ContentLength.HasValue && response.Content.Headers.ContentLength.Value != expectedSize)
+                long expectedResponseSize = expectedSize - resumeAt;
+                if (response.Content.Headers.ContentLength.HasValue && response.Content.Headers.ContentLength.Value != expectedResponseSize)
                     throw new UpdaterFailure("DOWNLOAD_VERIFICATION_FAILED", "Content-Length manifest ile uyuşmuyor.");
 
                 using (Stream input = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
-                using (FileStream output = new FileStream(partPath, FileMode.Create, FileAccess.Write, FileShare.None, 1024 * 1024, FileOptions.SequentialScan))
+                using (FileStream output = new FileStream(partPath, resumeAt > 0 ? FileMode.Append : FileMode.Create, FileAccess.Write, FileShare.Read, 1024 * 1024, FileOptions.SequentialScan))
                 using (SHA256 sha = SHA256.Create())
                 {
                     byte[] buffer = new byte[1024 * 1024];
-                    long total = 0;
+                    long total = resumeAt;
+                    if (resumeAt > 0) HashExistingPrefix(partPath, resumeAt, sha, cancellationToken);
                     int read;
                     while ((read = await input.ReadAsync(buffer, 0, buffer.Length, cancellationToken).ConfigureAwait(false)) > 0)
                     {
@@ -211,20 +237,23 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
                 }
             }
         }
-        catch
+        catch (UpdaterFailure ex) when (ex.Code == "DOWNLOAD_VERIFICATION_FAILED")
         {
+            // A complete response/hash mismatch is not a safe resume point.
+            // Network failures and cancellation intentionally preserve .part.
             TryDelete(partPath);
+            TryDelete(ResumeMetadataPath(partPath));
             throw;
         }
     }
 
-    private async Task<HttpResponseMessage> SendAllowedAsync(Uri uri, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage> SendAllowedAsync(Uri uri, CancellationToken cancellationToken, long rangeStart = -1)
     {
         for (int attempt = 0; attempt < 3; attempt++)
         {
             try
             {
-                HttpResponseMessage response = await SendAllowedOnceAsync(uri, cancellationToken).ConfigureAwait(false);
+                HttpResponseMessage response = await SendAllowedOnceAsync(uri, cancellationToken, rangeStart).ConfigureAwait(false);
                 int status = (int)response.StatusCode;
                 bool transient = status == 408 || status == 429 || status >= 500;
                 if (!transient || attempt == 2) return response;
@@ -236,13 +265,14 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
         throw new UpdaterFailure("RELEASE_HTTP_FAILED", "GitHub bağlantısı kurulamadı.");
     }
 
-    private async Task<HttpResponseMessage> SendAllowedOnceAsync(Uri uri, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage> SendAllowedOnceAsync(Uri uri, CancellationToken cancellationToken, long rangeStart = -1)
     {
         for (int redirect = 0; redirect < 5; redirect++)
         {
             ValidateUri(uri);
             using (HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, uri))
             {
+                if (rangeStart > 0) request.Headers.Range = new System.Net.Http.Headers.RangeHeaderValue(rangeStart, null);
                 HttpResponseMessage response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
                 if ((int)response.StatusCode < 300 || (int)response.StatusCode >= 400) return response;
                 Uri next = response.Headers.Location == null ? null : new Uri(uri, response.Headers.Location);
@@ -279,6 +309,80 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
         return b.ToString();
     }
 
+    private static string ResumeMetadataPath(string partPath) { return partPath + ".meta"; }
+
+    private static long PrepareResumePart(string partPath, long expectedSize, string expectedSha256, Uri uri)
+    {
+        string metadata = ResumeMetadataPath(partPath);
+        if (File.Exists(partPath))
+        {
+            bool identityMatches = false;
+            try
+            {
+                string[] lines = File.ReadAllLines(metadata);
+                identityMatches = lines.Length >= 3
+                    && lines[0] == expectedSize.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                    && string.Equals(lines[1], expectedSha256, StringComparison.OrdinalIgnoreCase)
+                    && string.Equals(lines[2], uri.AbsoluteUri, StringComparison.Ordinal);
+            }
+            catch { }
+            if (!identityMatches) TryDelete(partPath);
+        }
+        if (!File.Exists(partPath))
+        {
+            TryDelete(metadata);
+            File.WriteAllLines(metadata, new[]
+            {
+                expectedSize.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                expectedSha256 ?? string.Empty,
+                uri.AbsoluteUri
+            }, new UTF8Encoding(false));
+            return 0;
+        }
+        long length = new FileInfo(partPath).Length;
+        if (length > expectedSize)
+        {
+            TryDelete(partPath);
+            return PrepareResumePart(partPath, expectedSize, expectedSha256, uri);
+        }
+        return length;
+    }
+
+    private static void HashExistingPrefix(string path, long length, SHA256 sha, CancellationToken token)
+    {
+        using (FileStream input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024 * 1024, FileOptions.SequentialScan))
+        {
+            byte[] buffer = new byte[1024 * 1024];
+            long remaining = length;
+            while (remaining > 0)
+            {
+                token.ThrowIfCancellationRequested();
+                int wanted = (int)Math.Min(buffer.Length, remaining);
+                int read = input.Read(buffer, 0, wanted);
+                if (read != wanted) throw new UpdaterFailure("DOWNLOAD_VERIFICATION_FAILED", "KÄ±smi indirme dosyasÄ± eksik.");
+                sha.TransformBlock(buffer, 0, read, null, 0);
+                remaining -= read;
+            }
+        }
+    }
+
+    private static string HashFile(string path, CancellationToken token)
+    {
+        using (FileStream input = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 1024 * 1024, FileOptions.SequentialScan))
+        using (SHA256 sha = SHA256.Create())
+        {
+            byte[] buffer = new byte[1024 * 1024];
+            int read;
+            while ((read = input.Read(buffer, 0, buffer.Length)) > 0)
+            {
+                token.ThrowIfCancellationRequested();
+                sha.TransformBlock(buffer, 0, read, null, 0);
+            }
+            sha.TransformFinalBlock(new byte[0], 0, 0);
+            return ToHex(sha.Hash);
+        }
+    }
+
     private static void TryDelete(string path)
     {
         try { if (File.Exists(path)) File.Delete(path); } catch { }
@@ -303,6 +407,7 @@ public sealed class FixedGitHubTransport : IProgressReleaseTransport
 public sealed class LotroReleaseUpdater
 {
     public const string CurrentUpdaterVersion = "1.4.0.0";
+    public const int RollbackBackupRetention = 2;
     public const string Owner = "Relactive55";
     public const string Repository = "lotro-turkiye-yama-calismasi";
     public const string ManifestAssetName = "manifest.json";
@@ -337,6 +442,7 @@ public sealed class LotroReleaseUpdater
         try { manifest = _json.Deserialize<ReleaseManifest>(manifestJson); }
         catch (Exception ex) { throw new UpdaterFailure("MANIFEST_JSON_INVALID", ex.Message); }
         ManifestValidator.Validate(manifest, release, manifestAsset);
+        await VerifyManifestSignatureAsync(release, manifest, manifestJson, cancellationToken).ConfigureAwait(false);
         ReleaseAsset patchAsset = FindUniqueAsset(release.assets, manifest.asset_name);
         if (patchAsset == null || patchAsset.id != manifest.asset_id || patchAsset.size != manifest.asset_size || string.IsNullOrWhiteSpace(patchAsset.browser_download_url))
             throw new UpdaterFailure("PATCH_ASSET_MISSING", "Manifest'teki patch asset stable release ile eşleşmiyor.");
@@ -377,11 +483,26 @@ public sealed class LotroReleaseUpdater
         try { manifest = _json.Deserialize<ReleaseManifest>(manifestJson); }
         catch (Exception ex) { throw new UpdaterFailure("MANIFEST_JSON_INVALID", ex.Message); }
         ManifestValidator.Validate(manifest, release, manifestAsset);
+        await VerifyManifestSignatureAsync(release, manifest, manifestJson, cancellationToken).ConfigureAwait(false);
         ReleaseAsset patchAsset = FindUniqueAsset(release.assets, manifest.asset_name);
         if (patchAsset == null || patchAsset.id != manifest.asset_id || patchAsset.size != manifest.asset_size || string.IsNullOrWhiteSpace(patchAsset.browser_download_url))
             throw new UpdaterFailure("PATCH_ASSET_MISSING", "Manifest'teki patch asset stable release ile eşleşmiyor.");
         FixedGitHubTransport.ValidateReleaseAssetUri(new Uri(patchAsset.browser_download_url), release.tag_name, manifest.asset_name);
         return Tuple.Create(release, manifest);
+    }
+
+    private async Task VerifyManifestSignatureAsync(StableRelease release, ReleaseManifest manifest, string manifestJson, CancellationToken cancellationToken)
+    {
+        if (manifest == null || manifest.schema_version < 2) return;
+        ReleaseAsset signatureAsset = FindUniqueAsset(release.assets, manifest.signature_asset_name);
+        if (signatureAsset == null || signatureAsset.id < 1 || signatureAsset.size < 1 || string.IsNullOrWhiteSpace(signatureAsset.browser_download_url))
+            throw new UpdaterFailure("MANIFEST_SIGNATURE_MISSING", "Manifest imza varlÄ±ÄŸÄ± stable release iÃ§inde bulunamadÄ±.");
+        FixedGitHubTransport.ValidateReleaseAssetUri(new Uri(signatureAsset.browser_download_url), release.tag_name, manifest.signature_asset_name);
+        string signature = await _transport.GetStringAsync(new Uri(signatureAsset.browser_download_url), cancellationToken).ConfigureAwait(false);
+        if (Encoding.UTF8.GetByteCount(signature) != signatureAsset.size
+            || !ManifestSignatureVerifier.Verify(manifestJson, signature)
+            || !string.Equals(manifest.signature_algorithm, ManifestSignatureVerifier.Algorithm, StringComparison.Ordinal))
+            throw new UpdaterFailure("MANIFEST_SIGNATURE_INVALID", "Release manifest imzasÄ± doÄŸrulanamadÄ±.");
     }
 
     public Task<DownloadResult> DownloadPatchAsync(StableRelease release, ReleaseManifest manifest, string cacheDirectory, CancellationToken cancellationToken)
@@ -412,7 +533,10 @@ public sealed class LotroReleaseUpdater
         {
             FileInfo cached = new FileInfo(path);
             if (cached.Length == manifest.asset_size && string.Equals(HashFile(path, cancellationToken), manifest.asset_sha256, StringComparison.OrdinalIgnoreCase))
+            {
+                TryDelete(part + ".meta");
                 return new DownloadResult { Size = cached.Length, Sha256 = manifest.asset_sha256 };
+            }
             TryDelete(path);
         }
         DownloadResult result;
@@ -422,6 +546,7 @@ public sealed class LotroReleaseUpdater
             result = await _transport.DownloadAsync(new Uri(url), part, manifest.asset_size, manifest.asset_sha256, cancellationToken).ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
         File.Move(part, path);
+        TryDelete(part + ".meta");
         return result;
     }
 
@@ -714,14 +839,17 @@ public sealed class LotroReleaseUpdater
                 sha256 = manifest.asset_sha256,
                 size = manifest.asset_size,
                 game_dir = gameDirectory,
+                source_backup_file = backup,
+                source_backup_sha256 = currentHash,
                 installed_at = DateTime.UtcNow.ToString("o")
             };
             WriteStateAtomic(statePath, state);
+            PruneRollbackBackups(gameDirectory, backup);
             return Task.FromResult(state);
         }
         catch
         {
-            if (replacementStarted) TryRestore(backup, target);
+            if (replacementStarted) TryRestore(backup, target, currentHash);
             if (priorStateText == null) TryDelete(statePath); else WriteTextAtomic(statePath, priorStateText);
             TryDelete(statePath + ".part");
             throw;
@@ -889,11 +1017,12 @@ public sealed class LotroReleaseUpdater
                 installed_at = DateTime.UtcNow.ToString("o")
             };
             WriteStateAtomic(statePath, state);
+            PruneRollbackBackups(gameDirectory, rollback);
             return Task.FromResult(state);
         }
         catch
         {
-            if (replacementStarted) TryRestore(rollback, target);
+            if (replacementStarted) TryRestore(rollback, target, currentHash);
             if (priorStateText == null) TryDelete(statePath); else WriteTextAtomic(statePath, priorStateText);
             TryDelete(statePath + ".part");
             throw;
@@ -1068,11 +1197,12 @@ public sealed class LotroReleaseUpdater
                 installed_at = DateTime.UtcNow.ToString("o")
             };
             WriteStateAtomic(statePath, state);
+            PruneRollbackBackups(gameDirectory, rollback);
             return Task.FromResult(state);
         }
         catch
         {
-            if (replacementStarted) TryRestore(rollback, target);
+            if (replacementStarted) TryRestore(rollback, target, currentHash);
             if (priorStateText == null) TryDelete(statePath); else WriteTextAtomic(statePath, priorStateText);
             TryDelete(statePath + ".part");
             throw;
@@ -1097,7 +1227,8 @@ public sealed class LotroReleaseUpdater
         string sourceBackup = SemanticCleanSourceBackupPath(gameDirectory, manifest);
         long allowance = checked(Math.Max(currentSize, manifest.source_dat_size) + Math.Max(256L * 1024 * 1024, currentSize / 10));
         EnsureFreeSpace(gameDirectory, checked(allowance * 3L + 64L * 1024 * 1024));
-        string rollback = BackupFile(target, gameDirectory, cancellationToken);
+        string rollbackHash = HashFile(target, cancellationToken);
+        string rollback = BackupFile(target, gameDirectory, cancellationToken, rollbackHash);
         bool replacementStarted = false;
         TryDelete(candidate);
         TryDelete(cleanCandidate);
@@ -1153,11 +1284,12 @@ public sealed class LotroReleaseUpdater
                 installed_at = DateTime.UtcNow.ToString("o")
             };
             WriteStateAtomic(statePath, state);
+            PruneRollbackBackups(gameDirectory, rollback);
             return Task.FromResult(state);
         }
         catch
         {
-            if (replacementStarted) TryRestore(rollback, target);
+            if (replacementStarted) TryRestore(rollback, target, rollbackHash);
             if (priorStateText == null) TryDelete(statePath); else WriteTextAtomic(statePath, priorStateText);
             TryDelete(statePath + ".part");
             throw;
@@ -1402,6 +1534,36 @@ public sealed class LotroReleaseUpdater
         catch { TryDelete(backup); throw; }
     }
 
+    private static void PruneRollbackBackups(string gameDirectory, string keepPath)
+    {
+        string directory = Path.Combine(gameDirectory, ".lotro-turkce-backups");
+        if (!Directory.Exists(directory)) return;
+        try
+        {
+            List<string> rollbackBackups = new List<string>();
+            foreach (string path in Directory.GetFiles(directory, "client_local_English.dat.*.bak", SearchOption.TopDirectoryOnly))
+                rollbackBackups.Add(path);
+            rollbackBackups.Sort((left, right) => File.GetLastWriteTimeUtc(right).CompareTo(File.GetLastWriteTimeUtc(left)));
+            int kept = 0;
+            foreach (string path in rollbackBackups)
+            {
+                if (string.Equals(path, keepPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (kept < RollbackBackupRetention) kept++;
+                    continue;
+                }
+                if (kept < RollbackBackupRetention)
+                {
+                    kept++;
+                    continue;
+                }
+                TryDelete(path);
+            }
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+    }
+
     private static void CopyAndVerify(string source, string destination, long size, string sha256, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -1439,7 +1601,7 @@ public sealed class LotroReleaseUpdater
         ReplaceFile(candidate, target);
     }
 
-    private static void TryRestore(string backup, string target)
+    private static void TryRestore(string backup, string target, string expectedHash)
     {
         string temp = target + ".rollback.part";
         try
@@ -1447,7 +1609,7 @@ public sealed class LotroReleaseUpdater
             if (!File.Exists(backup)) throw new IOException("Geri dönüş yedeği bulunamadı.");
             long expectedSize = new FileInfo(backup).Length;
             if (expectedSize < 1) throw new IOException("Geri dönüş yedeği boş.");
-            string expectedHash = HashFile(backup, CancellationToken.None);
+            if (!Hex64(expectedHash)) throw new IOException("Rollback SHA-256 is missing from installed state.");
             TryDelete(temp);
             CopyAndVerify(backup, temp, expectedSize, expectedHash, CancellationToken.None);
             if (File.Exists(target))
@@ -1466,7 +1628,19 @@ public sealed class LotroReleaseUpdater
         finally { TryDelete(temp); }
     }
 
-    private static string TryRead(string path) { try { return File.Exists(path) ? File.ReadAllText(path, Encoding.UTF8) : null; } catch { return null; } }
+    private static string TryRead(string path)
+    {
+        if (string.IsNullOrWhiteSpace(path)) return null;
+        try
+        {
+            using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (StreamReader reader = new StreamReader(stream, Encoding.UTF8, true)) return reader.ReadToEnd();
+        }
+        catch (FileNotFoundException) { return null; }
+        catch (DirectoryNotFoundException) { return null; }
+        catch (UnauthorizedAccessException ex) { throw new UpdaterFailure("STATE_IO_FAILED", "Kurulu yama state dosyasÄ± okunamadÄ±: " + ex.Message); }
+        catch (IOException ex) { throw new UpdaterFailure("STATE_IO_FAILED", "Kurulu yama state dosyasÄ± okunamadÄ±: " + ex.Message); }
+    }
     private InstalledPatchState ParseState(string text) { try { return string.IsNullOrWhiteSpace(text) ? null : _json.Deserialize<InstalledPatchState>(text); } catch { throw new UpdaterFailure("STATE_INVALID", "installed_patch.json bozuk."); } }
 
     private void WriteStateAtomic(string path, InstalledPatchState state) { WriteTextAtomic(path, _json.Serialize(state)); }
@@ -1480,11 +1654,34 @@ public sealed class LotroReleaseUpdater
     private static void TryDelete(string path) { try { if (File.Exists(path)) File.Delete(path); } catch { } }
 }
 
+public static class ManifestSignatureVerifier
+{
+    public const string Algorithm = "RSA-SHA256";
+    // This public key is intentionally compiled into the updater. The matching
+    // private key must remain in an offline release secret and is never stored
+    // in this repository.
+    private const string PublicKeyXml = "<RSAKeyValue><Modulus>qXf8NQv7Ih43UNL8m5Ox8NMaJrc9fL2T+xxvs+UvqspfJG1L+wT2DXWVRzUv//B+xM38+vrEtbdtvBdiUZOUcpmlyBiwPioM6zx74Z2t9H1ofco0hKIVHyodBEFcmCOpGGFeoh0zonofBq8VtKnQMbK5T2D8u+DuX6ndHfbRe3lUXY7jWrkr5fV82DA5HSC0Qd1EPXry1VtxenSl/0/9H5P0Xi9ALgugwD8vsv1KULa/zX6HGzZryelD1qQECIYkdJjfuSKnnD6RoZIpja6xv2F05rt14q1+V7EfvmdJ6xnJnw8LZLZbZdP0Xr5l5K3o0H2wl45T295gGU17h94QawzXMeRkgfw5BHY17f4YrCXwSkvysLSqByKz6HI7DqsZ+yIGyrbYls3FlPASp1fkttwL50SVa18wOnNTiOVfqquk9zepG/xE1P+FzdShYkDgl+/S+elHsVxYfM7W03EjzjwQG6vTiGvzT2xAykZsz0oKKA4rAi0QOqejsnH4voWB</Modulus><Exponent>AQAB</Exponent></RSAKeyValue>";
+
+    public static bool Verify(string manifestJson, string signatureBase64)
+    {
+        if (string.IsNullOrWhiteSpace(manifestJson) || string.IsNullOrWhiteSpace(signatureBase64)) return false;
+        byte[] signature;
+        try { signature = Convert.FromBase64String(signatureBase64.Trim()); }
+        catch (FormatException) { return false; }
+        using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
+        {
+            rsa.FromXmlString(PublicKeyXml);
+            return rsa.VerifyData(Encoding.UTF8.GetBytes(manifestJson), CryptoConfig.MapNameToOID("SHA256"), signature);
+        }
+    }
+}
+
 public static class ManifestValidator
 {
     public static void EnsureUpdaterSupported(ReleaseManifest manifest)
     {
-        if (manifest == null || string.IsNullOrWhiteSpace(manifest.minimum_updater_version)) return;
+        if (manifest == null || string.IsNullOrWhiteSpace(manifest.minimum_updater_version))
+            throw new UpdaterFailure("MANIFEST_INVALID", "Manifest minimum_updater_version alanÄ± zorunludur.");
         if (!Version.TryParse(manifest.minimum_updater_version, out Version minimum))
             throw new UpdaterFailure("MANIFEST_INVALID", "Gerekli kurulum aracı sürümü geçersiz.");
         if (minimum > new Version(LotroReleaseUpdater.CurrentUpdaterVersion))
@@ -1493,7 +1690,7 @@ public static class ManifestValidator
 
     public static void Validate(ReleaseManifest m, StableRelease release, ReleaseAsset manifestAsset)
     {
-        bool commonInvalid = m == null || m.schema_version != 1 || release == null || manifestAsset == null
+        bool commonInvalid = m == null || (m.schema_version != 1 && m.schema_version != 2) || release == null || manifestAsset == null
             || m.release_id != release.id
             || !string.Equals(m.release_tag, release.tag_name, StringComparison.Ordinal)
             || m.asset_id < 1 || m.asset_id == manifestAsset.id
@@ -1529,7 +1726,10 @@ public static class ManifestValidator
                         || !Hex64(m.candidate_dat_sha256)
                         || m.candidate_dat_size < 1
                         || m.chain_depth < 1 || m.chain_depth > 32)));
-        if (commonInvalid || semanticInvalid)
+        bool signatureInvalid = m != null && m.schema_version >= 2
+            && (!string.Equals(m.signature_asset_name, "manifest.sig", StringComparison.Ordinal)
+                || !string.Equals(m.signature_algorithm, ManifestSignatureVerifier.Algorithm, StringComparison.Ordinal));
+        if (commonInvalid || semanticInvalid || signatureInvalid)
             throw new UpdaterFailure("MANIFEST_INVALID", "Manifest şeması veya release kimliği geçersiz.");
         EnsureUpdaterSupported(m);
     }
@@ -1564,6 +1764,14 @@ public static class ProcessGuard
         foreach (Process process in Process.GetProcesses())
         {
             try { if (Names.Contains(process.ProcessName)) throw new UpdaterFailure("LOTRO_RUNNING", "LOTRO ve launcher'ı kapatın."); }
+            catch (Win32Exception ex)
+            {
+                throw new UpdaterFailure("PROCESS_CHECK_FAILED", "LOTRO süreçleri denetlenemedi: " + ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                throw new UpdaterFailure("PROCESS_CHECK_FAILED", "LOTRO süreçleri denetlenemedi: " + ex.Message);
+            }
             finally { process.Dispose(); }
         }
     }

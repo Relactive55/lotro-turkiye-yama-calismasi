@@ -116,9 +116,9 @@ def audit_candidate(row: dict, source: dict | None) -> str:
         return "empty source"
     if not target.strip():
         return "empty target"
-    if row.get("translation_status") == "MACHINE_TRANSLATED" and bool(row.get("critical_ui")):
-        return "critical UI machine candidate"
-    if row.get("translation_status") not in {"MACHINE_TRANSLATED", "TM_REUSED", "HUMAN_APPROVED", "GLOSSARY"}:
+    if row.get("translation_status") == "MACHINE_TRANSLATED":
+        return "machine translation requires human approval"
+    if row.get("translation_status") not in {"TM_REUSED", "HUMAN_APPROVED", "GLOSSARY"}:
         return "unapproved translation status"
     if row.get("translation_status") == "GLOSSARY" and target == english and TECHNICAL_KEY_RE.fullmatch(english):
         # Resource identifiers are deliberately preserved, not translated.
