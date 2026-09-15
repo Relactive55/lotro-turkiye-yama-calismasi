@@ -53,7 +53,9 @@ if ($manifest.release_tag -cnotmatch '^[A-Za-z0-9][A-Za-z0-9._-]{0,79}$' -or
     $manifest.asset_name -cnotmatch '^lotro-turkce-yama-[A-Za-z0-9][A-Za-z0-9._-]{0,110}$' -or
     (!$AllowFullDatDistribution -and !($manifest.asset_name.EndsWith('.semantic.json',[StringComparison]::Ordinal) -or
       $manifest.asset_name.EndsWith('.semantic.json.gz',[StringComparison]::Ordinal))) -or
-    ($AllowFullDatDistribution -and !$manifest.asset_name.EndsWith('.dat',[StringComparison]::Ordinal))) { throw 'Unsafe release asset name.' }
+    ($AllowFullDatDistribution -and !($manifest.asset_name.EndsWith('.dat',[StringComparison]::Ordinal) -or
+      $manifest.asset_name.EndsWith('.semantic.json',[StringComparison]::Ordinal) -or
+      $manifest.asset_name.EndsWith('.semantic.json.gz',[StringComparison]::Ordinal)))) { throw 'Unsafe release asset name.' }
 $asset = Join-Path $directory $manifest.asset_name
 $candidate = Join-Path $directory 'private-candidate.dat'
 if ((Get-Item -LiteralPath $asset).Length -ne $manifest.asset_size -or
