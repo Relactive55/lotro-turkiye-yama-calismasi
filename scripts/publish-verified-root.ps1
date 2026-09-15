@@ -116,7 +116,11 @@ if ($release.Count -eq 0) {
     if ($LASTEXITCODE -ne 0) { throw 'Draft creation failed.' }
     # The tag endpoint returns 404 for unpublished drafts. Resolve the
     # authenticated release list, then use the returned numeric ID.
-    $created = @(Invoke-GhJson @('api',"repos/$repository/releases?per_page=100") | Where-Object { $_.tag_name -ceq $tag })
+    $created = @()
+    for ($attempt = 0; $attempt -lt 10 -and $created.Count -ne 1; $attempt++) {
+        $created = @(Invoke-GhJson @('api',"repos/$repository/releases?per_page=100") | Where-Object { $_.tag_name -ceq $tag })
+        if ($created.Count -ne 1) { Start-Sleep -Seconds 1 }
+    }
     if ($created.Count -ne 1) { throw 'Created draft could not be uniquely resolved.' }
     $release = $created[0]
 } else { $release = $release[0] }
