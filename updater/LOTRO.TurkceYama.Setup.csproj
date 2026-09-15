@@ -20,6 +20,11 @@
     <OutputPath>bin\x64\Release\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="assets\lotro-online-background.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </Content>
+    <EmbeddedResource Include="assets\lotro-online-background.png" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\ProtectedFormat.cs" Link="LotroTrGemini\ProtectedFormat.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\DurationUnitFix.cs" Link="LotroTrGemini\DurationUnitFix.cs" />
     <Compile Include="..\developer-tool\src\LotroTrGemini\SourceDigest.cs" Link="LotroTrGemini\SourceDigest.cs" />

@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -34,9 +37,14 @@ internal sealed class SetupForm : Form
 {
     private readonly Label _status = new Label();
     private readonly Button _install = new Button();
+    private readonly Button _rollback = new Button();
+    private readonly Button _support = new Button();
+    private readonly Button _browse = new Button();
+    private readonly TextBox _pathBox = new TextBox();
     private readonly ProgressBar _progress = new ProgressBar();
     private readonly Label _versions = new Label();
     private readonly Label _credit = new Label();
+    private readonly ToolTip _toolTip = new ToolTip();
     private CancellationTokenSource _cancel;
     private Tuple<StableRelease, ReleaseManifest> _available;
     private string _gameDirectory;
@@ -46,35 +54,103 @@ internal sealed class SetupForm : Form
     public SetupForm()
     {
         Text = LotroSetupApp.ProductName;
-        Width = 560;
-        Height = 260;
+        ClientSize = new Size(720, 540);
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
+        MinimizeBox = false;
+        BackColor = Color.FromArgb(12, 15, 20);
+        BackgroundImageLayout = ImageLayout.Zoom;
+        BackgroundImage = LoadBackgroundImage();
         try { Icon = System.Drawing.Icon.ExtractAssociatedIcon(Application.ExecutablePath); } catch { }
+
+        Panel surface = new Panel
+        {
+            Dock = DockStyle.Fill,
+            BackColor = Color.FromArgb(150, 0, 0, 0),
+            Padding = new Padding(18, 16, 18, 12)
+        };
+        Controls.Add(surface);
+
+        Label title = new Label
+        {
+            Text = "LOTR TÜRKÇE YAMA",
+            ForeColor = Color.White,
+            Font = new Font("Segoe UI", 13f, FontStyle.Bold),
+            AutoSize = true,
+            BackColor = Color.Transparent,
+            Location = new Point(20, 12)
+        };
+        surface.Controls.Add(title);
+
         _status.AutoSize = false;
-        _status.SetBounds(24, 24, 500, 52);
+        _status.SetBounds(20, 48, 664, 48);
         _status.Text = "Güncellemeler kontrol ediliyor...";
-        _progress.SetBounds(24, 88, 500, 18);
-        _install.Text = "Yama Yap";
-        _install.SetBounds(24, 124, 140, 32);
+        _status.ForeColor = Color.White;
+        _status.Font = new Font("Segoe UI", 10f, FontStyle.Regular);
+        _status.BackColor = Color.Transparent;
+        surface.Controls.Add(_status);
+
+        Label pathLabel = new Label
+        {
+            Text = "LOTRO Oyun Klasörü",
+            ForeColor = Color.White,
+            BackColor = Color.Transparent,
+            AutoSize = true,
+            Location = new Point(22, 304)
+        };
+        surface.Controls.Add(pathLabel);
+        _pathBox.SetBounds(150, 300, 430, 28);
+        _pathBox.ReadOnly = true;
+        _pathBox.BackColor = Color.FromArgb(35, 35, 40);
+        _pathBox.ForeColor = Color.White;
+        _pathBox.BorderStyle = BorderStyle.FixedSingle;
+        surface.Controls.Add(_pathBox);
+        _browse.Text = "Gözat...";
+        _browse.SetBounds(590, 300, 94, 28);
+        _browse.FlatStyle = FlatStyle.Flat;
+        _browse.BackColor = Color.FromArgb(55, 58, 68);
+        _browse.ForeColor = Color.White;
+        _browse.Click += BrowseClicked;
+        surface.Controls.Add(_browse);
+
+        _progress.SetBounds(20, 344, 664, 14);
+        _progress.Style = ProgressBarStyle.Marquee;
+        surface.Controls.Add(_progress);
+
+        _install.Text = "YAMAYI KUR";
+        _install.SetBounds(124, 376, 150, 42);
         _install.Enabled = false;
+        StyleActionButton(_install, Color.FromArgb(42, 139, 105));
         _install.Click += InstallClicked;
-        Controls.Add(_status);
-        Controls.Add(_progress);
-        Controls.Add(_install);
-        _versions.SetBounds(24, 172, 390, 36);
-        _versions.Anchor = AnchorStyles.Left | AnchorStyles.Bottom;
-        _versions.ForeColor = System.Drawing.Color.Black;
+        surface.Controls.Add(_install);
+
+        _rollback.Text = "GERİ AL";
+        _rollback.SetBounds(285, 376, 150, 42);
+        _rollback.Enabled = false;
+        StyleActionButton(_rollback, Color.FromArgb(42, 139, 105));
+        _rollback.Click += RollbackClicked;
+        surface.Controls.Add(_rollback);
+
+        _support.Text = "DESTEK / BAĞIŞ";
+        _support.SetBounds(446, 376, 150, 42);
+        StyleActionButton(_support, Color.FromArgb(32, 117, 199));
+        _support.Click += SupportClicked;
+        _toolTip.SetToolTip(_support, "Teşekkürler");
+        surface.Controls.Add(_support);
+
+        _versions.SetBounds(20, 454, 430, 38);
+        _versions.ForeColor = Color.White;
+        _versions.BackColor = Color.Transparent;
         _versions.Text = "Program: " + LotroReleaseUpdater.CurrentUpdaterVersion + "\nYama: kontrol ediliyor...";
-        _credit.SetBounds(420, 184, 104, 22);
-        _credit.Anchor = AnchorStyles.Right | AnchorStyles.Bottom;
+        surface.Controls.Add(_versions);
+        _credit.SetBounds(548, 465, 136, 22);
         _credit.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-        _credit.ForeColor = System.Drawing.Color.Black;
+        _credit.ForeColor = Color.White;
+        _credit.BackColor = Color.Transparent;
         _credit.Font = new System.Drawing.Font(Font, System.Drawing.FontStyle.Bold);
         _credit.Text = "Relactive";
-        Controls.Add(_versions);
-        Controls.Add(_credit);
+        surface.Controls.Add(_credit);
         Shown += async (sender, args) => await CheckAsync();
         FormClosing += (sender, args) =>
         {
@@ -85,6 +161,77 @@ internal sealed class SetupForm : Form
             _install.Enabled = false;
             _status.Text = "Güvenli iptal tamamlanıyor; pencere ardından kapanacak...";
         };
+    }
+
+    private static Image LoadBackgroundImage()
+    {
+        try
+        {
+            Assembly assembly = typeof(SetupForm).Assembly;
+            string resourceName = null;
+            foreach (string name in assembly.GetManifestResourceNames())
+                if (name.EndsWith("lotro-online-background.png", StringComparison.OrdinalIgnoreCase)) { resourceName = name; break; }
+            if (resourceName != null)
+            {
+                using (Stream stream = assembly.GetManifestResourceStream(resourceName))
+                using (Image source = Image.FromStream(stream)) return new Bitmap(source);
+            }
+            string backgroundPath = Path.Combine(Application.StartupPath, "assets", "lotro-online-background.png");
+            return File.Exists(backgroundPath) ? Image.FromFile(backgroundPath) : null;
+        }
+        catch { return null; }
+    }
+
+    private static void StyleActionButton(Button button, Color color)
+    {
+        button.FlatStyle = FlatStyle.Flat;
+        button.FlatAppearance.BorderSize = 0;
+        button.BackColor = color;
+        button.ForeColor = Color.White;
+        button.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+        button.Cursor = Cursors.Hand;
+    }
+
+    private void BrowseClicked(object sender, EventArgs e)
+    {
+        using (FolderBrowserDialog dialog = new FolderBrowserDialog { Description = "LOTRO oyun klasörünü seçin" })
+        {
+            if (dialog.ShowDialog(this) != DialogResult.OK) return;
+            try
+            {
+                LotroPathValidator.Validate(dialog.SelectedPath);
+                _gameDirectory = dialog.SelectedPath;
+                _pathBox.Text = _gameDirectory;
+                _status.Text = "LOTRO klasörü seçildi. Hazır olduğunuzda yamayı kurabilirsiniz.";
+            }
+            catch (UpdaterFailure ex) { MessageBox.Show(this, ex.Message, ex.Code, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+        }
+    }
+
+    private void SupportClicked(object sender, EventArgs e)
+    {
+        try { Process.Start(new ProcessStartInfo("https://www.shopier.com/poe2tr/50856020") { UseShellExecute = true }); }
+        catch (Exception ex) { MessageBox.Show(this, "Destek sayfası açılamadı: " + ex.Message, LotroSetupApp.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+    }
+
+    private async void RollbackClicked(object sender, EventArgs e)
+    {
+        if (string.IsNullOrWhiteSpace(_gameDirectory)) return;
+        if (MessageBox.Show(this, "Kurulu Türkçe yamayı kaldırıp temiz LOTRO DAT yedeğine dönmek istiyor musunuz?", "Geri Al", MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+        try
+        {
+            _rollback.Enabled = false;
+            _install.Enabled = false;
+            _progress.Style = ProgressBarStyle.Marquee;
+            _status.Text = "Temiz LOTRO dosyası geri yükleniyor...";
+            string statePath = Path.Combine(_gameDirectory, "installed_patch.json");
+            using (IReleaseTransport transport = new FixedGitHubTransport())
+                await Task.Run(() => new LotroReleaseUpdater(transport).RollbackInstalledPatchAsync(_gameDirectory, statePath, CancellationToken.None));
+            _status.Text = "Yama geri alındı; temiz LOTRO DAT geri yüklendi.";
+            UpdateVersionInfo(null);
+        }
+        catch (Exception ex) { MessageBox.Show(this, ex.Message, "Geri alma başarısız", MessageBoxButtons.OK, MessageBoxIcon.Warning); }
+        finally { _progress.Style = ProgressBarStyle.Continuous; _install.Enabled = true; _rollback.Enabled = false; }
     }
 
     private async Task CheckAsync()
@@ -110,6 +257,7 @@ internal sealed class SetupForm : Form
             if (IsDisposed) return;
             string statePath = _gameDirectory == null ? null : Path.Combine(_gameDirectory, "installed_patch.json");
             InstalledPatchState state = ReadState(statePath);
+            _pathBox.Text = _gameDirectory ?? "LOTRO klasörü otomatik bulunamadı";
             UpdateVersionInfo(state);
             bool current = LotroReleaseUpdater.IsStateAtManifest(state, _available.Item2)
                 && await Task.Run(() => LotroReleaseUpdater.IsInstalledFileValid(state, CancellationToken.None, _gameDirectory));
@@ -119,6 +267,7 @@ internal sealed class SetupForm : Form
                 _status.Text = "Türkçe yamanız güncel.";
                 _install.Text = "Tekrar Kontrol Et";
                 _install.Enabled = true;
+                _rollback.Enabled = state != null && !string.IsNullOrWhiteSpace(state.source_backup_file);
             }
             else
             {
@@ -129,6 +278,7 @@ internal sealed class SetupForm : Form
                     + (_gameDirectory == null ? "\nLOTRO klasörü kurulum sırasında seçilecek." : "\nLOTRO otomatik bulundu.");
                 _install.Text = "Yama Yap";
                 _install.Enabled = true;
+                _rollback.Enabled = state != null && !string.IsNullOrWhiteSpace(state.source_backup_file);
             }
         }
         catch (UpdaterFailure ex)
@@ -146,6 +296,7 @@ internal sealed class SetupForm : Form
                 _status.Text = "Güncelleme kontrol edilemedi. İnternet bağlantınızı kontrol edip yeniden deneyin.";
             _install.Text = "Tekrar Dene";
             _install.Enabled = true;
+            _rollback.Enabled = false;
         }
         catch
         {
@@ -153,6 +304,7 @@ internal sealed class SetupForm : Form
             _status.Text = "Güncelleme kontrol edilemedi. İnternet bağlantınızı kontrol edip yeniden deneyin.";
             _install.Text = "Tekrar Dene";
             _install.Enabled = true;
+            _rollback.Enabled = false;
         }
         finally
         {
@@ -261,7 +413,9 @@ internal sealed class SetupForm : Form
                 _progress.Style = ProgressBarStyle.Continuous;
                 _progress.Value = 100;
                 _status.Text = "Türkçe yama kuruldu.";
-                UpdateVersionInfo(ReadState(statePath));
+                InstalledPatchState installed = ReadState(statePath);
+                UpdateVersionInfo(installed);
+                _rollback.Enabled = installed != null && !string.IsNullOrWhiteSpace(installed.source_backup_file);
                 MessageBox.Show(this, "Türkçe yama başarıyla kuruldu.", LotroSetupApp.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }

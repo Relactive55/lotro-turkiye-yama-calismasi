@@ -917,6 +917,40 @@ public sealed class LotroReleaseUpdater
     }
 
     /// <summary>
+    /// Restores the verified clean DAT saved during installation and removes
+    /// the installed-patch marker. The current translated DAT is retained as
+    /// a normal rollback backup until the retention policy prunes it.
+    /// </summary>
+    public Task RollbackInstalledPatchAsync(string gameDirectory, string statePath, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        LotroPathValidator.Validate(gameDirectory);
+        ProcessGuard.EnsureClosed();
+        InstalledPatchState state = ParseState(TryRead(statePath));
+        if (state == null || string.IsNullOrWhiteSpace(state.source_backup_file)
+            || !Hex64(state.source_backup_sha256))
+            throw new UpdaterFailure("ROLLBACK_UNAVAILABLE", "Bu LOTRO klasöründe doğrulanmış geri alma yedeği bulunamadı.");
+
+        string directory = Path.GetFullPath(gameDirectory);
+        string target = Path.Combine(directory, "client_local_English.dat");
+        string backupRoot = Path.GetFullPath(Path.Combine(directory, ".lotro-turkce-backups"));
+        string cleanBackup = Path.GetFullPath(state.source_backup_file);
+        if (!cleanBackup.StartsWith(backupRoot + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+            || !File.Exists(cleanBackup))
+            throw new UpdaterFailure("ROLLBACK_UNAVAILABLE", "Geri alma yedeği güvenli konumda bulunamadı.");
+
+        cancellationToken.ThrowIfCancellationRequested();
+        VerifyFile(cleanBackup, new FileInfo(cleanBackup).Length, state.source_backup_sha256, cancellationToken);
+        EnsureDatUnlocked(target);
+        string currentHash = HashFile(target, cancellationToken);
+        string rollback = BackupFile(target, directory, cancellationToken, currentHash);
+        TryRestore(cleanBackup, target, state.source_backup_sha256);
+        TryDelete(statePath);
+        PruneRollbackBackups(directory, rollback);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
     /// Installs a small correction layer on the currently installed translated
     /// DAT. The predecessor DAT/catalog hashes are checked before any writable
     /// copy is created, and the old file/state are restored on every failure.
