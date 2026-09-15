@@ -551,6 +551,47 @@ public sealed class LotroReleaseUpdater
     }
 
     /// <summary>
+    /// Limits the hash-addressed package cache without touching unrelated
+    /// files. Incomplete packages are retained when they are among the newest
+    /// entries so a cancelled download can still resume.
+    /// </summary>
+    public static void PrunePackageCache(string cacheDirectory, IEnumerable<string> keepAssetHashes, int retention)
+    {
+        if (string.IsNullOrWhiteSpace(cacheDirectory) || !Directory.Exists(cacheDirectory)) return;
+        retention = Math.Max(1, retention);
+        HashSet<string> keep = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (keepAssetHashes != null)
+            foreach (string hash in keepAssetHashes)
+                if (IsSha256DirectoryName(hash)) keep.Add(hash.ToLowerInvariant());
+        try
+        {
+            List<string> directories = new List<string>();
+            foreach (string directory in Directory.GetDirectories(cacheDirectory))
+                if (IsSha256DirectoryName(Path.GetFileName(directory))) directories.Add(directory);
+            directories.Sort((left, right) => Directory.GetLastWriteTimeUtc(right).CompareTo(Directory.GetLastWriteTimeUtc(left)));
+            int retained = 0;
+            foreach (string directory in directories)
+            {
+                string name = Path.GetFileName(directory);
+                if (keep.Contains(name)) { retained++; continue; }
+                if (retained < retention) { retained++; continue; }
+                try { Directory.Delete(directory, true); }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
+            }
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+    }
+
+    private static bool IsSha256DirectoryName(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length != 64) return false;
+        foreach (char c in value) if (!Uri.IsHexDigit(c)) return false;
+        return true;
+    }
+
+    /// <summary>
     /// Resolves and downloads the release asset. Current public releases are
     /// one full_dat package; the semantic chain code below remains only for
     /// reading historical manifests during migration.

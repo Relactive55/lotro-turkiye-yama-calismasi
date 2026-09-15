@@ -83,6 +83,23 @@ internal static class UpdaterBehaviorTests
             Verify(Path.Combine(cache, patchName), patch.Length, patchHash);
             Pass("streaming asset fixture verified");
 
+            string packageCache = CreateTemp();
+            try
+            {
+                string[] cacheHashes = { Hash(Encoding.UTF8.GetBytes("cache-a")), Hash(Encoding.UTF8.GetBytes("cache-b")), Hash(Encoding.UTF8.GetBytes("cache-c")) };
+                foreach (string hash in cacheHashes)
+                {
+                    string directory = Path.Combine(packageCache, hash);
+                    Directory.CreateDirectory(directory);
+                    File.WriteAllText(Path.Combine(directory, "package.part"), hash);
+                }
+                LotroReleaseUpdater.PrunePackageCache(packageCache, new[] { cacheHashes[2] }, 2);
+                if (!Directory.Exists(Path.Combine(packageCache, cacheHashes[2])) || Directory.GetDirectories(packageCache).Length > 2)
+                    throw new Exception("package cache retention failed");
+                Pass("package cache retention keeps resumable recent entries");
+            }
+            finally { TryDeleteDirectory(packageCache); }
+
             string game = CreateTemp();
             try
             {

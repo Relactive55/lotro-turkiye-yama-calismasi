@@ -170,6 +170,12 @@ internal sealed class SetupForm : Form
             _cancel.Cancel();
             return;
         }
+        if (_available != null && string.Equals(_install.Text, "Tekrar Kontrol Et", StringComparison.Ordinal))
+        {
+            _available = null;
+            await CheckAsync();
+            return;
+        }
         if (_available == null)
         {
             await CheckAsync();
@@ -198,6 +204,7 @@ internal sealed class SetupForm : Form
                 if (string.IsNullOrWhiteSpace(gameDir)) throw new OperationCanceledException();
                 LotroPathValidator.Validate(gameDir);
                 string cache = Path.Combine(Path.GetTempPath(), "lotro-turkce-yama");
+                LotroReleaseUpdater.PrunePackageCache(cache, null, 2);
                 string statePath = Path.Combine(gameDir, "installed_patch.json");
                 InstalledPatchState installedState = ReadState(statePath);
                 if (installedState != null && !string.Equals(installedState.game_dir, gameDir, StringComparison.OrdinalIgnoreCase)) installedState = null;
@@ -248,6 +255,7 @@ internal sealed class SetupForm : Form
                 await Task.Run(
                     () => updater.InstallPatchChainAsync(gameDir, packages, statePath, token, installProgress),
                     token);
+                LotroReleaseUpdater.PrunePackageCache(cache, new[] { _available.Item2.asset_sha256 }, 2);
                 acceptingProgress = false;
                 _gameDirectory = gameDir;
                 _progress.Style = ProgressBarStyle.Continuous;

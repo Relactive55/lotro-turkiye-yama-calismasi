@@ -9,6 +9,9 @@ karşılığını ve dışarıdan sağlanması gereken bağımlılıkları ayır
   onayı, TM veya glossary statüleri yayınlanabilir.
 - Updater indirmeleri sonsuz ağ zaman aşımıyla `.part` dosyasını korur ve HTTP
   Range ile devam eder. Yarım paket kimliği yanındaki metadata ile doğrulanır.
+- **Tekrar Kontrol Et** düğmesi `_available` önbelleğini sıfırlayıp GitHub stable
+  release sorgusunu gerçekten yeniden çalıştırır; hash tabanlı geçici paket
+  klasörleri de sınırlı retention ile temizlenir.
 - Rollback yedekleri en fazla iki dosyaya budanır; state dosyası kaynak yedeği
   ve SHA-256'sını kaydeder. Geri alma hash'i yedekten değil, işlem öncesi canlı
   dosyadan alınır.

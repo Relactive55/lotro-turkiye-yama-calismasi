@@ -40,6 +40,10 @@ Akış:
 9. Kaynak veya sonuç kimliği uyuşmuyorsa işlem güvenli biçimde durur; paket
    üretimindeki bir hata otomatik olarak bozuk orijinal DAT sayılmaz.
 
+**Tekrar Kontrol Et** bellekteki eski release'i kullanmaz; GitHub stable release
+sorgusunu yeniden çalıştırır. Hash tabanlı geçici paket klasörleri sınırlı
+retention ile tutulur; yarım `.part` dosyaları resume için korunur.
+
 Updater manifestteki `semantic_delta_patch` sözleşmesini indirir ve doğrular
 (detached RSA-SHA256 imzası, asset boyutu/SHA-256, kaynak oyun kimliği ve şema).
 Paket geçici `.part` dosyasına alınır, doğrulama tamamlanmadan canlı dosyaya
