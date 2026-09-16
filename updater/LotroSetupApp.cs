@@ -253,7 +253,8 @@ internal sealed class SetupForm : Form
                 _available = available;
             }
             if (IsDisposed) return;
-            _gameDirectory = await Task.Run(() => LotroGameLocator.FindFirst());
+            if (string.IsNullOrWhiteSpace(_gameDirectory))
+                _gameDirectory = await Task.Run(() => LotroGameLocator.FindFirst());
             if (IsDisposed) return;
             string statePath = _gameDirectory == null ? null : Path.Combine(_gameDirectory, "installed_patch.json");
             InstalledPatchState state = ReadState(statePath);
